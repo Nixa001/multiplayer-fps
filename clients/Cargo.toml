@@ -1,0 +1,9 @@
+[package]
+name = "multiplayer_fps"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { version = "0.12.1", features = ["jpeg"] }
+bevy_gltf = "0.12.1"
+bevy_rapier3d = "0.23.0"
