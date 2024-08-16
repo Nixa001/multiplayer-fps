@@ -59,7 +59,7 @@ fn main() {
                         let event = GameEvent::BeginGame;
                         game_state.consume(&event);
                         server.broadcast_message(0, bincode::serialize(&event).unwrap());
-                        trace!("The game gas begun");
+                        println!("The game gas begun");
                     }
                 }
 
@@ -74,7 +74,7 @@ fn main() {
                         let event = GameEvent::EndGame;
                         game_state.consume(&event);
                         server.broadcast_message(0, bincode::serialize(&event).unwrap());
-                        trace!("Game has ended");
+                        println!("Game has ended");
                     }
                 }
             
@@ -87,7 +87,7 @@ fn main() {
                 if let Ok(event) = deserialize::<GameEvent>(&message) {
                     if game_state.validate(&event) {
                         game_state.consume(&event);
-                        trace!("Player {} sent:\n\t{:#?}", client_id, event);
+                        println!("Player {} sent:\n\t{:#?}", client_id, event);
                         server.broadcast_message(0, serialize(&event).unwrap());
 
                         // Determine if a player has won the game
