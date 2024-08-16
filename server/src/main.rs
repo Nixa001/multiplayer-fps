@@ -1,4 +1,3 @@
-use log::{ info, trace, warn };
 use renet::{ RenetConnectionConfig, RenetServer, ServerAuthentication, ServerConfig, ServerEvent };
 use store::GameState;
 use std::net::{ SocketAddr, UdpSocket };
@@ -55,7 +54,7 @@ fn main() {
                     // Tell all players that a new player has joined
                     server.broadcast_message(0, serialize(&event).unwrap());
 
-                    info!("{}-[{}] joined the server.", name, id);
+                    println!("{}-[{}] joined the server.", name, id);
                     if game_state.players.len() == PLAYER_LIMIT {
                         let event = GameEvent::BeginGame;
                         game_state.consume(&event);
@@ -69,7 +68,7 @@ fn main() {
                     let event = GameEvent::PlayerDisconnected { player_id: id as u8 };
                     game_state.consume(&event);
                     server.broadcast_message(0, bincode::serialize(&event).unwrap());
-                    info!("Client {} disconnected", id);
+                    println!("Client {} disconnected", id);
 
                     if game_state.players.len() == 1 {
                         let event = GameEvent::EndGame;
@@ -95,10 +94,10 @@ fn main() {
                         if let Some(winner) = game_state.determine_winner() {
                             let event = GameEvent::EndGame;
                             server.broadcast_message(0, bincode::serialize(&event).unwrap());
-                            info!("player with id [{}] won !", winner);
+                            println!("player with id [{}] won !", winner);
                         }
                     } else {
-                        warn!("Player {} sent invalid event:\n\t{:#?}", client_id, event);
+                        println!("Player {} sent invalid event:\n\t{:#?}", client_id, event);
                     }
                 }
             }
