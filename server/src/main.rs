@@ -12,6 +12,7 @@ pub const PROTOCOL_ID: u64 = 1582;
 
 fn main() {
     env_logger::init();
+
     let server_addr: SocketAddr = "127.0.0.1:8080".parse().unwrap();
     let mut server: RenetServer = RenetServer::new(
         SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap(),
@@ -20,7 +21,7 @@ fn main() {
         UdpSocket::bind(server_addr).unwrap()
     ).unwrap();
 
-    info!("🕹 maze server listening on {}", server_addr);
+    println!("🕹 maze server listening on {}", server_addr);
 
     let mut last_updated = Instant::now();
     let mut game_state = GameState::default();
@@ -40,6 +41,7 @@ fn main() {
                             player_id: *player_id,
                             name: player.name.clone(),
                         };
+                        println!("innit");
                         server.send_message(id, 0, serialize(&event).unwrap());
                     }
                     let name = name_from_user_data(&user_data);
@@ -76,6 +78,7 @@ fn main() {
                         trace!("Game has ended");
                     }
                 }
+            
             }
         }
 

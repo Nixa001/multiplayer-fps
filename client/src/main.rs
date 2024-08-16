@@ -1,3 +1,148 @@
+use bevy::prelude::*;
+use bevy_renet::{ renet::*, transport::NetcodeClientPlugin, RenetClientPlugin };
+//     //     ClientAuthentication,
+//     //     RenetClient,
+//     //     RenetConnectionConfig,
+use renet::RenetError;
+//     //     NETCODE_USER_DATA_BYTES,
+// };
+use transport::{ ClientAuthentication, NetcodeClientTransport };
+use std::{ net::{ SocketAddr, UdpSocket }, process::exit, time::SystemTime };
+use std::io::{ self, Write, * };
+
+// This id needs to be the same as the server is using
+const PROTOCOL_ID: u64 = 1582;
+
 fn main() {
-    println!("Hello, world!");
+    let mut input = String::new();
+
+    print!("Enter server IP address: ");
+    stdout().flush().unwrap();
+    stdin().read_line(&mut input).unwrap();
+    let server_ip = input.trim().to_string();
+    if server_ip.is_empty() {
+        eprintln!("❌ Please provide an IP address");
+        return;
+    }
+    if server_ip.parse::<SocketAddr>().is_err() {
+        eprintln!("❌ invalid Ip address!");
+        return;
+    }
+    input.clear();
+
+    print!("Enter your username: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut input).unwrap();
+    let username = input.trim().to_string();
+
+    if username.is_empty() {
+        eprintln!("❌ Please provide a username");
+        return;
+    }
+    if username.len() > 256 - 8 {
+        eprintln!("Username is too big");
+        return;
+    }
+
+    //--------- app
+    let mut app = App::new();
+    //app.add_plugins(DefaultPlugins);
+    app.add_plugins(
+        DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "test".into(),
+                resolution: (100.0, 100.0).into(),
+                resizable: false,
+                ..default()
+            }),
+            ..default()
+        })
+    );
+    app.add_plugins(RenetClientPlugin);
+    let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
+    let client = RenetClient::new(ConnectionConfig::default());
+    let client_id = current_time.as_millis() as u64;
+    app.insert_resource(client);
+    // Setup the transport layer
+
+    app.add_plugins(NetcodeClientPlugin);
+    let mut user_data = [0u8; 256];
+    user_data[0..8].copy_from_slice(&(username.len() as u64).to_le_bytes());
+    user_data[8..username.len() + 8].copy_from_slice(username.as_bytes());
+
+    let authentication = ClientAuthentication::Unsecure {
+        server_addr: server_ip.parse().unwrap(),
+        client_id,
+        user_data: Some(user_data),
+        protocol_id: PROTOCOL_ID,
+    };
+    let socket = UdpSocket::bind("127.0.0.1:5500").unwrap();
+    let transport = NetcodeClientTransport::new(current_time, authentication, socket).unwrap();
+    app.insert_resource(transport);
+    app.run();
+
+    // app.add_systems(Update, send_message_system);
+    // app.add_systems(Update, receive_message_system);
+    // App::new()
+    //     .add_plugins(
+    //         DefaultPlugins.set(WindowPlugin {
+    //             primary_window: Some(Window {
+    //                 title: "IBG".into(),
+    //                 resolution: (1500.0, 1000.0).into(),
+    //                 resizable: false,
+    //                 ..default()
+    //             }),
+    //             ..default()
+    //         })
+    //     )
+    //     // Lets add a nice dark grey background color
+    //     //  .insert_resource(ClearColor(Color::hex("282828").unwrap()))
+    //     .add_plugins(DefaultPlugins)
+    //     // Renet setup
+    //     .add_plugins(RenetClientPlugin)
+    //     .insert_resource(new_renet_client(&server_ip, &username).unwrap())
+    //     .add_systems(handle_renet_error)
+    //     .run();
 }
+
+/*
+ *RENET NETWORKING
+ *Creates a RenetClient thats already connected to a server Returns an Err if connection fails
+ */
+// fn new_renet_client(server_ip: &String, username: &String) -> anyhow::Result<RenetClient> {
+//     let server_addr = server_ip.parse()?;
+//     let socket = UdpSocket::bind("127.0.0.1:0")?;
+//     let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
+//     let client_id = current_time.as_millis() as u64;
+
+//     // Place username in user data
+//     let mut user_data = [0u8; 256];
+//     user_data[0..8].copy_from_slice(&(username.len() as u64).to_le_bytes());
+//     user_data[8..username.len() + 8].copy_from_slice(username.as_bytes());
+
+//     let client = RenetClient::new(
+//         current_time,
+//         socket,
+//         client_id,
+//         RenetConnectionConfig::default(),
+//         ClientAuthentication::Unsecure {
+//             client_id,
+//             protocol_id: PROTOCOL_ID,
+//             server_addr,
+//             user_data: Some(user_data),
+//         }
+//     )?;
+
+//     Ok(client)
+// }
+// #[derive(Debug)]
+// pub struct MyRenetError(pub RenetError);
+
+// impl Event for MyRenetError {}
+// impl Resource for MyRenetError {}
+// fn handle_renet_error(mut renet_error: EventReader<MyRenetError>) {
+//     for err in renet_error.read() {
+//         warn!("connection with server lost - {:?}", err);
+//         exit(1);
+//     }
+// }
