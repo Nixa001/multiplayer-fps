@@ -1,18 +1,32 @@
 use renet::{ RenetConnectionConfig, RenetServer, ServerAuthentication, ServerConfig, ServerEvent };
 use store::GameState;
+use std::fmt::format;
 use std::net::{ SocketAddr, UdpSocket };
 use std::time::{ Duration, Instant, SystemTime };
 use std::thread::*;
 use store::*;
 use bincode::*;
 use server::*;
+use local_ip_address::local_ip;
 
 pub const PROTOCOL_ID: u64 = 1582;
 
 fn main() {
     env_logger::init();
 
-    let server_addr: SocketAddr = "127.0.0.1:8080".parse().unwrap();
+    let ip_adress = match local_ip() {
+        Ok(ip) => ip.to_string(),  // Convertit l'adresse IP en chaîne de caractères
+        Err(e) => {
+            eprintln!("Erreur lors de la récupération de l'adresse IP : {}", e);
+            return;
+        }
+    };
+
+
+    let port = 8080;
+    let ip_with_port = format!("{}:{}", ip_adress, port);
+    
+    let server_addr: SocketAddr = ip_with_port.parse().unwrap();
     let mut server: RenetServer = RenetServer::new(
         SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap(),
         ServerConfig::new(PLAYER_LIMIT, PROTOCOL_ID, server_addr, ServerAuthentication::Unsecure),
