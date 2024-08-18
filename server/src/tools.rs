@@ -1,4 +1,4 @@
-use renet:: NETCODE_USER_DATA_BYTES;
+use renet::transport::NETCODE_USER_DATA_BYTES;
 /// Utility function for extracting a players name from renet user data
 
 pub fn name_from_user_data(user_data: &[u8; NETCODE_USER_DATA_BYTES]) -> String {
