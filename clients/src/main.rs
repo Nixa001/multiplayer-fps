@@ -1,14 +1,11 @@
+use crate::player::player::Player;
 use bevy::prelude::*;
 use bevy_rapier3d::plugin::{NoUserData, RapierPhysicsPlugin};
-use crate::player::player::Player;
 // use bevy::sprite::collide_aabb::collide;
 // use bevy::render::debug::DebugLines;
 // use bevy_gltf::Gltf;
-mod playing_field;
 mod player;
-
-
-
+mod playing_field;
 
 // #[derive(Component)]
 // struct GltfWall;
@@ -26,43 +23,50 @@ fn main() {
             ..default()
         }))
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_systems(Startup, (
-            player::player::setup_player_and_camera,
-            playing_field::playing_field::Fields::spawn_ground,
-            // playing_field::playing_field::Fields::spawn_object,
-            // playing_field::playing_field::Fields::spawn_player,
-            setup,
-        ))
+        .add_systems(
+            Startup,
+            (
+                player::player::setup_player_and_camera,
+                playing_field::playing_field::Fields::spawn_ground,
+                // playing_field::playing_field::Fields::spawn_object,
+                // playing_field::playing_field::Fields::spawn_player,
+                setup,
+            ),
+        )
         // .add_systems(Startup, setup)
-        .add_systems(Update,(
-            player::player::move_player,
-            player::player::grab_mouse,
-            player::fire::fire_laser,
-            player::fire::update_lasers,
-            // playing_field::playing_field::handle_collisions,
-            // handle_gltf_wall_collisions,
-            // debug_draw_system,
-        ).chain())
+        .add_systems(
+            Update,
+            (
+                player::player::move_player,
+                player::player::grab_mouse,
+                player::fire::fire_laser,
+                player::fire::update_lasers,
+                // playing_field::playing_field::handle_collisions,
+                // handle_gltf_wall_collisions,
+                // debug_draw_system,
+            )
+                .chain(),
+        )
         .run();
 }
 fn setup(
     mut commands: Commands,
     _asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    playing_field::playing_field::create_maze(&mut commands, &mut meshes, &mut materials, "Map1");    // Charger le modèle
-    // let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_2.glb#Scene0");
-    // // Spawner le modèle
-    // commands.spawn((
-    //     SceneBundle {
-    //         scene: scene_handle,
-    //         transform: Transform::from_xyz(-5.0, -2.3, -5.0).with_scale(Vec3::splat(0.8)),
-    //         ..default()
-    //     },
-    //     GltfWall,
-    // ));
-    // Caméra
+    playing_field::playing_field::create_maze(&mut commands, &mut meshes, &mut materials, "Map1"); // Charger le modèle
+                                                                                                   // let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_2.glb#Scene0");
+                                                                                                   // // Spawner le modèle
+                                                                                                   // commands.spawn((
+                                                                                                   //     SceneBundle {
+                                                                                                   //         scene: scene_handle,
+                                                                                                   //         transform: Transform::from_xyz(-5.0, -2.3, -5.0).with_scale(Vec3::splat(0.8)),
+                                                                                                   //         ..default()
+                                                                                                   //     },
+                                                                                                   //     GltfWall,
+                                                                                                   // ));
+                                                                                                   // Caméra
     commands.spawn(Camera3dBundle {
         transform: Transform::from_xyz(10.0, 45.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
@@ -97,7 +101,7 @@ fn setup(
             },
             transform: Transform::from_scale(Vec3::splat(5.0)), // Échelle du joueur sur la minimap
             ..default()
-        }
+        },
     ));
 }
 fn check_model_loaded(asset_server: Res<AssetServer>, scene_assets: Res<Assets<Scene>>) {
@@ -170,7 +174,7 @@ fn update_minimap(
 
 pub fn mages(name: &str) -> Vec<Vec<u8>> {
     if name == "Map1" {
-        return  vec![
+        return vec![
             vec![4, 4, 3, 3, 2, 4, 3, 4, 3, 3, 1],
             vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
             vec![1, 2, 4, 3, 3, 3, 2, 1, 3, 1, 1],
@@ -181,16 +185,12 @@ pub fn mages(name: &str) -> Vec<Vec<u8>> {
             vec![1, 3, 4, 1, 1, 1, 4, 2, 1, 2, 1],
             vec![1, 1, 2, 1, 4, 2, 1, 1, 4, 3, 1],
             vec![1, 3, 3, 1, 2, 4, 2, 1, 2, 1, 1],
-            vec![3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 2]
+            vec![3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 2],
         ];
     } else if name == "Map2" {
-        return  vec![
-            vec![],
-        ];
+        return vec![vec![]];
     }
-    vec![
-        vec![],
-    ]
+    vec![vec![]]
 }
 
 // pub fn crate_mage(

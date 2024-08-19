@@ -1,13 +1,10 @@
 use bevy::prelude::*;
 use std::default::Default;
 // use bevy::sprite::collide_aabb::collide;
-use bevy_rapier3d::prelude::*; // version bevy_rapier3d = "0.17.0"
 use crate::player::player::Player;
 use bevy_rapier3d::dynamics::RigidBody;
 use bevy_rapier3d::prelude::Collider;
-
-
-
+use bevy_rapier3d::prelude::*; // version bevy_rapier3d = "0.17.0"
 
 #[derive(Bundle)]
 struct CustomBundle {
@@ -16,7 +13,6 @@ struct CustomBundle {
     rigid_body: RigidBody,
     collider: Collider,
 }
-
 
 #[derive(Component)]
 pub enum Collision {
@@ -45,47 +41,49 @@ impl Fields {
         let wall_thickness = 0.5;
 
         let mut spawn_wall = |commands: &mut Commands, position: Vec3, size: Vec3| {
-            commands.spawn(
-                PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::Box::new(size.x, size.y, size.z))),
-                material: materials.add(StandardMaterial {
-                    base_color: Color::rgb(0.8, 0.8, 0.8),
+            commands
+                .spawn(PbrBundle {
+                    mesh: meshes.add(Mesh::from(shape::Box::new(size.x, size.y, size.z))),
+                    material: materials.add(StandardMaterial {
+                        base_color: Color::rgb(0.8, 0.8, 0.8),
+                        ..Default::default()
+                    }),
+                    transform: Transform::from_translation(position),
                     ..Default::default()
-                }),
-                transform: Transform::from_translation(position),
-                ..Default::default()
-            })
+                })
                 .insert(RigidBody::Fixed)
                 .insert(Collider::cuboid(size.x * 0.5, size.y * 0.5, size.z * 0.5))
-                .insert(Collision::Wall { size: Vec2::new(size.x, size.z) });
+                .insert(Collision::Wall {
+                    size: Vec2::new(size.x, size.z),
+                });
         };
 
         // North Wall
         spawn_wall(
             &mut commands,
             Vec3::new(0.0, wall_height / 2.0, -arena_size / 2.0),
-            Vec3::new(arena_size, wall_height, wall_thickness)
+            Vec3::new(arena_size, wall_height, wall_thickness),
         );
 
         // South Wall
         spawn_wall(
             &mut commands,
             Vec3::new(0.0, wall_height / 2.0, arena_size / 2.0),
-            Vec3::new(arena_size, wall_height, wall_thickness)
+            Vec3::new(arena_size, wall_height, wall_thickness),
         );
 
         // East Wall
         spawn_wall(
             &mut commands,
             Vec3::new(arena_size / 2.0, wall_height / 2.0, 0.0),
-            Vec3::new(wall_thickness, wall_height, arena_size)
+            Vec3::new(wall_thickness, wall_height, arena_size),
         );
 
         // West Wall
         spawn_wall(
             &mut commands,
             Vec3::new(-arena_size / 2.0, wall_height / 2.0, 0.0),
-            Vec3::new(wall_thickness, wall_height, arena_size)
+            Vec3::new(wall_thickness, wall_height, arena_size),
         );
 
         // Light
@@ -118,22 +116,23 @@ impl Fields {
         mut materials: ResMut<Assets<StandardMaterial>>,
     ) {
         // Capsule
-        commands.spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Capsule {
-                radius: 0.5,
-                rings: 4,
-                depth: 1.0,
-                latitudes: 8,
-                longitudes: 16,
-                uv_profile: shape::CapsuleUvProfile::Fixed,
-            })),
-            material: materials.add(StandardMaterial {
-                base_color: Color::SILVER,
+        commands
+            .spawn(PbrBundle {
+                mesh: meshes.add(Mesh::from(shape::Capsule {
+                    radius: 0.5,
+                    rings: 4,
+                    depth: 1.0,
+                    latitudes: 8,
+                    longitudes: 16,
+                    uv_profile: shape::CapsuleUvProfile::Fixed,
+                })),
+                material: materials.add(StandardMaterial {
+                    base_color: Color::SILVER,
+                    ..Default::default()
+                }),
+                transform: Transform::from_xyz(0.0, 1.0, 0.0),
                 ..Default::default()
-            }),
-            transform: Transform::from_xyz(0.0, 1.0, 0.0),
-            ..Default::default()
-        })
+            })
             .insert(Player {
                 id: 1,
                 name: "Player".to_string(),
@@ -143,10 +142,6 @@ impl Fields {
             });
     }
 }
-
-
-
-
 
 pub fn create_maze(
     commands: &mut Commands,
@@ -167,16 +162,40 @@ pub fn create_maze(
             match cell {
                 4 => {
                     // Vers le bas et la droite
-                    spawn_wall(commands, meshes, materials, Vec3::new(x, wall_height / 2.0, z + cell_size / 2.0), Vec3::new(wall_thickness, wall_height, cell_size));
-                    spawn_wall(commands, meshes, materials, Vec3::new(x + cell_size / 2.0, wall_height / 2.0, z), Vec3::new(cell_size, wall_height, wall_thickness));
+                    spawn_wall(
+                        commands,
+                        meshes,
+                        materials,
+                        Vec3::new(x, wall_height / 2.0, z + cell_size / 2.0),
+                        Vec3::new(wall_thickness, wall_height, cell_size),
+                    );
+                    spawn_wall(
+                        commands,
+                        meshes,
+                        materials,
+                        Vec3::new(x + cell_size / 2.0, wall_height / 2.0, z),
+                        Vec3::new(cell_size, wall_height, wall_thickness),
+                    );
                 }
                 3 => {
                     // Vers la droite
-                    spawn_wall(commands, meshes, materials, Vec3::new(x + cell_size / 2.0, wall_height / 2.0, z), Vec3::new(cell_size, wall_height, wall_thickness));
+                    spawn_wall(
+                        commands,
+                        meshes,
+                        materials,
+                        Vec3::new(x + cell_size / 2.0, wall_height / 2.0, z),
+                        Vec3::new(cell_size, wall_height, wall_thickness),
+                    );
                 }
                 1 => {
                     // Vers le bas
-                    spawn_wall(commands, meshes, materials, Vec3::new(x, wall_height / 2.0, z + cell_size / 2.0), Vec3::new(wall_thickness, wall_height, cell_size));
+                    spawn_wall(
+                        commands,
+                        meshes,
+                        materials,
+                        Vec3::new(x, wall_height / 2.0, z + cell_size / 2.0),
+                        Vec3::new(wall_thickness, wall_height, cell_size),
+                    );
                 }
                 2 => {
                     // Fin de ligne (pas de mur)
@@ -264,7 +283,6 @@ pub fn check_player_collision(
     false // Pas de collision détectée
 }
 
-
 // pub fn handle_collisions(
 //     mut player_query: Query<(&mut Transform, &Player)>,
 //     collider_query: Query<(&Transform, &Collision), Without<Player>>,
@@ -313,4 +331,3 @@ pub fn check_player_collision(
 //         }
 //     }
 // }
-

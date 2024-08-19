@@ -1,14 +1,13 @@
-use bevy::prelude::*;
 use bevy::input::mouse::MouseMotion;
+use bevy::prelude::*;
 // use crate::playing_field::playing_field::Collision;
 // use bevy::ecs::system::ParamSet;
 use bevy_rapier3d::dynamics::{LockedAxes, Velocity};
-use bevy_rapier3d::prelude::{RigidBody, Collider, GravityScale, RapierContext};
+use bevy_rapier3d::prelude::{Collider, GravityScale, RapierContext, RigidBody};
 // use bevy::sprite::collide_aabb::Collision;
 use crate::playing_field::playing_field::check_player_collision;
 use crate::playing_field::playing_field::Collision;
 // use bevy_rapier3d::prelude::RapierContext;
-
 
 #[derive(Component)]
 pub struct Player {
@@ -56,17 +55,31 @@ pub fn move_player(
 
     if let Ok((entity, player, mut transform, mut velocity)) = query.get_single_mut() {
         let mut direction = Vec3::ZERO;
-        if keyboard.pressed(KeyCode::W) { direction += transform.forward(); }
-        if keyboard.pressed(KeyCode::S) { direction += transform.back(); }
-        if keyboard.pressed(KeyCode::A) { direction += transform.left(); }
-        if keyboard.pressed(KeyCode::D) { direction += transform.right(); }
+        if keyboard.pressed(KeyCode::W) {
+            direction += transform.forward();
+        }
+        if keyboard.pressed(KeyCode::S) {
+            direction += transform.back();
+        }
+        if keyboard.pressed(KeyCode::A) {
+            direction += transform.left();
+        }
+        if keyboard.pressed(KeyCode::D) {
+            direction += transform.right();
+        }
 
         direction = direction.normalize_or_zero();
 
         let movement = direction * player.speed * 0.016;
 
         // Vérifier la collision avant de déplacer le joueur
-        if !check_player_collision(entity, &transform, movement, &rapier_context, &collider_query) {
+        if !check_player_collision(
+            entity,
+            &transform,
+            movement,
+            &rapier_context,
+            &collider_query,
+        ) {
             transform.translation += movement;
         }
 
@@ -74,7 +87,6 @@ pub fn move_player(
         transform.rotate_y(-mouse_delta.x * 0.002);
     }
 }
-
 
 pub fn grab_mouse(
     mut windows: Query<&mut Window>,
@@ -91,27 +103,26 @@ pub fn grab_mouse(
         window.cursor.visible = true;
     }
 }
-pub fn setup_player_and_camera(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
+pub fn setup_player_and_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Spawn the player
     let player_handle: Handle<Scene> = asset_server.load("armes/arme1.glb#Scene0");
     // let player_handle:Handle<Scene> = asset_server.load("armes/Soldier.glb#Scene0");
-    let player_entity = commands.spawn((
-        Player::new(1, "Player".to_string(), 5.0, Vec2::new(0.5, 0.5)),
-        SceneBundle {
-            scene: player_handle,
-            transform: Transform::from_xyz(-6.2, 0.2, -6.1).with_scale(Vec3::splat(0.4)),
-            ..default()
-        },
-        // Controle nanuel du joueur sans se soucier d'influence externe
-        RigidBody::KinematicPositionBased,
-        Collider::ball(0.5),
-        Velocity::default(),  // Assurez-vous que cette ligne est présente
-        LockedAxes::ROTATION_LOCKED,
-        GravityScale(0.0),
-    )).id();
+    let player_entity = commands
+        .spawn((
+            Player::new(1, "Player".to_string(), 5.0, Vec2::new(0.5, 0.5)),
+            SceneBundle {
+                scene: player_handle,
+                transform: Transform::from_xyz(-6.2, 0.2, -6.1).with_scale(Vec3::splat(0.4)),
+                ..default()
+            },
+            // Controle nanuel du joueur sans se soucier d'influence externe
+            RigidBody::KinematicPositionBased,
+            Collider::ball(0.5),
+            Velocity::default(), // Assurez-vous que cette ligne est présente
+            LockedAxes::ROTATION_LOCKED,
+            GravityScale(0.0),
+        ))
+        .id();
     // Spawn the weapon and attach it to the player
     // let weapon_handle: Handle<Scene> = asset_server.load("armes/arme1.glb#Scene0");
     // let weapon_entity = commands.spawn((
@@ -132,8 +143,8 @@ pub fn setup_player_and_camera(
     //     },
     // )).set_parent(player_entity);
 
-    commands.spawn(
-        PointLightBundle {
+    commands
+        .spawn(PointLightBundle {
             point_light: PointLight {
                 intensity: 500.0,
                 shadows_enabled: true,
@@ -141,6 +152,6 @@ pub fn setup_player_and_camera(
             },
             transform: Transform::from_xyz(-1.0, 2.0, -4.0),
             ..default()
-        }).set_parent(player_entity);
-
+        })
+        .set_parent(player_entity);
 }
