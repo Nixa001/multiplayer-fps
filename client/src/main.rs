@@ -3,7 +3,7 @@ use bevy_renet::{ renet::*, transport::NetcodeClientPlugin, RenetClientPlugin };
 use store::{ PROTOCOL_ID, GAME_FPS, * };
 use bincode::*;
 use transport::{ ClientAuthentication, NetcodeClientTransport };
-use std::{ net::{ SocketAddr, UdpSocket }, time::{ Duration, SystemTime }, thread::* };
+use std::{ net::{ SocketAddr, UdpSocket }, time:: SystemTime, thread::* };
 use std::io::{ self, Write, * };
 
 fn main() {
