@@ -17,7 +17,7 @@ pub enum EndGameReason {
     },
 }
 
-/// A GameState object that is able to keep track of a game of TicTacTussle
+/// A GameState object that is able to keep track of game
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct GameState {
     pub stage: Stage,

@@ -2,14 +2,12 @@ use renet::transport::{ ServerAuthentication, ServerConfig, NetcodeServerTranspo
 use renet::{ ConnectionConfig, DefaultChannel, RenetServer, ServerEvent };
 use store::GameState;
 use std::net::{ SocketAddr, UdpSocket };
-use std::time::{ Duration, SystemTime };
+use std::time::SystemTime;
 use std::thread::*;
-use store::*;
+use store::{ PROTOCOL_ID, GAME_FPS, * };
 use bincode::*;
 use server::*;
 use local_ip_address::local_ip;
-
-pub const PROTOCOL_ID: u64 = 1582;
 
 fn main() {
     let ip_adress = match local_ip() {
@@ -40,11 +38,9 @@ fn main() {
     let mut game_state = GameState::default();
 
     loop {
-        // Update server time
-        let delta_time = Duration::from_millis(16);
-        // Receive new messages and update clients
-        server.update(delta_time);
-        transport.update(delta_time, &mut server).expect("error while transporting from server");
+        // Receive new messages and update clients at desired fps
+        server.update(GAME_FPS);
+        transport.update(GAME_FPS, &mut server).expect("error while transporting from server");
 
         while let Some(event) = server.get_event() {
             match event {
@@ -120,6 +116,6 @@ fn main() {
             }
         }
         transport.send_packets(&mut server);
-        sleep(delta_time);
+        sleep(GAME_FPS);
     }
 }

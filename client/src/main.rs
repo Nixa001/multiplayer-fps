@@ -1,13 +1,10 @@
 use bevy::prelude::*;
 use bevy_renet::{ renet::*, transport::NetcodeClientPlugin, RenetClientPlugin };
-use store::*;
+use store::{ PROTOCOL_ID, GAME_FPS, * };
 use bincode::*;
 use transport::{ ClientAuthentication, NetcodeClientTransport };
 use std::{ net::{ SocketAddr, UdpSocket }, time::{ Duration, SystemTime }, thread::* };
 use std::io::{ self, Write, * };
-
-// ! must be the same with server's
-const PROTOCOL_ID: u64 = 1582;
 
 fn main() {
     let mut input = String::new();
@@ -85,8 +82,8 @@ fn handle_connection(
     mut client: ResMut<RenetClient>,
     mut transport: ResMut<NetcodeClientTransport>
 ) {
-    client.update(Duration::from_millis(16));
-    if transport.update(Duration::from_millis(16), &mut client).is_err() {
+    client.update(GAME_FPS);
+    if transport.update(GAME_FPS, &mut client).is_err() {
         warn!("server is unavailable");
         client.disconnect_due_to_transport();
 
@@ -108,5 +105,5 @@ fn handle_connection(
          */
     }
     transport.send_packets(&mut client).expect("error while sending packets to server");
-    sleep(Duration::from_millis(16));
+    sleep(GAME_FPS);
 }
