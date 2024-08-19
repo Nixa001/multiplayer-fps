@@ -1,19 +1,19 @@
 use bevy::prelude::*;
 use bevy_rapier3d::plugin::{NoUserData, RapierPhysicsPlugin};
 use crate::player::player::Player;
-use bevy::sprite::collide_aabb::collide;
+// use bevy::sprite::collide_aabb::collide;
 // use bevy::render::debug::DebugLines;
-
 // use bevy_gltf::Gltf;
-mod  playing_field;
+mod playing_field;
 mod player;
-#[derive(Component)]
-struct GltfWall;
 
 
+
+
+// #[derive(Component)]
+// struct GltfWall;
 #[derive(Component)]
 struct MinimapPlayer;
-
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -35,34 +35,38 @@ fn main() {
         ))
         // .add_systems(Startup, setup)
         .add_systems(Update,(
-            player::player::move_player, player::player::grab_mouse,
+            player::player::move_player,
+            player::player::grab_mouse,
+            player::fire::fire_laser,
+            player::fire::update_lasers,
             // playing_field::playing_field::handle_collisions,
-            handle_gltf_wall_collisions,
+            // handle_gltf_wall_collisions,
             // debug_draw_system,
         ).chain())
         .run();
 }
-
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // Charger le modèle
-    let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_2.glb#Scene0");
-
-    // Spawner le modèle
-    commands.spawn((
-        SceneBundle {
-            scene: scene_handle,
-            transform: Transform::from_xyz(-5.0, -2.3, -5.0).with_scale(Vec3::splat(0.8)),
-            ..default()
-        },
-        GltfWall,
-    ));
-
+fn setup(
+    mut commands: Commands,
+    _asset_server: Res<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>
+) {
+    playing_field::playing_field::create_maze(&mut commands, &mut meshes, &mut materials, "Map1");    // Charger le modèle
+    // let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_2.glb#Scene0");
+    // // Spawner le modèle
+    // commands.spawn((
+    //     SceneBundle {
+    //         scene: scene_handle,
+    //         transform: Transform::from_xyz(-5.0, -2.3, -5.0).with_scale(Vec3::splat(0.8)),
+    //         ..default()
+    //     },
+    //     GltfWall,
+    // ));
     // Caméra
-    // commands.spawn(Camera3dBundle {
-    //     transform: Transform::from_xyz(0.0, 5.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
-    //     ..default()
-    // });
-
+    commands.spawn(Camera3dBundle {
+        transform: Transform::from_xyz(10.0, 45.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
+        ..default()
+    });
     // Lumière
     commands.spawn(PointLightBundle {
         point_light: PointLight {
@@ -74,6 +78,15 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
     });
 
+    commands.spawn(PointLightBundle {
+        point_light: PointLight {
+            intensity: 1500.0,
+            shadows_enabled: true,
+            ..default()
+        },
+        transform: Transform::from_xyz(0.0, 10.0, 0.0),
+        ..default()
+    });
     // Joueur sur la minimap
     commands.spawn((
         MinimapPlayer,
@@ -86,10 +99,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         }
     ));
-
-
 }
-
 fn check_model_loaded(asset_server: Res<AssetServer>, scene_assets: Res<Assets<Scene>>) {
     let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_3.glb#Scene0");
     if scene_assets.contains(&scene_handle) {
@@ -98,58 +108,50 @@ fn check_model_loaded(asset_server: Res<AssetServer>, scene_assets: Res<Assets<S
         println!("Le modèle GLTF n'est pas encore chargé...");
     }
 }
-
-
-
-fn handle_gltf_wall_collisions(
-    mut player_query: Query<(&mut Transform, &Player)>,
-    wall_query: Query<&GlobalTransform, With<GltfWall>>,
-) {
-    if let Ok((mut player_transform, player)) = player_query.get_single_mut() {
-        if let Ok((mut player_transform, player)) = player_query.get_single_mut() {
-            for wall_transform in wall_query.iter() {
-                let wall_scale = wall_transform.compute_transform().scale;
-                let wall_size = Vec3::new(2.0, 2.0, 2.0) * wall_scale.x;
-                let wall_pos = wall_transform.translation();
-
-                let collision = collide(
-                    player_transform.translation,
-                    Vec2::new(player.size.x, player.size.y),
-                    wall_pos,
-                    Vec2::new(wall_size.x, wall_size.z),
-                );
-
-                if let Some(collision) = collision {
-                    match collision {
-                        bevy::sprite::collide_aabb::Collision::Left => {
-                            println!("Main Collision Letf");
-                            player_transform.translation.x = wall_pos.x - (wall_size.x + player.size.x) * 0.5;
-                        }
-                        bevy::sprite::collide_aabb::Collision::Right => {
-                            println!("Main Collision Right");
-                            player_transform.translation.x = wall_pos.x + (wall_size.x + player.size.x) * 0.5;
-                            // player_transform.translation.x = transform.translation.x + (collider_size.x + player_size.x) * 0.5;
-                        }
-                        bevy::sprite::collide_aabb::Collision::Top => {
-                            println!("Main Collision Top");
-                            player_transform.translation.z = wall_pos.z - (wall_size.z + player.size.y) * 0.5;
-                        }
-                        bevy::sprite::collide_aabb::Collision::Bottom => {
-                            println!("Main Collision Bottom");
-                            player_transform.translation.z = wall_pos.z + (wall_size.z + player.size.y) * 0.5;
-                        }
-                        bevy::sprite::collide_aabb::Collision::Inside => {
-                            println!("Main Collision Inside");
-                            // Gérez le cas où le joueur est à l'intérieur du mur
-                        }
-                    }
-                    println!("Player pos: {:?}, Wall pos: {:?}", player_transform.translation, wall_pos);
-                }
-            }
-        }
-    }
-}
-
+// fn handle_gltf_wall_collisions(
+//     mut player_query: Query<(&mut Transform, &Player)>,
+//     wall_query: Query<&GlobalTransform, With<GltfWall>>,
+// ) {
+//     if let Ok((mut player_transform, player)) = player_query.get_single_mut() {
+//         for wall_transform in wall_query.iter() {
+//                 let wall_scale = wall_transform.compute_transform().scale;
+//                 let wall_size = Vec3::new(2.0, 2.0, 2.0) * wall_scale.x;
+//                 let wall_pos = wall_transform.translation();
+//                 let collision = collide(
+//                     player_transform.translation,
+//                     Vec2::new(player.size.x, player.size.y),
+//                     wall_pos,
+//                     Vec2::new(wall_size.x, wall_size.z),
+//                 );
+//                 if let Some(collision) = collision {
+//                     match collision {
+//                         bevy::sprite::collide_aabb::Collision::Left => {
+//                             println!("Main Collision Letf");
+//                             player_transform.translation.x = wall_pos.x - (wall_size.x + player.size.x) * 0.5;
+//                         }
+//                         bevy::sprite::collide_aabb::Collision::Right => {
+//                             println!("Main Collision Right");
+//                             player_transform.translation.x = wall_pos.x + (wall_size.x + player.size.x) * 0.5;
+//                             // player_transform.translation.x = transform.translation.x + (collider_size.x + player_size.x) * 0.5;
+//                         }
+//                         bevy::sprite::collide_aabb::Collision::Top => {
+//                             println!("Main Collision Top");
+//                             player_transform.translation.z = wall_pos.z - (wall_size.z + player.size.y) * 0.5;
+//                         }
+//                         bevy::sprite::collide_aabb::Collision::Bottom => {
+//                             println!("Main Collision Bottom");
+//                             player_transform.translation.z = wall_pos.z + (wall_size.z + player.size.y) * 0.5;
+//                         }
+//                         bevy::sprite::collide_aabb::Collision::Inside => {
+//                             println!("Main Collision Inside");
+//                             // Gérez le cas où le joueur est à l'intérieur du mur
+//                         }
+//                     }
+//                     println!("Player pos: {:?}, Wall pos: {:?}", player_transform.translation, wall_pos);
+//                 }
+//             }
+//         }
+//     }
 fn update_minimap(
     player_query: Query<&Transform, With<Player>>,
     mut minimap_query: Query<&mut Transform, With<MinimapPlayer>>,
@@ -166,6 +168,78 @@ fn update_minimap(
     }
 }
 
+pub fn mages(name: &str) -> Vec<Vec<u8>> {
+    if name == "Map1" {
+        return  vec![
+            vec![4, 4, 3, 3, 2, 4, 3, 4, 3, 3, 1],
+            vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
+            vec![1, 2, 4, 3, 3, 3, 2, 1, 3, 1, 1],
+            vec![4, 3, 3, 2, 3, 3, 1, 2, 1, 3, 1],
+            vec![1, 4, 3, 2, 4, 2, 4, 3, 3, 1, 1],
+            vec![4, 2, 4, 3, 4, 3, 2, 4, 2, 1, 1],
+            vec![1, 3, 2, 1, 1, 4, 3, 3, 1, 1, 1],
+            vec![1, 3, 4, 1, 1, 1, 4, 2, 1, 2, 1],
+            vec![1, 1, 2, 1, 4, 2, 1, 1, 4, 3, 1],
+            vec![1, 3, 3, 1, 2, 4, 2, 1, 2, 1, 1],
+            vec![3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 2]
+        ];
+    } else if name == "Map2" {
+        return  vec![
+            vec![],
+        ];
+    }
+    vec![
+        vec![],
+    ]
+}
+
+// pub fn crate_mage(
+//     name: &str,
+//     mut commands: Commands,
+//     mut mesh: ResMut<Assets<Mesh>>,
+//     mut materials: ResMut<Assets<StandardMaterial>>
+// ) {
+//     let mage = mages(name);
+//     for v in &mage {
+//         for k in v {
+//            if *k == 4 {
+//                println!("Vers le bas et la droit");
+//            } else if *k == 3 {
+//                println!("Vers la droite");
+//            } else if *k == 2 {
+//                println!("Fin de ligne")
+//            } else {
+//                println!("Vers lebas");
+//            }
+//         }
+//     }
+//     println!("{:?}", mage);
+// }
+// pub fn mages(name: &str) -> Vec<Vec<u8>> {
+//     if name == "Map1" {
+//         return  vec![
+//             vec![4, 4, 3, 3, 2, 4, 3, 4, 3, 3, 1],
+//             vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
+//             vec![1, 2, 4, 3, 3, 3, 2, 1, 3, 1, 1],
+//             vec![4, 3, 3, 2, 3, 3, 1, 2, 1, 3, 1],
+//             vec![1, 4, 3, 2, 4, 2, 4, 3, 3, 1, 1],
+//             vec![4, 2, 4, 3, 4, 3, 2, 4, 2, 1, 1],
+//             vec![1, 3, 2, 1, 1, 4, 3, 3, 1, 1, 1],
+//             vec![1, 3, 4, 1, 1, 1, 4, 2, 1, 2, 1],
+//             vec![1, 1, 2, 1, 4, 2, 1, 1, 4, 3, 1],
+//             vec![1, 3, 3, 1, 2, 4, 2, 1, 2, 1, 1],
+//             vec![3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 2]
+//         ];
+//     } else if name == "Map2" {
+//         return  vec![
+//             vec![],
+//         ];
+//     }
+//     vec![
+//         vec![],
+//     ]
+// }
+
 // fn debug_draw_system(
 //     mut gizmos: Gizmos,
 //     wall_query: Query<&GlobalTransform, With<GltfWall>>,
@@ -181,7 +255,6 @@ fn update_minimap(
 //         );
 //     }
 // }
-
 // fn debug_draw_system(
 //     mut lines: ResMut<DebugLines>,
 //     player_query: Query<&Transform, With<Player>>,
@@ -238,7 +311,6 @@ fn update_minimap(
 //     });
 //
 // }
-
 // #[derive(Component)]
 // struct Ground;
 //

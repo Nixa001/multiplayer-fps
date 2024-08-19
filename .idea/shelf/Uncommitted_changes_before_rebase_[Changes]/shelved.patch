@@ -1,0 +1,1117 @@
+Index: clients/.gitignore
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>/target\r\n/assets\r\nCargo.lock
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/clients/.gitignore b/clients/.gitignore
+--- a/clients/.gitignore	(revision 00056909447d6c39a6c53a3232bab2e49c59ff1f)
++++ b/clients/.gitignore	(date 1724080658918)
+@@ -1,3 +1,2 @@
+ /target
+-/assets
+ Cargo.lock
+\ No newline at end of file
+Index: clients/src/main.rs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>use bevy::prelude::*;\r\nuse bevy_rapier3d::plugin::{NoUserData, RapierPhysicsPlugin};\r\nuse crate::player::player::Player;\r\n// use bevy::sprite::collide_aabb::collide;\r\n// use bevy::render::debug::DebugLines;\r\n// use bevy_gltf::Gltf;\r\nmod playing_field;\r\nmod player;\r\n\r\n\r\n\r\n\r\n// #[derive(Component)]\r\n// struct GltfWall;\r\n#[derive(Component)]\r\nstruct MinimapPlayer;\r\nfn main() {\r\n    App::new()\r\n        .add_plugins(DefaultPlugins.set(WindowPlugin {\r\n            primary_window: Some(Window {\r\n                title: \"IBG\".into(),\r\n                resolution: (1500.0, 1000.0).into(),\r\n                resizable: false,\r\n                ..default()\r\n            }),\r\n            ..default()\r\n        }))\r\n        .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())\r\n        .add_systems(Startup, (\r\n            player::player::setup_player_and_camera,\r\n            playing_field::playing_field::Fields::spawn_ground,\r\n            // playing_field::playing_field::Fields::spawn_object,\r\n            // playing_field::playing_field::Fields::spawn_player,\r\n            setup,\r\n        ))\r\n        // .add_systems(Startup, setup)\r\n        .add_systems(Update,(\r\n            player::player::move_player,\r\n            player::player::grab_mouse,\r\n            player::fire::fire_laser,\r\n            player::fire::update_lasers,\r\n            // playing_field::playing_field::handle_collisions,\r\n            // handle_gltf_wall_collisions,\r\n            // debug_draw_system,\r\n        ).chain())\r\n        .run();\r\n}\r\nfn setup(\r\n    mut commands: Commands,\r\n    _asset_server: Res<AssetServer>,\r\n    mut meshes: ResMut<Assets<Mesh>>,\r\n    mut materials: ResMut<Assets<StandardMaterial>>\r\n) {\r\n    playing_field::playing_field::create_maze(&mut commands, &mut meshes, &mut materials, \"Map1\");    // Charger le modèle\r\n    // let scene_handle: Handle<Scene> = asset_server.load(\"mages/mage1_2.glb#Scene0\");\r\n    // // Spawner le modèle\r\n    // commands.spawn((\r\n    //     SceneBundle {\r\n    //         scene: scene_handle,\r\n    //         transform: Transform::from_xyz(-5.0, -2.3, -5.0).with_scale(Vec3::splat(0.8)),\r\n    //         ..default()\r\n    //     },\r\n    //     GltfWall,\r\n    // ));\r\n    // Caméra\r\n    commands.spawn(Camera3dBundle {\r\n        transform: Transform::from_xyz(10.0, 45.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),\r\n        ..default()\r\n    });\r\n    // Lumière\r\n    commands.spawn(PointLightBundle {\r\n        point_light: PointLight {\r\n            intensity: 1500.0,\r\n            shadows_enabled: true,\r\n            ..default()\r\n        },\r\n        transform: Transform::from_xyz(4.0, 8.0, 4.0),\r\n        ..default()\r\n    });\r\n\r\n    commands.spawn(PointLightBundle {\r\n        point_light: PointLight {\r\n            intensity: 1500.0,\r\n            shadows_enabled: true,\r\n            ..default()\r\n        },\r\n        transform: Transform::from_xyz(0.0, 10.0, 0.0),\r\n        ..default()\r\n    });\r\n    // Joueur sur la minimap\r\n    commands.spawn((\r\n        MinimapPlayer,\r\n        SpriteBundle {\r\n            sprite: Sprite {\r\n                color: Color::RED,\r\n                ..default()\r\n            },\r\n            transform: Transform::from_scale(Vec3::splat(5.0)), // Échelle du joueur sur la minimap\r\n            ..default()\r\n        }\r\n    ));\r\n}\r\nfn check_model_loaded(asset_server: Res<AssetServer>, scene_assets: Res<Assets<Scene>>) {\r\n    let scene_handle: Handle<Scene> = asset_server.load(\"mages/mage1_3.glb#Scene0\");\r\n    if scene_assets.contains(&scene_handle) {\r\n        println!(\"Le modèle GLTF a été chargé avec succès!\");\r\n    } else {\r\n        println!(\"Le modèle GLTF n'est pas encore chargé...\");\r\n    }\r\n}\r\n// fn handle_gltf_wall_collisions(\r\n//     mut player_query: Query<(&mut Transform, &Player)>,\r\n//     wall_query: Query<&GlobalTransform, With<GltfWall>>,\r\n// ) {\r\n//     if let Ok((mut player_transform, player)) = player_query.get_single_mut() {\r\n//         for wall_transform in wall_query.iter() {\r\n//                 let wall_scale = wall_transform.compute_transform().scale;\r\n//                 let wall_size = Vec3::new(2.0, 2.0, 2.0) * wall_scale.x;\r\n//                 let wall_pos = wall_transform.translation();\r\n//                 let collision = collide(\r\n//                     player_transform.translation,\r\n//                     Vec2::new(player.size.x, player.size.y),\r\n//                     wall_pos,\r\n//                     Vec2::new(wall_size.x, wall_size.z),\r\n//                 );\r\n//                 if let Some(collision) = collision {\r\n//                     match collision {\r\n//                         bevy::sprite::collide_aabb::Collision::Left => {\r\n//                             println!(\"Main Collision Letf\");\r\n//                             player_transform.translation.x = wall_pos.x - (wall_size.x + player.size.x) * 0.5;\r\n//                         }\r\n//                         bevy::sprite::collide_aabb::Collision::Right => {\r\n//                             println!(\"Main Collision Right\");\r\n//                             player_transform.translation.x = wall_pos.x + (wall_size.x + player.size.x) * 0.5;\r\n//                             // player_transform.translation.x = transform.translation.x + (collider_size.x + player_size.x) * 0.5;\r\n//                         }\r\n//                         bevy::sprite::collide_aabb::Collision::Top => {\r\n//                             println!(\"Main Collision Top\");\r\n//                             player_transform.translation.z = wall_pos.z - (wall_size.z + player.size.y) * 0.5;\r\n//                         }\r\n//                         bevy::sprite::collide_aabb::Collision::Bottom => {\r\n//                             println!(\"Main Collision Bottom\");\r\n//                             player_transform.translation.z = wall_pos.z + (wall_size.z + player.size.y) * 0.5;\r\n//                         }\r\n//                         bevy::sprite::collide_aabb::Collision::Inside => {\r\n//                             println!(\"Main Collision Inside\");\r\n//                             // Gérez le cas où le joueur est à l'intérieur du mur\r\n//                         }\r\n//                     }\r\n//                     println!(\"Player pos: {:?}, Wall pos: {:?}\", player_transform.translation, wall_pos);\r\n//                 }\r\n//             }\r\n//         }\r\n//     }\r\nfn update_minimap(\r\n    player_query: Query<&Transform, With<Player>>,\r\n    mut minimap_query: Query<&mut Transform, With<MinimapPlayer>>,\r\n) {\r\n    if let Ok(player_transform) = player_query.get_single() {\r\n        if let Ok(mut minimap_transform) = minimap_query.get_single_mut() {\r\n            // Met à jour la position du joueur sur la minimap\r\n            minimap_transform.translation = Vec3::new(\r\n                200.0 + player_transform.translation.x * 10.0, // Ajuste l'échelle pour la minimap\r\n                200.0 + player_transform.translation.z * 10.0,\r\n                0.0,\r\n            );\r\n        }\r\n    }\r\n}\r\n\r\npub fn mages(name: &str) -> Vec<Vec<u8>> {\r\n    if name == \"Map1\" {\r\n        return  vec![\r\n            vec![4, 4, 3, 3, 2, 4, 3, 4, 3, 3, 1],\r\n            vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],\r\n            vec![1, 2, 4, 3, 3, 3, 2, 1, 3, 1, 1],\r\n            vec![4, 3, 3, 2, 3, 3, 1, 2, 1, 3, 1],\r\n            vec![1, 4, 3, 2, 4, 2, 4, 3, 3, 1, 1],\r\n            vec![4, 2, 4, 3, 4, 3, 2, 4, 2, 1, 1],\r\n            vec![1, 3, 2, 1, 1, 4, 3, 3, 1, 1, 1],\r\n            vec![1, 3, 4, 1, 1, 1, 4, 2, 1, 2, 1],\r\n            vec![1, 1, 2, 1, 4, 2, 1, 1, 4, 3, 1],\r\n            vec![1, 3, 3, 1, 2, 4, 2, 1, 2, 1, 1],\r\n            vec![3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 2]\r\n        ];\r\n    } else if name == \"Map2\" {\r\n        return  vec![\r\n            vec![],\r\n        ];\r\n    }\r\n    vec![\r\n        vec![],\r\n    ]\r\n}\r\n\r\n// pub fn crate_mage(\r\n//     name: &str,\r\n//     mut commands: Commands,\r\n//     mut mesh: ResMut<Assets<Mesh>>,\r\n//     mut materials: ResMut<Assets<StandardMaterial>>\r\n// ) {\r\n//     let mage = mages(name);\r\n//     for v in &mage {\r\n//         for k in v {\r\n//            if *k == 4 {\r\n//                println!(\"Vers le bas et la droit\");\r\n//            } else if *k == 3 {\r\n//                println!(\"Vers la droite\");\r\n//            } else if *k == 2 {\r\n//                println!(\"Fin de ligne\")\r\n//            } else {\r\n//                println!(\"Vers lebas\");\r\n//            }\r\n//         }\r\n//     }\r\n//     println!(\"{:?}\", mage);\r\n// }\r\n// pub fn mages(name: &str) -> Vec<Vec<u8>> {\r\n//     if name == \"Map1\" {\r\n//         return  vec![\r\n//             vec![4, 4, 3, 3, 2, 4, 3, 4, 3, 3, 1],\r\n//             vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],\r\n//             vec![1, 2, 4, 3, 3, 3, 2, 1, 3, 1, 1],\r\n//             vec![4, 3, 3, 2, 3, 3, 1, 2, 1, 3, 1],\r\n//             vec![1, 4, 3, 2, 4, 2, 4, 3, 3, 1, 1],\r\n//             vec![4, 2, 4, 3, 4, 3, 2, 4, 2, 1, 1],\r\n//             vec![1, 3, 2, 1, 1, 4, 3, 3, 1, 1, 1],\r\n//             vec![1, 3, 4, 1, 1, 1, 4, 2, 1, 2, 1],\r\n//             vec![1, 1, 2, 1, 4, 2, 1, 1, 4, 3, 1],\r\n//             vec![1, 3, 3, 1, 2, 4, 2, 1, 2, 1, 1],\r\n//             vec![3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 2]\r\n//         ];\r\n//     } else if name == \"Map2\" {\r\n//         return  vec![\r\n//             vec![],\r\n//         ];\r\n//     }\r\n//     vec![\r\n//         vec![],\r\n//     ]\r\n// }\r\n\r\n// fn debug_draw_system(\r\n//     mut gizmos: Gizmos,\r\n//     wall_query: Query<&GlobalTransform, With<GltfWall>>,\r\n// ) {\r\n//     for wall_transform in wall_query.iter() {\r\n//         let wall_pos = wall_transform.translation();\r\n//         let wall_scale = wall_transform.scale();\r\n//         let wall_size = Vec3::new(2.0, 2.0, 2.0) * wall_scale.x;\r\n//\r\n//         gizmos.cuboid(\r\n//             Transform::from_translation(wall_pos).with_scale(wall_size),\r\n//             Color::RED,\r\n//         );\r\n//     }\r\n// }\r\n// fn debug_draw_system(\r\n//     mut lines: ResMut<DebugLines>,\r\n//     player_query: Query<&Transform, With<Player>>,\r\n//     wall_query: Query<&GlobalTransform, With<GltfWall>>,\r\n// ) {\r\n//     let player_transform = player_query.single();\r\n//     for wall_transform in wall_query.iter() {\r\n//         let wall_pos = wall_transform.translation();\r\n//         let wall_size = Vec3::new(2.0, 3.0, 2.0);\r\n//\r\n//         lines.line_colored(\r\n//             wall_pos - wall_size * 0.5,\r\n//             wall_pos + wall_size * 0.5,\r\n//             0.0,\r\n//             Color::RED,\r\n//         );\r\n//     }\r\n//\r\n//     lines.line_colored(\r\n//         player_transform.translation,\r\n//         player_transform.translation + Vec3::Y,\r\n//         0.0,\r\n//         Color::GREEN,\r\n//     );\r\n// }\r\n//\r\n// fn setup(\r\n//     mut commands: Commands,\r\n//     asset_server: Res<AssetServer>,\r\n//     mut meshes: ResMut<Assets<Mesh>>,\r\n//     mut materials: ResMut<Assets<StandardMaterial>>,\r\n// ) {\r\n//     // Assuming you have a GLTF plugin or loader set up\r\n//     let map_handle: Handle<Gltf> = asset_server.load(\"mages/mage3D.glb\");\r\n//\r\n//     commands.spawn(PointLightBundle {\r\n//         transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),\r\n//         ..default()\r\n//     });\r\n//     commands.spawn(PointLightBundle {\r\n//         point_light: PointLight {\r\n//             intensity: 1500.0,\r\n//             shadows_enabled: true,\r\n//             ..default()\r\n//         },\r\n//         transform: Transform::from_xyz(4.0, 8.0, 4.0),\r\n//         ..default()\r\n//     });\r\n//\r\n//     // Load the GLTF model and spawn it with necessary components\r\n//     commands.spawn(SceneBundle {\r\n//         scene: asset_server.load(\"mages/mage3D.glb\"),\r\n//         ..default()\r\n//     });\r\n//\r\n// }\r\n// #[derive(Component)]\r\n// struct Ground;\r\n//\r\n// fn spawn_plancher(\r\n//     mut commands: Commands,\r\n//     mut meshes: ResMut<Assets<Mesh>>,\r\n//     mut materials: ResMut<Assets<StandardMaterial>>,\r\n// ) {\r\n//     // plane\r\n//     commands.spawn((\r\n//         PbrBundle {\r\n//             mesh: meshes.add(Plane3d::default().mesh().size(20., 20.)),\r\n//             material: materials.add(Color::srgb(0.3, 0.5, 0.3)),\r\n//             ..default()\r\n//         },\r\n//         Ground,\r\n//     ));\r\n//\r\n//     // light\r\n//     commands.spawn(DirectionalLightBundle {\r\n//         transform: Transform::from_translation(Vec3::ONE).looking_at(Vec3::ZERO, Vec3::Y),\r\n//         ..default()\r\n//     });\r\n//\r\n//     // camera\r\n//     commands.spawn(Camera3dBundle {\r\n//         transform: Transform::from_xyz(0.0, 5.0, 15.0).looking_at(Vec3::ZERO, Vec3::Y),\r\n//         ..default()\r\n//     });\r\n// }\r\n//\r\n// pub fn spawn_object(\r\n//     mut commands: Commands,\r\n//     mut meshes: ResMut<Assets<Mesh>>,\r\n//     mut materials: ResMut<Assets<StandardMaterial>>,\r\n// ){\r\n//     // cube\r\n//     commands.spawn(PbrBundle {\r\n//         mesh: meshes.add(Cuboid::new(1.0, 1.0, 1.0)),\r\n//         material: materials.add(Color::srgb_u8(124, 144, 255)),\r\n//         transform: Transform::from_xyz(0.0, 0.5, 0.0),\r\n//         ..default()\r\n//\r\n//     });\r\n// }\r\n//\r\n//\r\n// pub fn spawn_player(\r\n//     mut commands: Commands,\r\n//     mut meshes: ResMut<Assets<Mesh>>,\r\n//     mut materials: ResMut<Assets<StandardMaterial>>,\r\n// ) {\r\n//     commands.spawn((\r\n//         PbrBundle {\r\n//             // mesh: meshes.add(Mesh::try_from(Capsule::default()).unwrap()),\r\n//             material: materials.add(Color::from(SILVER)),\r\n//             transform: Transform::from_xyz(0.0, 1.0, 0.0),\r\n//             ..default()\r\n//         },\r\n//         Player,\r\n//     ));\r\n// }\r\n// #[derive(Component)]\r\n// struct Player;\r\n// pub fn spawn_camera(mut commands: Commands) {\r\n//     let camera = Camera3dBundle {\r\n//         transform: Transform::from_xyz(0.0, 2.5, 10.0).looking_at(Vec3::ZERO, Vec3::Y),\r\n//         ..default()\r\n//     };\r\n//     commands.spawn(camera);\r\n// }\r\n// pub fn spawn_lumiere(mut commands: Commands) {\r\n//     let lumiere = PointLightBundle {\r\n//        point_light: PointLight {\r\n//            intensity: 10000.0,\r\n//            shadows_enabled: true,\r\n//            ..default()\r\n//        } ,\r\n//         transform: Transform::from_xyz(4.0, 8.0, 4.0),\r\n//         ..default()\r\n//     };\r\n//     commands.spawn(lumiere);\r\n// }\r\n// fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {\r\n//     commands.spawn(Camera2dBundle::default());\r\n//\r\n//     commands.spawn(TextBundle::from_section(\r\n//         \"Bienvenue dans IBG!\",\r\n//         TextStyle {\r\n//             font: asset_server.load(\"fonts/EduAUVICWANTHand-VariableFont_wght.ttf\"),\r\n//             font_size: 40.0,\r\n//             color: Color::WHITE,\r\n//         },\r\n//     ));\r\n// }\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/clients/src/main.rs b/clients/src/main.rs
+--- a/clients/src/main.rs	(revision 00056909447d6c39a6c53a3232bab2e49c59ff1f)
++++ b/clients/src/main.rs	(date 1724080658886)
+@@ -1,19 +1,19 @@
+ use bevy::prelude::*;
+ use bevy_rapier3d::plugin::{NoUserData, RapierPhysicsPlugin};
+ use crate::player::player::Player;
+-// use bevy::sprite::collide_aabb::collide;
++use bevy::sprite::collide_aabb::collide;
+ // use bevy::render::debug::DebugLines;
++
+ // use bevy_gltf::Gltf;
+-mod playing_field;
++mod  playing_field;
+ mod player;
+-
++#[derive(Component)]
++struct GltfWall;
+ 
+ 
+-
+-// #[derive(Component)]
+-// struct GltfWall;
+ #[derive(Component)]
+ struct MinimapPlayer;
++
+ fn main() {
+     App::new()
+         .add_plugins(DefaultPlugins.set(WindowPlugin {
+@@ -35,38 +35,34 @@
+         ))
+         // .add_systems(Startup, setup)
+         .add_systems(Update,(
+-            player::player::move_player,
+-            player::player::grab_mouse,
+-            player::fire::fire_laser,
+-            player::fire::update_lasers,
++            player::player::move_player, player::player::grab_mouse,
+             // playing_field::playing_field::handle_collisions,
+-            // handle_gltf_wall_collisions,
++            handle_gltf_wall_collisions,
+             // debug_draw_system,
+         ).chain())
+         .run();
+ }
+-fn setup(
+-    mut commands: Commands,
+-    _asset_server: Res<AssetServer>,
+-    mut meshes: ResMut<Assets<Mesh>>,
+-    mut materials: ResMut<Assets<StandardMaterial>>
+-) {
+-    playing_field::playing_field::create_maze(&mut commands, &mut meshes, &mut materials, "Map1");    // Charger le modèle
+-    // let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_2.glb#Scene0");
+-    // // Spawner le modèle
+-    // commands.spawn((
+-    //     SceneBundle {
+-    //         scene: scene_handle,
+-    //         transform: Transform::from_xyz(-5.0, -2.3, -5.0).with_scale(Vec3::splat(0.8)),
+-    //         ..default()
+-    //     },
+-    //     GltfWall,
+-    // ));
+-    // Caméra
+-    commands.spawn(Camera3dBundle {
+-        transform: Transform::from_xyz(10.0, 45.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
+-        ..default()
+-    });
++
++fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
++    // Charger le modèle
++    let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_2.glb#Scene0");
++
++    // Spawner le modèle
++    commands.spawn((
++        SceneBundle {
++            scene: scene_handle,
++            transform: Transform::from_xyz(-5.0, -2.3, -5.0).with_scale(Vec3::splat(0.8)),
++            ..default()
++        },
++        GltfWall,
++    ));
++
++    // Caméra
++    // commands.spawn(Camera3dBundle {
++    //     transform: Transform::from_xyz(0.0, 5.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
++    //     ..default()
++    // });
++
+     // Lumière
+     commands.spawn(PointLightBundle {
+         point_light: PointLight {
+@@ -78,15 +74,6 @@
+         ..default()
+     });
+ 
+-    commands.spawn(PointLightBundle {
+-        point_light: PointLight {
+-            intensity: 1500.0,
+-            shadows_enabled: true,
+-            ..default()
+-        },
+-        transform: Transform::from_xyz(0.0, 10.0, 0.0),
+-        ..default()
+-    });
+     // Joueur sur la minimap
+     commands.spawn((
+         MinimapPlayer,
+@@ -99,7 +86,10 @@
+             ..default()
+         }
+     ));
++
++
+ }
++
+ fn check_model_loaded(asset_server: Res<AssetServer>, scene_assets: Res<Assets<Scene>>) {
+     let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_3.glb#Scene0");
+     if scene_assets.contains(&scene_handle) {
+@@ -108,50 +98,58 @@
+         println!("Le modèle GLTF n'est pas encore chargé...");
+     }
+ }
+-// fn handle_gltf_wall_collisions(
+-//     mut player_query: Query<(&mut Transform, &Player)>,
+-//     wall_query: Query<&GlobalTransform, With<GltfWall>>,
+-// ) {
+-//     if let Ok((mut player_transform, player)) = player_query.get_single_mut() {
+-//         for wall_transform in wall_query.iter() {
+-//                 let wall_scale = wall_transform.compute_transform().scale;
+-//                 let wall_size = Vec3::new(2.0, 2.0, 2.0) * wall_scale.x;
+-//                 let wall_pos = wall_transform.translation();
+-//                 let collision = collide(
+-//                     player_transform.translation,
+-//                     Vec2::new(player.size.x, player.size.y),
+-//                     wall_pos,
+-//                     Vec2::new(wall_size.x, wall_size.z),
+-//                 );
+-//                 if let Some(collision) = collision {
+-//                     match collision {
+-//                         bevy::sprite::collide_aabb::Collision::Left => {
+-//                             println!("Main Collision Letf");
+-//                             player_transform.translation.x = wall_pos.x - (wall_size.x + player.size.x) * 0.5;
+-//                         }
+-//                         bevy::sprite::collide_aabb::Collision::Right => {
+-//                             println!("Main Collision Right");
+-//                             player_transform.translation.x = wall_pos.x + (wall_size.x + player.size.x) * 0.5;
+-//                             // player_transform.translation.x = transform.translation.x + (collider_size.x + player_size.x) * 0.5;
+-//                         }
+-//                         bevy::sprite::collide_aabb::Collision::Top => {
+-//                             println!("Main Collision Top");
+-//                             player_transform.translation.z = wall_pos.z - (wall_size.z + player.size.y) * 0.5;
+-//                         }
+-//                         bevy::sprite::collide_aabb::Collision::Bottom => {
+-//                             println!("Main Collision Bottom");
+-//                             player_transform.translation.z = wall_pos.z + (wall_size.z + player.size.y) * 0.5;
+-//                         }
+-//                         bevy::sprite::collide_aabb::Collision::Inside => {
+-//                             println!("Main Collision Inside");
+-//                             // Gérez le cas où le joueur est à l'intérieur du mur
+-//                         }
+-//                     }
+-//                     println!("Player pos: {:?}, Wall pos: {:?}", player_transform.translation, wall_pos);
+-//                 }
+-//             }
+-//         }
+-//     }
++
++
++
++fn handle_gltf_wall_collisions(
++    mut player_query: Query<(&mut Transform, &Player)>,
++    wall_query: Query<&GlobalTransform, With<GltfWall>>,
++) {
++    if let Ok((mut player_transform, player)) = player_query.get_single_mut() {
++        if let Ok((mut player_transform, player)) = player_query.get_single_mut() {
++            for wall_transform in wall_query.iter() {
++                let wall_scale = wall_transform.compute_transform().scale;
++                let wall_size = Vec3::new(2.0, 2.0, 2.0) * wall_scale.x;
++                let wall_pos = wall_transform.translation();
++
++                let collision = collide(
++                    player_transform.translation,
++                    Vec2::new(player.size.x, player.size.y),
++                    wall_pos,
++                    Vec2::new(wall_size.x, wall_size.z),
++                );
++
++                if let Some(collision) = collision {
++                    match collision {
++                        bevy::sprite::collide_aabb::Collision::Left => {
++                            println!("Main Collision Letf");
++                            player_transform.translation.x = wall_pos.x - (wall_size.x + player.size.x) * 0.5;
++                        }
++                        bevy::sprite::collide_aabb::Collision::Right => {
++                            println!("Main Collision Right");
++                            player_transform.translation.x = wall_pos.x + (wall_size.x + player.size.x) * 0.5;
++                            // player_transform.translation.x = transform.translation.x + (collider_size.x + player_size.x) * 0.5;
++                        }
++                        bevy::sprite::collide_aabb::Collision::Top => {
++                            println!("Main Collision Top");
++                            player_transform.translation.z = wall_pos.z - (wall_size.z + player.size.y) * 0.5;
++                        }
++                        bevy::sprite::collide_aabb::Collision::Bottom => {
++                            println!("Main Collision Bottom");
++                            player_transform.translation.z = wall_pos.z + (wall_size.z + player.size.y) * 0.5;
++                        }
++                        bevy::sprite::collide_aabb::Collision::Inside => {
++                            println!("Main Collision Inside");
++                            // Gérez le cas où le joueur est à l'intérieur du mur
++                        }
++                    }
++                    println!("Player pos: {:?}, Wall pos: {:?}", player_transform.translation, wall_pos);
++                }
++            }
++        }
++    }
++}
++
+ fn update_minimap(
+     player_query: Query<&Transform, With<Player>>,
+     mut minimap_query: Query<&mut Transform, With<MinimapPlayer>>,
+@@ -168,78 +166,6 @@
+     }
+ }
+ 
+-pub fn mages(name: &str) -> Vec<Vec<u8>> {
+-    if name == "Map1" {
+-        return  vec![
+-            vec![4, 4, 3, 3, 2, 4, 3, 4, 3, 3, 1],
+-            vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
+-            vec![1, 2, 4, 3, 3, 3, 2, 1, 3, 1, 1],
+-            vec![4, 3, 3, 2, 3, 3, 1, 2, 1, 3, 1],
+-            vec![1, 4, 3, 2, 4, 2, 4, 3, 3, 1, 1],
+-            vec![4, 2, 4, 3, 4, 3, 2, 4, 2, 1, 1],
+-            vec![1, 3, 2, 1, 1, 4, 3, 3, 1, 1, 1],
+-            vec![1, 3, 4, 1, 1, 1, 4, 2, 1, 2, 1],
+-            vec![1, 1, 2, 1, 4, 2, 1, 1, 4, 3, 1],
+-            vec![1, 3, 3, 1, 2, 4, 2, 1, 2, 1, 1],
+-            vec![3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 2]
+-        ];
+-    } else if name == "Map2" {
+-        return  vec![
+-            vec![],
+-        ];
+-    }
+-    vec![
+-        vec![],
+-    ]
+-}
+-
+-// pub fn crate_mage(
+-//     name: &str,
+-//     mut commands: Commands,
+-//     mut mesh: ResMut<Assets<Mesh>>,
+-//     mut materials: ResMut<Assets<StandardMaterial>>
+-// ) {
+-//     let mage = mages(name);
+-//     for v in &mage {
+-//         for k in v {
+-//            if *k == 4 {
+-//                println!("Vers le bas et la droit");
+-//            } else if *k == 3 {
+-//                println!("Vers la droite");
+-//            } else if *k == 2 {
+-//                println!("Fin de ligne")
+-//            } else {
+-//                println!("Vers lebas");
+-//            }
+-//         }
+-//     }
+-//     println!("{:?}", mage);
+-// }
+-// pub fn mages(name: &str) -> Vec<Vec<u8>> {
+-//     if name == "Map1" {
+-//         return  vec![
+-//             vec![4, 4, 3, 3, 2, 4, 3, 4, 3, 3, 1],
+-//             vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
+-//             vec![1, 2, 4, 3, 3, 3, 2, 1, 3, 1, 1],
+-//             vec![4, 3, 3, 2, 3, 3, 1, 2, 1, 3, 1],
+-//             vec![1, 4, 3, 2, 4, 2, 4, 3, 3, 1, 1],
+-//             vec![4, 2, 4, 3, 4, 3, 2, 4, 2, 1, 1],
+-//             vec![1, 3, 2, 1, 1, 4, 3, 3, 1, 1, 1],
+-//             vec![1, 3, 4, 1, 1, 1, 4, 2, 1, 2, 1],
+-//             vec![1, 1, 2, 1, 4, 2, 1, 1, 4, 3, 1],
+-//             vec![1, 3, 3, 1, 2, 4, 2, 1, 2, 1, 1],
+-//             vec![3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 2]
+-//         ];
+-//     } else if name == "Map2" {
+-//         return  vec![
+-//             vec![],
+-//         ];
+-//     }
+-//     vec![
+-//         vec![],
+-//     ]
+-// }
+-
+ // fn debug_draw_system(
+ //     mut gizmos: Gizmos,
+ //     wall_query: Query<&GlobalTransform, With<GltfWall>>,
+@@ -255,6 +181,7 @@
+ //         );
+ //     }
+ // }
++
+ // fn debug_draw_system(
+ //     mut lines: ResMut<DebugLines>,
+ //     player_query: Query<&Transform, With<Player>>,
+@@ -311,6 +238,7 @@
+ //     });
+ //
+ // }
++
+ // #[derive(Component)]
+ // struct Ground;
+ //
+Index: clients/src/player/player.rs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>use bevy::prelude::*;\r\nuse bevy::input::mouse::MouseMotion;\r\n// use crate::playing_field::playing_field::Collision;\r\n// use bevy::ecs::system::ParamSet;\r\nuse bevy_rapier3d::dynamics::{LockedAxes, Velocity};\r\nuse bevy_rapier3d::prelude::{RigidBody, Collider, GravityScale, RapierContext};\r\n// use bevy::sprite::collide_aabb::Collision;\r\nuse crate::playing_field::playing_field::check_player_collision;\r\nuse crate::playing_field::playing_field::Collision;\r\n// use bevy_rapier3d::prelude::RapierContext;\r\n\r\n\r\n#[derive(Component)]\r\npub struct Player {\r\n    #[allow(dead_code)]\r\n    pub id: i32,\r\n    #[allow(dead_code)]\r\n    pub name: String,\r\n    pub speed: f32,\r\n    pub camera_offset: Vec3,\r\n    pub size: Vec2,\r\n}\r\n#[derive(Component)]\r\npub struct PlayerCamera;\r\n#[derive(Component)]\r\npub struct Weapon;\r\nimpl Player {\r\n    pub fn new(id: i32, name: String, speed: f32, size: Vec2) -> Self {\r\n        Player {\r\n            id,\r\n            name,\r\n            speed,\r\n            camera_offset: Vec3::new(0.0, 0.2, 0.8),\r\n            size,\r\n        }\r\n    }\r\n}\r\n\r\npub fn move_player(\r\n    mut query: Query<(Entity, &Player, &mut Transform, &mut Velocity)>,\r\n    keyboard: Res<Input<KeyCode>>,\r\n    mut mouse_motion: EventReader<MouseMotion>,\r\n    windows: Query<&Window>,\r\n    rapier_context: Res<RapierContext>,\r\n    collider_query: Query<Entity, (With<Collision>, Without<Player>)>,\r\n) {\r\n    let window = windows.single();\r\n    if window.cursor.grab_mode == bevy::window::CursorGrabMode::None {\r\n        return;\r\n    }\r\n\r\n    let mut mouse_delta = Vec2::ZERO;\r\n    for ev in mouse_motion.read() {\r\n        mouse_delta += ev.delta;\r\n    }\r\n\r\n    if let Ok((entity, player, mut transform, mut velocity)) = query.get_single_mut() {\r\n        let mut direction = Vec3::ZERO;\r\n        if keyboard.pressed(KeyCode::W) { direction += transform.forward(); }\r\n        if keyboard.pressed(KeyCode::S) { direction += transform.back(); }\r\n        if keyboard.pressed(KeyCode::A) { direction += transform.left(); }\r\n        if keyboard.pressed(KeyCode::D) { direction += transform.right(); }\r\n\r\n        direction = direction.normalize_or_zero();\r\n\r\n        let movement = direction * player.speed * 0.016;\r\n\r\n        // Vérifier la collision avant de déplacer le joueur\r\n        if !check_player_collision(entity, &transform, movement, &rapier_context, &collider_query) {\r\n            transform.translation += movement;\r\n        }\r\n\r\n        // Rotation du joueur (et de l'arme)\r\n        transform.rotate_y(-mouse_delta.x * 0.002);\r\n    }\r\n}\r\n\r\n\r\npub fn grab_mouse(\r\n    mut windows: Query<&mut Window>,\r\n    mouse: Res<Input<MouseButton>>,\r\n    key: Res<Input<KeyCode>>,\r\n) {\r\n    let mut window = windows.single_mut();\r\n    if mouse.just_pressed(MouseButton::Left) {\r\n        window.cursor.grab_mode = bevy::window::CursorGrabMode::Confined;\r\n        window.cursor.visible = false;\r\n    }\r\n    if key.just_pressed(KeyCode::Escape) {\r\n        window.cursor.grab_mode = bevy::window::CursorGrabMode::None;\r\n        window.cursor.visible = true;\r\n    }\r\n}\r\npub fn setup_player_and_camera(\r\n    mut commands: Commands,\r\n    asset_server: Res<AssetServer>,\r\n) {\r\n    // Spawn the player\r\n    let player_handle: Handle<Scene> = asset_server.load(\"armes/arme1.glb#Scene0\");\r\n    // let player_handle:Handle<Scene> = asset_server.load(\"armes/Soldier.glb#Scene0\");\r\n    let player_entity = commands.spawn((\r\n        Player::new(1, \"Player\".to_string(), 5.0, Vec2::new(0.5, 0.5)),\r\n        SceneBundle {\r\n            scene: player_handle,\r\n            transform: Transform::from_xyz(-6.2, 0.2, -6.1).with_scale(Vec3::splat(0.4)),\r\n            ..default()\r\n        },\r\n        // Controle nanuel du joueur sans se soucier d'influence externe\r\n        RigidBody::KinematicPositionBased,\r\n        Collider::ball(0.5),\r\n        Velocity::default(),  // Assurez-vous que cette ligne est présente\r\n        LockedAxes::ROTATION_LOCKED,\r\n        GravityScale(0.0),\r\n    )).id();\r\n    // Spawn the weapon and attach it to the player\r\n    // let weapon_handle: Handle<Scene> = asset_server.load(\"armes/arme1.glb#Scene0\");\r\n    // let weapon_entity = commands.spawn((\r\n    //     Weapon,\r\n    //     SceneBundle {\r\n    //         scene: weapon_handle,\r\n    //         transform: Transform::from_xyz(0.0, 0.2, 2.5).with_scale(Vec3::splat(0.3)),\r\n    //         ..default()\r\n    //     },\r\n    // )).id();\r\n    // commands.entity(player_entity).add_child(player_entity);\r\n\r\n    // Spawn the camera and attach it to the weapon\r\n    // commands.spawn((\r\n    //     Camera3dBundle {\r\n    //         transform: Transform::from_xyz(0.0, 0.8, 0.0), // Adjust camera position relative to weapon\r\n    //         ..default()\r\n    //     },\r\n    // )).set_parent(player_entity);\r\n\r\n    commands.spawn(\r\n        PointLightBundle {\r\n            point_light: PointLight {\r\n                intensity: 500.0,\r\n                shadows_enabled: true,\r\n                ..default()\r\n            },\r\n            transform: Transform::from_xyz(-1.0, 2.0, -4.0),\r\n            ..default()\r\n        }).set_parent(player_entity);\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/clients/src/player/player.rs b/clients/src/player/player.rs
+--- a/clients/src/player/player.rs	(revision 00056909447d6c39a6c53a3232bab2e49c59ff1f)
++++ b/clients/src/player/player.rs	(date 1724080658887)
+@@ -1,14 +1,7 @@
+ use bevy::prelude::*;
+ use bevy::input::mouse::MouseMotion;
+-// use crate::playing_field::playing_field::Collision;
+-// use bevy::ecs::system::ParamSet;
+-use bevy_rapier3d::dynamics::{LockedAxes, Velocity};
+-use bevy_rapier3d::prelude::{RigidBody, Collider, GravityScale, RapierContext};
+-// use bevy::sprite::collide_aabb::Collision;
+-use crate::playing_field::playing_field::check_player_collision;
+ use crate::playing_field::playing_field::Collision;
+-// use bevy_rapier3d::prelude::RapierContext;
+-
++use bevy::ecs::system::ParamSet;
+ 
+ #[derive(Component)]
+ pub struct Player {
+@@ -20,6 +13,7 @@
+     pub camera_offset: Vec3,
+     pub size: Vec2,
+ }
++
+ #[derive(Component)]
+ pub struct PlayerCamera;
+ #[derive(Component)]
+@@ -37,12 +31,14 @@
+ }
+ 
+ pub fn move_player(
+-    mut query: Query<(Entity, &Player, &mut Transform, &mut Velocity)>,
++    mut query_set: ParamSet<(
++        Query<(&Player, &mut Transform)>,
++        Query<&mut Transform, With<PlayerCamera>>,
++    )>,
+     keyboard: Res<Input<KeyCode>>,
+     mut mouse_motion: EventReader<MouseMotion>,
++    time: Res<Time>,
+     windows: Query<&Window>,
+-    rapier_context: Res<RapierContext>,
+-    collider_query: Query<Entity, (With<Collision>, Without<Player>)>,
+ ) {
+     let window = windows.single();
+     if window.cursor.grab_mode == bevy::window::CursorGrabMode::None {
+@@ -54,43 +50,48 @@
+         mouse_delta += ev.delta;
+     }
+ 
+-    if let Ok((entity, player, mut transform, mut velocity)) = query.get_single_mut() {
++    // Mouvement du joueur
++    if let Ok((player, mut transform)) = query_set.p0().get_single_mut() {
+         let mut direction = Vec3::ZERO;
++
+         if keyboard.pressed(KeyCode::W) { direction += transform.forward(); }
+         if keyboard.pressed(KeyCode::S) { direction += transform.back(); }
+         if keyboard.pressed(KeyCode::A) { direction += transform.left(); }
+         if keyboard.pressed(KeyCode::D) { direction += transform.right(); }
+ 
+-        direction = direction.normalize_or_zero();
+-
+-        let movement = direction * player.speed * 0.016;
+-
+-        // Vérifier la collision avant de déplacer le joueur
+-        if !check_player_collision(entity, &transform, movement, &rapier_context, &collider_query) {
+-            transform.translation += movement;
++        if direction != Vec3::ZERO {
++            direction = direction.normalize();
++            transform.translation += direction * player.speed * time.delta_seconds();
+         }
+ 
+         // Rotation du joueur (et de l'arme)
+         transform.rotate_y(-mouse_delta.x * 0.002);
+     }
+-}
+-
+ 
++    // Rotation de la caméra (seulement verticalement)
++    if let Ok(mut camera_transform) = query_set.p1().get_single_mut() {
++        camera_transform.rotate_local_x(-mouse_delta.y * 0.002);
++        camera_transform.rotation.x = camera_transform.rotation.x.clamp(-1.0, 1.0);
++    }
++}
+ pub fn grab_mouse(
+     mut windows: Query<&mut Window>,
+     mouse: Res<Input<MouseButton>>,
+     key: Res<Input<KeyCode>>,
+ ) {
+     let mut window = windows.single_mut();
++
+     if mouse.just_pressed(MouseButton::Left) {
+-        window.cursor.grab_mode = bevy::window::CursorGrabMode::Confined;
+         window.cursor.visible = false;
++        window.cursor.grab_mode = bevy::window::CursorGrabMode::Confined;
+     }
++
+     if key.just_pressed(KeyCode::Escape) {
+-        window.cursor.grab_mode = bevy::window::CursorGrabMode::None;
+         window.cursor.visible = true;
++        window.cursor.grab_mode = bevy::window::CursorGrabMode::None;
+     }
+ }
++
+ pub fn setup_player_and_camera(
+     mut commands: Commands,
+     asset_server: Res<AssetServer>,
+@@ -98,49 +99,34 @@
+     // Spawn the player
+     let player_handle: Handle<Scene> = asset_server.load("armes/arme1.glb#Scene0");
+     // let player_handle:Handle<Scene> = asset_server.load("armes/Soldier.glb#Scene0");
++
+     let player_entity = commands.spawn((
+-        Player::new(1, "Player".to_string(), 5.0, Vec2::new(0.5, 0.5)),
++        Player::new(1, "Player".to_string(), 3.0, Vec2::new(1.0, 1.0)), // Ajoutez la taille du joueur
+         SceneBundle {
+             scene: player_handle,
+-            transform: Transform::from_xyz(-6.2, 0.2, -6.1).with_scale(Vec3::splat(0.4)),
++            transform: Transform::from_xyz(0.0, 0.2, 8.0).with_scale(Vec3::splat(0.1)),
+             ..default()
+         },
+-        // Controle nanuel du joueur sans se soucier d'influence externe
+-        RigidBody::KinematicPositionBased,
+-        Collider::ball(0.5),
+-        Velocity::default(),  // Assurez-vous que cette ligne est présente
+-        LockedAxes::ROTATION_LOCKED,
+-        GravityScale(0.0),
+     )).id();
++
+     // Spawn the weapon and attach it to the player
+-    // let weapon_handle: Handle<Scene> = asset_server.load("armes/arme1.glb#Scene0");
+-    // let weapon_entity = commands.spawn((
+-    //     Weapon,
+-    //     SceneBundle {
+-    //         scene: weapon_handle,
+-    //         transform: Transform::from_xyz(0.0, 0.2, 2.5).with_scale(Vec3::splat(0.3)),
+-    //         ..default()
+-    //     },
+-    // )).id();
+-    // commands.entity(player_entity).add_child(player_entity);
+-
+-    // Spawn the camera and attach it to the weapon
+-    // commands.spawn((
+-    //     Camera3dBundle {
+-    //         transform: Transform::from_xyz(0.0, 0.8, 0.0), // Adjust camera position relative to weapon
+-    //         ..default()
+-    //     },
+-    // )).set_parent(player_entity);
+-
+-    commands.spawn(
+-        PointLightBundle {
+-            point_light: PointLight {
+-                intensity: 500.0,
+-                shadows_enabled: true,
+-                ..default()
+-            },
+-            transform: Transform::from_xyz(-1.0, 2.0, -4.0),
++    let weapon_handle: Handle<Scene> = asset_server.load("armes/arme1.glb#Scene0"); // Replace with your weapon model
++    let weapon_entity = commands.spawn((
++        Weapon,
++        SceneBundle {
++            scene: weapon_handle,
++            transform: Transform::from_xyz(0.0, 0.2, 0.5), // Adjust weapon position relative to player
++            ..default()
++        },
++    )).id();
++
++    commands.entity(player_entity).add_child(weapon_entity);
++
++    // Spawn the camera and attach it to the weapon
++    commands.spawn((
++        Camera3dBundle {
++            transform: Transform::from_xyz(0.0, 0.8, 0.8), // Adjust camera position relative to weapon
+             ..default()
+-        }).set_parent(player_entity);
+-
++        },
++    )).set_parent(weapon_entity);
+ }
+Index: clients/src/player/mod.rs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>pub mod player;\r\npub mod fire;
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/clients/src/player/mod.rs b/clients/src/player/mod.rs
+--- a/clients/src/player/mod.rs	(revision 00056909447d6c39a6c53a3232bab2e49c59ff1f)
++++ b/clients/src/player/mod.rs	(date 1724080658887)
+@@ -1,2 +1,1 @@
+-pub mod player;
+-pub mod fire;
+\ No newline at end of file
++pub mod player;
+\ No newline at end of file
+Index: clients/src/playing_field/playing_field.rs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>use bevy::prelude::*;\r\nuse std::default::Default;\r\n// use bevy::sprite::collide_aabb::collide;\r\nuse bevy_rapier3d::prelude::*; // version bevy_rapier3d = \"0.17.0\"\r\nuse crate::player::player::Player;\r\nuse bevy_rapier3d::dynamics::RigidBody;\r\nuse bevy_rapier3d::prelude::Collider;\r\n\r\n\r\n\r\n\r\n#[derive(Bundle)]\r\nstruct CustomBundle {\r\n    pbr: PbrBundle,\r\n    collision: Collision,\r\n    rigid_body: RigidBody,\r\n    collider: Collider,\r\n}\r\n\r\n\r\n#[derive(Component)]\r\npub enum Collision {\r\n    Wall { size: Vec2 },\r\n    Ground,\r\n}\r\n\r\nimpl Default for Collision {\r\n    fn default() -> Self {\r\n        Collision::Ground\r\n    }\r\n}\r\n\r\npub struct Fields;\r\n\r\nimpl Fields {\r\n    pub fn spawn_ground(\r\n        mut commands: Commands,\r\n        mut meshes: ResMut<Assets<Mesh>>,\r\n        mut materials: ResMut<Assets<StandardMaterial>>,\r\n    ) {\r\n        // Plane\r\n        let arena_size = 28.0;\r\n\r\n        let wall_height = 5.0;\r\n        let wall_thickness = 0.5;\r\n\r\n        let mut spawn_wall = |commands: &mut Commands, position: Vec3, size: Vec3| {\r\n            commands.spawn(\r\n                PbrBundle {\r\n                mesh: meshes.add(Mesh::from(shape::Box::new(size.x, size.y, size.z))),\r\n                material: materials.add(StandardMaterial {\r\n                    base_color: Color::rgb(0.8, 0.8, 0.8),\r\n                    ..Default::default()\r\n                }),\r\n                transform: Transform::from_translation(position),\r\n                ..Default::default()\r\n            })\r\n                .insert(RigidBody::Fixed)\r\n                .insert(Collider::cuboid(size.x * 0.5, size.y * 0.5, size.z * 0.5))\r\n                .insert(Collision::Wall { size: Vec2::new(size.x, size.z) });\r\n        };\r\n\r\n        // North Wall\r\n        spawn_wall(\r\n            &mut commands,\r\n            Vec3::new(0.0, wall_height / 2.0, -arena_size / 2.0),\r\n            Vec3::new(arena_size, wall_height, wall_thickness)\r\n        );\r\n\r\n        // South Wall\r\n        spawn_wall(\r\n            &mut commands,\r\n            Vec3::new(0.0, wall_height / 2.0, arena_size / 2.0),\r\n            Vec3::new(arena_size, wall_height, wall_thickness)\r\n        );\r\n\r\n        // East Wall\r\n        spawn_wall(\r\n            &mut commands,\r\n            Vec3::new(arena_size / 2.0, wall_height / 2.0, 0.0),\r\n            Vec3::new(wall_thickness, wall_height, arena_size)\r\n        );\r\n\r\n        // West Wall\r\n        spawn_wall(\r\n            &mut commands,\r\n            Vec3::new(-arena_size / 2.0, wall_height / 2.0, 0.0),\r\n            Vec3::new(wall_thickness, wall_height, arena_size)\r\n        );\r\n\r\n        // Light\r\n        commands.spawn(DirectionalLightBundle {\r\n            transform: Transform::from_translation(Vec3::ONE).looking_at(Vec3::ZERO, Vec3::Y),\r\n            ..Default::default()\r\n        });\r\n    }\r\n\r\n    pub fn spawn_object(\r\n        mut commands: Commands,\r\n        mut meshes: ResMut<Assets<Mesh>>,\r\n        mut materials: ResMut<Assets<StandardMaterial>>,\r\n    ) {\r\n        // Cube\r\n        commands.spawn(PbrBundle {\r\n            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.3 })),\r\n            material: materials.add(StandardMaterial {\r\n                base_color: Color::rgb_u8(124, 144, 255),\r\n                ..Default::default()\r\n            }),\r\n            transform: Transform::from_xyz(0.0, 0.5, 0.0),\r\n            ..Default::default()\r\n        });\r\n    }\r\n\r\n    pub fn spawn_player(\r\n        mut commands: Commands,\r\n        mut meshes: ResMut<Assets<Mesh>>,\r\n        mut materials: ResMut<Assets<StandardMaterial>>,\r\n    ) {\r\n        // Capsule\r\n        commands.spawn(PbrBundle {\r\n            mesh: meshes.add(Mesh::from(shape::Capsule {\r\n                radius: 0.5,\r\n                rings: 4,\r\n                depth: 1.0,\r\n                latitudes: 8,\r\n                longitudes: 16,\r\n                uv_profile: shape::CapsuleUvProfile::Fixed,\r\n            })),\r\n            material: materials.add(StandardMaterial {\r\n                base_color: Color::SILVER,\r\n                ..Default::default()\r\n            }),\r\n            transform: Transform::from_xyz(0.0, 1.0, 0.0),\r\n            ..Default::default()\r\n        })\r\n            .insert(Player {\r\n                id: 1,\r\n                name: \"Player\".to_string(),\r\n                speed: 3.0,\r\n                camera_offset: Vec3::new(0.0, 0.2, 0.8),\r\n                size: Vec2::new(1.0, 1.0),\r\n            });\r\n    }\r\n}\r\n\r\n\r\n\r\n\r\n\r\npub fn create_maze(\r\n    commands: &mut Commands,\r\n    meshes: &mut ResMut<Assets<Mesh>>,\r\n    materials: &mut ResMut<Assets<StandardMaterial>>,\r\n    name: &str,\r\n) {\r\n    let maze = crate::mages(name);\r\n    let wall_height = 2.0;\r\n    let wall_thickness = 0.5;\r\n    let cell_size = 2.0;\r\n\r\n    for (row_index, row) in maze.iter().enumerate() {\r\n        for (col_index, &cell) in row.iter().enumerate() {\r\n            let x = col_index as f32 * cell_size - 9.0;\r\n            let z = row_index as f32 * cell_size - 9.0;\r\n\r\n            match cell {\r\n                4 => {\r\n                    // Vers le bas et la droite\r\n                    spawn_wall(commands, meshes, materials, Vec3::new(x, wall_height / 2.0, z + cell_size / 2.0), Vec3::new(wall_thickness, wall_height, cell_size));\r\n                    spawn_wall(commands, meshes, materials, Vec3::new(x + cell_size / 2.0, wall_height / 2.0, z), Vec3::new(cell_size, wall_height, wall_thickness));\r\n                }\r\n                3 => {\r\n                    // Vers la droite\r\n                    spawn_wall(commands, meshes, materials, Vec3::new(x + cell_size / 2.0, wall_height / 2.0, z), Vec3::new(cell_size, wall_height, wall_thickness));\r\n                }\r\n                1 => {\r\n                    // Vers le bas\r\n                    spawn_wall(commands, meshes, materials, Vec3::new(x, wall_height / 2.0, z + cell_size / 2.0), Vec3::new(wall_thickness, wall_height, cell_size));\r\n                }\r\n                2 => {\r\n                    // Fin de ligne (pas de mur)\r\n                }\r\n                _ => {}\r\n            }\r\n        }\r\n    }\r\n}\r\n\r\nfn spawn_wall(\r\n    commands: &mut Commands,\r\n    meshes: &mut ResMut<Assets<Mesh>>,\r\n    materials: &mut ResMut<Assets<StandardMaterial>>,\r\n    position: Vec3,\r\n    size: Vec3,\r\n) {\r\n    commands.spawn((\r\n        PbrBundle {\r\n            mesh: meshes.add(Mesh::from(shape::Box::new(size.x, size.y, size.z))),\r\n            material: materials.add(StandardMaterial {\r\n                base_color: Color::rgb(0.8, 0.8, 0.8),\r\n                ..Default::default()\r\n            }),\r\n            transform: Transform::from_translation(position),\r\n            ..Default::default()\r\n        },\r\n        RigidBody::Fixed,\r\n        Collider::cuboid(size.x * 0.5, size.y * 0.5, size.z * 0.5),\r\n    ));\r\n}\r\n\r\n// pub fn handle_collisions(\r\n//     mut player_query: Query<(Entity, &mut Transform, &Collider), With<Player>>,\r\n//     collider_query: Query<(Entity, &Collider), With<Collision>>,\r\n//     rapier_context: Res<RapierContext>,\r\n// ) {\r\n//     if let Ok((player_entity, mut player_transform, player_collider)) = player_query.get_single_mut() {\r\n//         for (wall_entity, wall_collider) in collider_query.iter() {\r\n//             if let Some(contact_pair) = rapier_context.contact_pair(player_entity, wall_entity) {\r\n//                 if contact_pair.has_any_active_contacts() {\r\n//                     for manifold in contact_pair.manifolds() {\r\n//                         let normal = manifold.normal();\r\n//                         for contact_point in manifold.points() {\r\n//                             let depth = contact_point.dist();\r\n//                             if depth < 0.0 {\r\n//                                 // Ajuster la position du joueur pour éviter la pénétration\r\n//                                 player_transform.translation += Vec3::new(normal.x, normal.y, normal.z) * depth.abs();\r\n//                             }\r\n//                         }\r\n//                     }\r\n//                 }\r\n//             }\r\n//         }\r\n//     }\r\n// }\r\n\r\npub fn check_player_collision(\r\n    player_entity: Entity,\r\n    weapon_transform: &Transform,\r\n    direction: Vec3,\r\n    rapier_context: &RapierContext,\r\n    collider_query: &Query<Entity, (With<Collision>, Without<Player>)>,\r\n) -> bool {\r\n    // Position future du joueur\r\n    let future_position = weapon_transform.translation + direction;\r\n\r\n    // Lancer un rayon pour détecter une collision\r\n    let ray_origin = weapon_transform.translation;\r\n    let ray_direction = direction.normalize();\r\n\r\n    let max_toi = direction.length(); // Distance maximale du rayon\r\n\r\n    if let Some((_hit_entity, _hit_position)) = rapier_context.cast_ray(\r\n        ray_origin,\r\n        ray_direction,\r\n        max_toi + 1.5,\r\n        true,\r\n        QueryFilter::default().exclude_collider(player_entity),\r\n    ) {\r\n        // Si un objet est détecté sur la trajectoire, il y a une collision\r\n        return true;\r\n    }\r\n\r\n    false // Pas de collision détectée\r\n}\r\n\r\n\r\n// pub fn handle_collisions(\r\n//     mut player_query: Query<(&mut Transform, &Player)>,\r\n//     collider_query: Query<(&Transform, &Collision), Without<Player>>,\r\n// ) {\r\n//     if let Ok((mut player_transform, player)) = player_query.get_single_mut() {\r\n//         let player_size = Vec3::new(player.size.x, 1.0, player.size.y);\r\n//\r\n//         for (transform, collision) in collider_query.iter() {\r\n//             let collider_size = match collision {\r\n//                 Collision::Wall { size } => Vec3::new(size.x, 3.0, size.y),\r\n//                 Collision::Ground => Vec3::new(22.0, 0.1, 22.0),\r\n//             };\r\n//\r\n//             if let Some(collision) = collide(\r\n//                 player_transform.translation,\r\n//                 Vec2::new(player_size.x, player_size.z), // Taille du joueur en 2D\r\n//                 transform.translation,\r\n//                 Vec2::new(collider_size.x, collider_size.z), // Taille du collider en 2D\r\n//             ) {\r\n//                 match collision {\r\n//                     bevy::sprite::collide_aabb::Collision::Left => {\r\n//                         println!(\"Collision Left\");\r\n//                         player_transform.translation.x = transform.translation.x - (collider_size.x + player_size.x) * 0.5;\r\n//                     }\r\n//                     bevy::sprite::collide_aabb::Collision::Right => {\r\n//                         println!(\"Collision Right\");\r\n//                         player_transform.translation.x = transform.translation.x + (collider_size.x + player_size.x) * 0.5;\r\n//                         // player_transform.translation = player_transform.translation;\r\n//                     }\r\n//                     bevy::sprite::collide_aabb::Collision::Top => {\r\n//                         println!(\"Collision Top\");\r\n//                         player_transform.translation.z = transform.translation.z - (collider_size.z + player_size.z) * 0.5;\r\n//                     }\r\n//                     bevy::sprite::collide_aabb::Collision::Bottom => {\r\n//                         println!(\"Collision Bottom\");\r\n//                         player_transform.translation.z = transform.translation.z + (collider_size.z + player_size.z) * 0.5;\r\n//                     }\r\n//                     bevy::sprite::collide_aabb::Collision::Inside => {\r\n//                         println!(\"Collision Inside\");\r\n//                         // Réduire la vitesse du joueur à zéro pour éviter de traverser le mur\r\n//                         // Vous pouvez ajuster cette logique pour reculer légèrement le joueur\r\n//                         player_transform.translation = player_transform.translation;\r\n//                     }\r\n//                 }\r\n//             }\r\n//         }\r\n//     }\r\n// }\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/clients/src/playing_field/playing_field.rs b/clients/src/playing_field/playing_field.rs
+--- a/clients/src/playing_field/playing_field.rs	(revision 00056909447d6c39a6c53a3232bab2e49c59ff1f)
++++ b/clients/src/playing_field/playing_field.rs	(date 1724080658888)
+@@ -1,6 +1,6 @@
+ use bevy::prelude::*;
+ use std::default::Default;
+-// use bevy::sprite::collide_aabb::collide;
++use bevy::sprite::collide_aabb::collide;
+ use bevy_rapier3d::prelude::*; // version bevy_rapier3d = "0.17.0"
+ use crate::player::player::Player;
+ use bevy_rapier3d::dynamics::RigidBody;
+@@ -39,14 +39,24 @@
+         mut materials: ResMut<Assets<StandardMaterial>>,
+     ) {
+         // Plane
+-        let arena_size = 28.0;
++        let arena_size = 22.0;
++        commands.spawn(PbrBundle {
++            mesh: meshes.add(Mesh::from(shape::Plane { size: arena_size, subdivisions: 0 })),
++            material: materials.add(StandardMaterial {
++                base_color: Color::hex("7F7F7F").unwrap(),
++                ..Default::default()
++            }),
++            ..Default::default()
++        })
++            .insert(RigidBody::Fixed)
++            .insert(Collider::cuboid(arena_size * 0.5, 0.1, arena_size * 0.5))
++            .insert(Collision::Ground);
+ 
+         let wall_height = 5.0;
+         let wall_thickness = 0.5;
+ 
+         let mut spawn_wall = |commands: &mut Commands, position: Vec3, size: Vec3| {
+-            commands.spawn(
+-                PbrBundle {
++            commands.spawn(PbrBundle {
+                 mesh: meshes.add(Mesh::from(shape::Box::new(size.x, size.y, size.z))),
+                 material: materials.add(StandardMaterial {
+                     base_color: Color::rgb(0.8, 0.8, 0.8),
+@@ -102,7 +112,7 @@
+     ) {
+         // Cube
+         commands.spawn(PbrBundle {
+-            mesh: meshes.add(Mesh::from(shape::Cube { size: 0.3 })),
++            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+             material: materials.add(StandardMaterial {
+                 base_color: Color::rgb_u8(124, 144, 255),
+                 ..Default::default()
+@@ -145,172 +155,53 @@
+ }
+ 
+ 
++pub fn handle_collisions(
++    mut player_query: Query<(&mut Transform, &Player)>,
++    collider_query: Query<(&Transform, &Collision), Without<Player>>,
++) {
++    if let Ok((mut player_transform, player)) = player_query.get_single_mut() {
++        // let player_pos = player_transform.translation;
++        let _player_pos = player_transform.translation;
++        let player_size = Vec3::new(player.size.x, 1.0, player.size.y);
+ 
++        for (transform, collision) in collider_query.iter() {
++            let collider_size = match collision {
++                Collision::Wall { size } => Vec3::new(size.x, 3.0, size.y),
++                Collision::Ground => Vec3::new(22.0, 0.1, 22.0),
++            };
+ 
++            let collision = collide(
++                player_transform.translation,
++                Vec2::new(player_size.x, player_size.z), // Convert to Vec2 for collide
++                transform.translation,
++                Vec2::new(collider_size.x, collider_size.z), // Convert to Vec2 for collide
++            );
+ 
+-pub fn create_maze(
+-    commands: &mut Commands,
+-    meshes: &mut ResMut<Assets<Mesh>>,
+-    materials: &mut ResMut<Assets<StandardMaterial>>,
+-    name: &str,
+-) {
+-    let maze = crate::mages(name);
+-    let wall_height = 2.0;
+-    let wall_thickness = 0.5;
+-    let cell_size = 2.0;
+-
+-    for (row_index, row) in maze.iter().enumerate() {
+-        for (col_index, &cell) in row.iter().enumerate() {
+-            let x = col_index as f32 * cell_size - 9.0;
+-            let z = row_index as f32 * cell_size - 9.0;
+-
+-            match cell {
+-                4 => {
+-                    // Vers le bas et la droite
+-                    spawn_wall(commands, meshes, materials, Vec3::new(x, wall_height / 2.0, z + cell_size / 2.0), Vec3::new(wall_thickness, wall_height, cell_size));
+-                    spawn_wall(commands, meshes, materials, Vec3::new(x + cell_size / 2.0, wall_height / 2.0, z), Vec3::new(cell_size, wall_height, wall_thickness));
+-                }
+-                3 => {
+-                    // Vers la droite
+-                    spawn_wall(commands, meshes, materials, Vec3::new(x + cell_size / 2.0, wall_height / 2.0, z), Vec3::new(cell_size, wall_height, wall_thickness));
+-                }
+-                1 => {
+-                    // Vers le bas
+-                    spawn_wall(commands, meshes, materials, Vec3::new(x, wall_height / 2.0, z + cell_size / 2.0), Vec3::new(wall_thickness, wall_height, cell_size));
+-                }
+-                2 => {
+-                    // Fin de ligne (pas de mur)
+-                }
+-                _ => {}
+-            }
+-        }
+-    }
+-}
+-
+-fn spawn_wall(
+-    commands: &mut Commands,
+-    meshes: &mut ResMut<Assets<Mesh>>,
+-    materials: &mut ResMut<Assets<StandardMaterial>>,
+-    position: Vec3,
+-    size: Vec3,
+-) {
+-    commands.spawn((
+-        PbrBundle {
+-            mesh: meshes.add(Mesh::from(shape::Box::new(size.x, size.y, size.z))),
+-            material: materials.add(StandardMaterial {
+-                base_color: Color::rgb(0.8, 0.8, 0.8),
+-                ..Default::default()
+-            }),
+-            transform: Transform::from_translation(position),
+-            ..Default::default()
+-        },
+-        RigidBody::Fixed,
+-        Collider::cuboid(size.x * 0.5, size.y * 0.5, size.z * 0.5),
+-    ));
+-}
+-
+-// pub fn handle_collisions(
+-//     mut player_query: Query<(Entity, &mut Transform, &Collider), With<Player>>,
+-//     collider_query: Query<(Entity, &Collider), With<Collision>>,
+-//     rapier_context: Res<RapierContext>,
+-// ) {
+-//     if let Ok((player_entity, mut player_transform, player_collider)) = player_query.get_single_mut() {
+-//         for (wall_entity, wall_collider) in collider_query.iter() {
+-//             if let Some(contact_pair) = rapier_context.contact_pair(player_entity, wall_entity) {
+-//                 if contact_pair.has_any_active_contacts() {
+-//                     for manifold in contact_pair.manifolds() {
+-//                         let normal = manifold.normal();
+-//                         for contact_point in manifold.points() {
+-//                             let depth = contact_point.dist();
+-//                             if depth < 0.0 {
+-//                                 // Ajuster la position du joueur pour éviter la pénétration
+-//                                 player_transform.translation += Vec3::new(normal.x, normal.y, normal.z) * depth.abs();
+-//                             }
+-//                         }
+-//                     }
+-//                 }
+-//             }
+-//         }
+-//     }
+-// }
+-
+-pub fn check_player_collision(
+-    player_entity: Entity,
+-    weapon_transform: &Transform,
+-    direction: Vec3,
+-    rapier_context: &RapierContext,
+-    collider_query: &Query<Entity, (With<Collision>, Without<Player>)>,
+-) -> bool {
+-    // Position future du joueur
+-    let future_position = weapon_transform.translation + direction;
+-
+-    // Lancer un rayon pour détecter une collision
+-    let ray_origin = weapon_transform.translation;
+-    let ray_direction = direction.normalize();
+-
+-    let max_toi = direction.length(); // Distance maximale du rayon
+-
+-    if let Some((_hit_entity, _hit_position)) = rapier_context.cast_ray(
+-        ray_origin,
+-        ray_direction,
+-        max_toi + 1.5,
+-        true,
+-        QueryFilter::default().exclude_collider(player_entity),
+-    ) {
+-        // Si un objet est détecté sur la trajectoire, il y a une collision
+-        return true;
+-    }
+-
+-    false // Pas de collision détectée
+-}
+-
+-
+-// pub fn handle_collisions(
+-//     mut player_query: Query<(&mut Transform, &Player)>,
+-//     collider_query: Query<(&Transform, &Collision), Without<Player>>,
+-// ) {
+-//     if let Ok((mut player_transform, player)) = player_query.get_single_mut() {
+-//         let player_size = Vec3::new(player.size.x, 1.0, player.size.y);
+-//
+-//         for (transform, collision) in collider_query.iter() {
+-//             let collider_size = match collision {
+-//                 Collision::Wall { size } => Vec3::new(size.x, 3.0, size.y),
+-//                 Collision::Ground => Vec3::new(22.0, 0.1, 22.0),
+-//             };
+-//
+-//             if let Some(collision) = collide(
+-//                 player_transform.translation,
+-//                 Vec2::new(player_size.x, player_size.z), // Taille du joueur en 2D
+-//                 transform.translation,
+-//                 Vec2::new(collider_size.x, collider_size.z), // Taille du collider en 2D
+-//             ) {
+-//                 match collision {
+-//                     bevy::sprite::collide_aabb::Collision::Left => {
+-//                         println!("Collision Left");
+-//                         player_transform.translation.x = transform.translation.x - (collider_size.x + player_size.x) * 0.5;
+-//                     }
+-//                     bevy::sprite::collide_aabb::Collision::Right => {
+-//                         println!("Collision Right");
+-//                         player_transform.translation.x = transform.translation.x + (collider_size.x + player_size.x) * 0.5;
+-//                         // player_transform.translation = player_transform.translation;
+-//                     }
+-//                     bevy::sprite::collide_aabb::Collision::Top => {
+-//                         println!("Collision Top");
+-//                         player_transform.translation.z = transform.translation.z - (collider_size.z + player_size.z) * 0.5;
+-//                     }
+-//                     bevy::sprite::collide_aabb::Collision::Bottom => {
+-//                         println!("Collision Bottom");
+-//                         player_transform.translation.z = transform.translation.z + (collider_size.z + player_size.z) * 0.5;
+-//                     }
+-//                     bevy::sprite::collide_aabb::Collision::Inside => {
+-//                         println!("Collision Inside");
+-//                         // Réduire la vitesse du joueur à zéro pour éviter de traverser le mur
+-//                         // Vous pouvez ajuster cette logique pour reculer légèrement le joueur
+-//                         player_transform.translation = player_transform.translation;
+-//                     }
+-//                 }
+-//             }
+-//         }
+-//     }
+-// }
+-
++            if let Some(collision) = collision {
++                match collision {
++                    bevy::sprite::collide_aabb::Collision::Left => {
++                        println!("Collision Left");
++                        player_transform.translation.x = transform.translation.x - (collider_size.x + player_size.x) * 0.5;
++                    }
++                    bevy::sprite::collide_aabb::Collision::Right => {
++                        println!("Collision Right");
++                        player_transform.translation.x = transform.translation.x + (collider_size.x + player_size.x) * 0.5;
++                    }
++                    bevy::sprite::collide_aabb::Collision::Top => {
++                        println!("Collision Top");
++                        player_transform.translation.z = transform.translation.z - (collider_size.z + player_size.z) * 0.5;
++                    }
++                    bevy::sprite::collide_aabb::Collision::Bottom => {
++                        println!("Collision Bottom");
++                        player_transform.translation.z = transform.translation.z + (collider_size.z + player_size.z) * 0.5;
++                    }
++                    bevy::sprite::collide_aabb::Collision::Inside => {
++                        println!("Collision Inside");
++                        // let direction = player_transform.translation - transform.translation;
++                        // player_transform.translation += direction.normalize() * 0.1;
++                    }
++                }
++            }
++        }
++    }
++}
+Index: clients/src/player/fire.rs
+===================================================================
+diff --git a/clients/src/player/fire.rs b/clients/src/player/fire.rs
+deleted file mode 100644
+--- a/clients/src/player/fire.rs	(revision 00056909447d6c39a6c53a3232bab2e49c59ff1f)
++++ /dev/null	(revision 00056909447d6c39a6c53a3232bab2e49c59ff1f)
+@@ -1,183 +0,0 @@
+-use bevy::prelude::*;
+-use bevy::input::mouse::MouseMotion;
+-use bevy_rapier3d::prelude::*;
+-use crate::player::player::Player;
+-use bevy::render::primitives::Sphere;
+-use bevy_rapier3d::prelude::{RigidBody, Collider};
+-use crate::playing_field::playing_field::Collision;
+-
+-
+-#[derive(Component)]
+-pub struct Projectile {
+-    pub speed: f32,
+-}
+-
+-#[derive(Component)]
+-pub struct Laser {
+-    pub max_distance: f32,
+-    pub lifetime: Timer,
+-}
+-
+-#[derive(Bundle)]
+-pub struct LaserBundle {
+-    laser: Laser,
+-    pbr_bundle: PbrBundle,
+-}
+-
+-pub fn fire_laser(
+-    mut commands: Commands,
+-    mut meshes: ResMut<Assets<Mesh>>,
+-    mut materials: ResMut<Assets<StandardMaterial>>,
+-    keyboard: Res<Input<KeyCode>>,
+-    query: Query<(&Transform, &Player)>,
+-) {
+-    if keyboard.just_pressed(KeyCode::Space) {
+-        if let Ok((transform, _player)) = query.get_single() {
+-            let forward = transform.forward();
+-            let spawn_point = transform.translation + forward * 0.5 + Vec3::new(0.0, 0.0, -0.0);
+-
+-            let laser_length = 3.0; // Longueur maximale du laser
+-            let laser_width = 0.09; // Largeur du laser
+-
+-            commands.spawn(LaserBundle {
+-                laser: Laser {
+-                    max_distance: laser_length,
+-                    // Le laser dure 0.1 seconde
+-                    lifetime: Timer::from_seconds(0.1, TimerMode::Once),
+-                },
+-                pbr_bundle: PbrBundle {
+-                    mesh: meshes.add(Mesh::from(shape::Box::new(laser_width, laser_width, laser_length))),
+-                    material: materials.add(StandardMaterial {
+-                        base_color: Color::RED,
+-                        emissive: Color::rgba_linear(1.0, 0.0, 0.0, 1.0),
+-                        ..default()
+-                    }),
+-                    transform: Transform::from_translation(spawn_point)
+-                        .looking_to(forward, Vec3::Y)
+-                        .with_scale(Vec3::new(0.07, 0.09, -1.0)),
+-                    ..default()
+-                },
+-            });
+-        }
+-    }
+-}
+-
+-pub fn update_lasers(
+-    mut commands: Commands,
+-    mut laser_query: Query<(Entity, &mut Laser, &mut Transform)>,
+-    time: Res<Time>,
+-    rapier_context: Res<RapierContext>,
+-) {
+-    for (entity, mut laser, mut transform) in laser_query.iter_mut() {
+-        laser.lifetime.tick(time.delta());
+-
+-        if laser.lifetime.finished() {
+-            commands.entity(entity).despawn();
+-            continue;
+-        }
+-
+-        let ray_origin = transform.translation;
+-        let ray_direction = transform.forward();
+-
+-        if let Some((_, intersection)) = rapier_context.cast_ray(
+-            ray_origin,
+-            ray_direction,
+-            laser.max_distance,
+-            true,
+-            QueryFilter::default(),
+-        ) {
+-            let hit_distance = intersection.tanh();
+-            transform.scale.z = hit_distance;
+-        } else {
+-            transform.scale.z = laser.max_distance;
+-        }
+-    }
+-}
+-
+-// impl Projectile {
+-    // pub fn fire_projectile(
+-    //     mut commands: Commands,
+-    //     keyboard: Res<Input<KeyCode>>,
+-    //     query: Query<(&Transform, &Player, &Velocity)>,
+-    //     asset_server: Res<AssetServer>,
+-    // ) {
+-    //     if keyboard.just_pressed(KeyCode::Space) {
+-    //         if let Ok((transform, player, player_velocity)) = query.get_single() {
+-    //             let forward = transform.forward();
+-    //             let spawn_point = transform.translation + forward * 1.0 + Vec3::new(0.0, 0.1, 0.0);
+-    //
+-    //             let projectile_handle: Handle<Scene> = asset_server.load("projectil/bullet.glb#Scene0");
+-    //
+-    //             let projectile_velocity = player_velocity.linvel + forward * 20.0;
+-    //
+-    //             commands.spawn((
+-    //                 SceneBundle {
+-    //                     scene: projectile_handle,
+-    //                     transform: Transform::from_translation(spawn_point)
+-    //                         .looking_to(forward, Vec3::Y)
+-    //                         .with_scale(Vec3::splat(0.1)),
+-    //                     ..default()
+-    //                 },
+-    //                 Projectile { speed: 5.0 },
+-    //                 RigidBody::Dynamic,
+-    //                 Collider::ball(0.1),
+-    //                 Velocity::linear(projectile_velocity),
+-    //             ));
+-    //         }
+-    //     }
+-    // }
+-
+-
+-
+-    // pub fn update_projectiles(
+-    //     mut commands: Commands,
+-    //     mut query: Query<(Entity, &mut Transform, &Projectile)>,
+-    //     time: Res<Time>,
+-    // ) {
+-    //     for (entity, mut transform, projectile) in query.iter_mut() {
+-    //         let forward = transform.forward();
+-    //         transform.translation += forward * projectile.speed * time.delta_seconds();
+-    //
+-    //         if transform.translation.length() > 100.0 {
+-    //             commands.entity(entity).despawn();
+-    //         }
+-    //     }
+-    // }
+-
+-// }
+-pub fn handle_projectile_collisions(
+-    mut commands: Commands,
+-    projectile_query: Query<(Entity, &Transform), With<Projectile>>,
+-    rapier_context: Res<RapierContext>,
+-    collider_query: Query<Entity, (With<Collision>, Without<Projectile>)>,
+-) {
+-    for (projectile_entity, projectile_transform) in projectile_query.iter() {
+-        if check_projectile_collision(projectile_entity, projectile_transform, &rapier_context, &collider_query) {
+-            commands.entity(projectile_entity).despawn();
+-        }
+-    }
+-}
+-
+-fn check_projectile_collision(
+-    projectile_entity: Entity,
+-    projectile_transform: &Transform,
+-    rapier_context: &RapierContext,
+-    collider_query: &Query<Entity, (With<Collision>, Without<Projectile>)>,
+-) -> bool {
+-    let ray_origin = projectile_transform.translation;
+-    let ray_direction = projectile_transform.forward();
+-    let max_toi = 0.1; // Distance courte pour vérifier juste devant le projectile
+-
+-    if let Some((hit_entity, _hit_position)) = rapier_context.cast_ray(
+-        ray_origin,
+-        ray_direction,
+-        max_toi,
+-        true,
+-        QueryFilter::default().exclude_collider(projectile_entity),
+-    ) {
+-        // Vérifier si l'entité touchée fait partie des colliders valides
+-        collider_query.get(hit_entity).is_ok()
+-    } else {
+-        false
+-    }
+-}
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"ALL\" />\r\n  </component>\r\n  <component name=\"CargoProjects\">\r\n    <cargoProject FILE=\"$PROJECT_DIR$/clients/Cargo.toml\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"9f185197-bf52-4ec3-adf2-3d2c29c07a14\" name=\"Changes\" comment=\"\">\r\n      <change afterPath=\"$PROJECT_DIR$/clients/src/player/fire.rs\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/clients/src/main.rs\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/clients/src/main.rs\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/clients/src/player/mod.rs\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/clients/src/player/mod.rs\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/clients/src/player/player.rs\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/clients/src/player/player.rs\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/clients/src/playing_field/playing_field.rs\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/clients/src/playing_field/playing_field.rs\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"FileTemplateManagerImpl\">\r\n    <option name=\"RECENT_TEMPLATES\">\r\n      <list>\r\n        <option value=\"Rust File\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"MacroExpansionManager\">\r\n    <option name=\"directoryName\" value=\"vq7ocbta\" />\r\n  </component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;customColor&quot;: &quot;&quot;,\r\n  &quot;associatedIndex&quot;: 1\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2kZHHs2G3IEQJAwrVLXQZXoafYx\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\">{\r\n  &quot;keyToString&quot;: {\r\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\r\n    &quot;RunOnceActivity.rust.reset.selective.auto.import&quot;: &quot;true&quot;,\r\n    &quot;git-widget-placeholder&quot;: &quot;master&quot;,\r\n    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,\r\n    &quot;last_opened_file_path&quot;: &quot;C:/Users/iboug/Projets/Zone01/multiplayer_fps/clients/assets/projectil&quot;,\r\n    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,\r\n    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,\r\n    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,\r\n    &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,\r\n    &quot;org.rust.disableDetachedFileInspectionC:/Users/iboug/Projets/Zone01/multiplayer_fps/clients/assets/mages/mages.rs&quot;: &quot;true&quot;,\r\n    &quot;org.rust.disableDetachedFileInspectionC:/Users/iboug/Projets/Zone01/multiplayer_fps/clients/assets/map/mages.rs&quot;: &quot;true&quot;,\r\n    &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;\r\n  }\r\n}</component>\r\n  <component name=\"RecentsManager\">\r\n    <key name=\"CopyFile.RECENT_KEYS\">\r\n      <recent name=\"C:\\Users\\iboug\\Projets\\Zone01\\multiplayer_fps\\clients\\assets\\projectil\" />\r\n    </key>\r\n    <key name=\"MoveFile.RECENT_KEYS\">\r\n      <recent name=\"C:\\Users\\iboug\\Projets\\Zone01\\multiplayer_fps\\clients\\assets\" />\r\n    </key>\r\n  </component>\r\n  <component name=\"RustProjectSettings\">\r\n    <option name=\"toolchainHomeDirectory\" value=\"$USER_HOME$/.cargo/bin\" />\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"9f185197-bf52-4ec3-adf2-3d2c29c07a14\" name=\"Changes\" comment=\"\" />\r\n      <created>1723484096035</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1723484096035</updated>\r\n      <workItem from=\"1723484097911\" duration=\"150000\" />\r\n      <workItem from=\"1723668972945\" duration=\"31737000\" />\r\n      <workItem from=\"1723901513263\" duration=\"5462000\" />\r\n      <workItem from=\"1724072619803\" duration=\"396000\" />\r\n      <workItem from=\"1724073039153\" duration=\"6972000\" />\r\n    </task>\r\n    <servers />\r\n  </component>\r\n  <component name=\"TypeScriptGeneratedFilesManager\">\r\n    <option name=\"version\" value=\"3\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 00056909447d6c39a6c53a3232bab2e49c59ff1f)
++++ b/.idea/workspace.xml	(date 1724081052063)
+@@ -8,24 +8,21 @@
+   </component>
+   <component name="ChangeListManager">
+     <list default="true" id="9f185197-bf52-4ec3-adf2-3d2c29c07a14" name="Changes" comment="">
+-      <change afterPath="$PROJECT_DIR$/clients/src/player/fire.rs" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/clients/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/main.rs" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/clients/src/player/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/player/mod.rs" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/clients/src/player/player.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/player/player.rs" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/clients/src/playing_field/playing_field.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/playing_field/playing_field.rs" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/clients/assets/armes/Assault Rifle.glb" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/clients/assets/armes/Soldier.glb" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/clients/assets/armes/arme1.glb" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/clients/assets/armes/arme1_0.glb" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/clients/assets/map/mages.rs" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/clients/assets/map/mod.rs" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/clients/assets/mod.rs" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/clients/assets/projectil/7.62x39mm.glb" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/clients/assets/projectil/bullet.glb" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/clients/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/clients/.gitignore" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+     <option name="LAST_RESOLUTION" value="IGNORE" />
+-  </component>
+-  <component name="FileTemplateManagerImpl">
+-    <option name="RECENT_TEMPLATES">
+-      <list>
+-        <option value="Rust File" />
+-      </list>
+-    </option>
+   </component>
+   <component name="Git.Settings">
+     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+@@ -42,30 +39,16 @@
+     <option name="hideEmptyMiddlePackages" value="true" />
+     <option name="showLibraryContents" value="true" />
+   </component>
+-  <component name="PropertiesComponent">{
+-  &quot;keyToString&quot;: {
+-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+-    &quot;RunOnceActivity.rust.reset.selective.auto.import&quot;: &quot;true&quot;,
+-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+-    &quot;last_opened_file_path&quot;: &quot;C:/Users/iboug/Projets/Zone01/multiplayer_fps/clients/assets/projectil&quot;,
+-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+-    &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,
+-    &quot;org.rust.disableDetachedFileInspectionC:/Users/iboug/Projets/Zone01/multiplayer_fps/clients/assets/mages/mages.rs&quot;: &quot;true&quot;,
+-    &quot;org.rust.disableDetachedFileInspectionC:/Users/iboug/Projets/Zone01/multiplayer_fps/clients/assets/map/mages.rs&quot;: &quot;true&quot;,
+-    &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;
++  <component name="PropertiesComponent"><![CDATA[{
++  "keyToString": {
++    "RunOnceActivity.ShowReadmeOnStart": "true",
++    "RunOnceActivity.rust.reset.selective.auto.import": "true",
++    "git-widget-placeholder": "Rebasing collision",
++    "nodejs_package_manager_path": "npm",
++    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
++    "org.rust.first.attach.projects": "true"
+   }
+-}</component>
+-  <component name="RecentsManager">
+-    <key name="CopyFile.RECENT_KEYS">
+-      <recent name="C:\Users\iboug\Projets\Zone01\multiplayer_fps\clients\assets\projectil" />
+-    </key>
+-    <key name="MoveFile.RECENT_KEYS">
+-      <recent name="C:\Users\iboug\Projets\Zone01\multiplayer_fps\clients\assets" />
+-    </key>
+-  </component>
++}]]></component>
+   <component name="RustProjectSettings">
+     <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+   </component>
+@@ -78,14 +61,21 @@
+       <option name="presentableId" value="Default" />
+       <updated>1723484096035</updated>
+       <workItem from="1723484097911" duration="150000" />
+-      <workItem from="1723668972945" duration="31737000" />
+-      <workItem from="1723901513263" duration="5462000" />
+-      <workItem from="1724072619803" duration="396000" />
+-      <workItem from="1724073039153" duration="6972000" />
+     </task>
+     <servers />
+   </component>
+   <component name="TypeScriptGeneratedFilesManager">
+     <option name="version" value="3" />
+   </component>
++  <component name="Vcs.Log.Tabs.Properties">
++    <option name="TAB_STATES">
++      <map>
++        <entry key="MAIN">
++          <value>
++            <State />
++          </value>
++        </entry>
++      </map>
++    </option>
++  </component>
+ </project>
+\ No newline at end of file
