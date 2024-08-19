@@ -23,6 +23,7 @@ pub struct GameState {
     pub stage: Stage,
     pub players: HashMap<u8, Player>,
     pub history: Vec<GameEvent>,
+    pub id_counter: u8,
 }
 
 impl Default for GameState {
@@ -31,6 +32,7 @@ impl Default for GameState {
             stage: Stage::PreGame,
             players: HashMap::new(),
             history: Vec::new(),
+            id_counter: 0,
         }
     }
 }
@@ -71,6 +73,11 @@ impl GameState {
                     return false;
                 }
             }
+            GameEvent::SetId { player_id: _ } => {
+                if self.stage != Stage::PreGame {
+                    return false;
+                }
+            }
         }
         true
     }
@@ -86,7 +93,7 @@ impl GameState {
             }
 
             GameEvent::PlayerJoined { player_id, name } => {
-                // ! updated position here
+                // ! updated and define position here
                 self.players.insert(*player_id, Player {
                     name: name.to_string(),
                     id: *player_id,
@@ -99,10 +106,11 @@ impl GameState {
             }
 
             GameEvent::PlayerMove { player_id, at } => {
-                // ! must check thos part for coming features
+                // ! must check this part for coming features
                 let player = self.players.get_mut(player_id).unwrap();
                 player.position = at.clone();
             }
+            _ => {}
         }
 
         self.history.push(valid_event.clone());
@@ -115,5 +123,11 @@ impl GameState {
             }
         }
         None
+    }
+
+    pub fn generate_id(&mut self) -> u8 {
+        let id = self.id_counter;
+        self.id_counter += 1;
+        id
     }
 }

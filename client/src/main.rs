@@ -6,7 +6,7 @@ use transport::{ ClientAuthentication, NetcodeClientTransport };
 use std::{ net::{ SocketAddr, UdpSocket }, time::{ Duration, SystemTime }, thread::* };
 use std::io::{ self, Write, * };
 
-// This id needs to be the same as the server is using
+// ! must be the same with server's
 const PROTOCOL_ID: u64 = 1582;
 
 fn main() {
@@ -42,7 +42,6 @@ fn main() {
 
     //--------- app
     let mut app = App::new();
-    //app.add_plugins(DefaultPlugins);
     app.add_plugins(
         DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
@@ -55,6 +54,7 @@ fn main() {
         })
     );
     app.add_plugins(RenetClientPlugin);
+
     let client = RenetClient::new(ConnectionConfig::default());
     let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
     let client_id = current_time.as_millis() as u64;
@@ -75,16 +75,10 @@ fn main() {
     let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
     let transport = NetcodeClientTransport::new(current_time, authentication, socket).unwrap();
     app.insert_resource(transport);
-    app.add_systems(PostUpdate, handle_disconnection_system);
-    app.add_systems(PreUpdate, handle_connection);
-    app.run();
-}
 
-fn handle_disconnection_system(client: ResMut<RenetClient>) {
-    if !client.is_connected() {
-        warn!("Connection lost or network unavailable!");
-        //exit(1)
-    }
+    app.add_systems(Update, handle_connection);
+
+    app.run();
 }
 
 fn handle_connection(
@@ -92,16 +86,26 @@ fn handle_connection(
     mut transport: ResMut<NetcodeClientTransport>
 ) {
     client.update(Duration::from_millis(16));
-    transport.update(Duration::from_millis(16), &mut client).expect("err in transport unwrap");
+    if transport.update(Duration::from_millis(16), &mut client).is_err() {
+        warn!("server is unavailable");
+        client.disconnect_due_to_transport();
+
+        // TODO: implementing server shutdown case logic here 👇
+        //...
+        return;
+    }
+
     if client.is_connected() {
-        info!("Client connected");
         while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
             if let Ok(event) = deserialize::<GameEvent>(&message) {
                 // ! handle server events here
-                println!("event is here {:?}", event);
+                info!("event from server {:?}", event);
             }
         }
-        client.send_message(DefaultChannel::ReliableOrdered, "client text");
+        /*
+         * this how to send messages from client to server
+         * ex : client.send_message(DefaultChannel::ReliableOrdered, serialize(&event).unwrap());
+         */
     }
     transport.send_packets(&mut client).expect("error while sending packets to server");
     sleep(Duration::from_millis(16));

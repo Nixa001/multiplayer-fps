@@ -16,4 +16,7 @@ pub enum GameEvent {
         player_id: u8,
         at: Position,
     },
+    SetId {
+        player_id: u8,
+    },
 }
