@@ -3,7 +3,7 @@ use bevy_renet::{ renet::*, transport::NetcodeClientPlugin, RenetClientPlugin };
 use store::{ PROTOCOL_ID, GAME_FPS, * };
 use bincode::*;
 use transport::{ ClientAuthentication, NetcodeClientTransport };
-use std::{ net::{ SocketAddr, UdpSocket }, time:: SystemTime, thread::* };
+use std::{ net::{ SocketAddr, UdpSocket }, time::SystemTime, thread::* };
 use std::io::{ self, Write, * };
 
 fn main() {
@@ -69,7 +69,16 @@ fn main() {
         user_data: Some(user_data),
         protocol_id: PROTOCOL_ID,
     };
-    let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
+
+    let binding = UdpSocket::bind("0.0.0.0:5000");
+    if binding.is_err() {
+        error!(
+            "❌ address already used! Only one client can run on the same machine used as server"
+        );
+        return;
+    }
+
+    let socket = binding.unwrap();
     let transport = NetcodeClientTransport::new(current_time, authentication, socket).unwrap();
     app.insert_resource(transport);
 
