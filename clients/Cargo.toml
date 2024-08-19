@@ -7,3 +7,6 @@ edition = "2021"
 bevy = { version = "0.12.1", features = ["jpeg"] }
 bevy_gltf = "0.12.1"
 bevy_rapier3d = "0.23.0"
+bevy_renet = "0.0.10"
+store = { path = "../store" }
+bincode="1.3.1"

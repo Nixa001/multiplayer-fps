@@ -1,6 +1,10 @@
 use crate::player::player::Player;
 use bevy::prelude::*;
 use bevy_rapier3d::plugin::{NoUserData, RapierPhysicsPlugin};
+use bevy_renet::{transport::NetcodeClientPlugin, RenetClientPlugin};
+use multiplayer_fps::{get_input, handle_connection, setup_networking};
+use std::net::SocketAddr;
+
 // use bevy::sprite::collide_aabb::collide;
 // use bevy::render::debug::DebugLines;
 // use bevy_gltf::Gltf;
@@ -11,7 +15,33 @@ mod playing_field;
 // struct GltfWall;
 #[derive(Component)]
 struct MinimapPlayer;
+
+const MAX_USERNAME_LENGTH: usize = 248;
 fn main() {
+    let server_ip = get_input("Enter server IP address: ");
+    let server_addr: SocketAddr = match server_ip.parse() {
+        Ok(addr) => addr,
+        Err(_) => {
+            eprintln!("❌ Invalid IP address!");
+            return;
+        }
+    };
+
+    let username = get_input("Enter your username: ");
+    if username.is_empty() {
+        eprintln!("❌ Please provide a username");
+        return;
+    }
+    if username.len() > MAX_USERNAME_LENGTH {
+        eprintln!(
+            "❌ Username is too long (max {} characters)",
+            MAX_USERNAME_LENGTH
+        );
+        return;
+    }
+
+    let (client, transport) = setup_networking(&server_addr, &username);
+
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
@@ -22,7 +52,11 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugins((
+            RenetClientPlugin,
+            NetcodeClientPlugin,
+            RapierPhysicsPlugin::<NoUserData>::default(),
+        ))
         .add_systems(
             Startup,
             (
@@ -33,10 +67,13 @@ fn main() {
                 setup,
             ),
         )
+        .insert_resource(client)
+        .insert_resource(transport)
         // .add_systems(Startup, setup)
         .add_systems(
             Update,
             (
+                handle_connection,
                 player::player::move_player,
                 player::player::grab_mouse,
                 player::fire::fire_laser,
@@ -56,17 +93,18 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     playing_field::playing_field::create_maze(&mut commands, &mut meshes, &mut materials, "Map1"); // Charger le modèle
-                                                                                                   // let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_2.glb#Scene0");
-                                                                                                   // // Spawner le modèle
-                                                                                                   // commands.spawn((
-                                                                                                   //     SceneBundle {
-                                                                                                   //         scene: scene_handle,
-                                                                                                   //         transform: Transform::from_xyz(-5.0, -2.3, -5.0).with_scale(Vec3::splat(0.8)),
-                                                                                                   //         ..default()
-                                                                                                   //     },
-                                                                                                   //     GltfWall,
-                                                                                                   // ));
-                                                                                                   // Caméra
+    // let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_2.glb#Scene0");
+    // // Spawner le modèle
+    // commands.spawn((
+    //     SceneBundle {
+    //         scene: scene_handle,
+    //         transform: Transform::from_xyz(-5.0, -2.3, -5.0).with_scale(Vec3::splat(0.8)),
+    //         ..default()
+    //     },
+    //     GltfWall,
+    // ));
+    
+    // Caméra
     commands.spawn(Camera3dBundle {
         transform: Transform::from_xyz(10.0, 45.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
@@ -130,7 +168,7 @@ fn check_model_loaded(asset_server: Res<AssetServer>, scene_assets: Res<Assets<S
 //                 if let Some(collision) = collision {
 //                     match collision {
 //                         bevy::sprite::collide_aabb::Collision::Left => {
-//                             println!("Main Collision Letf");
+//                             println!("Main Collision Left");
 //                             player_transform.translation.x = wall_pos.x - (wall_size.x + player.size.x) * 0.5;
 //                         }
 //                         bevy::sprite::collide_aabb::Collision::Right => {
@@ -194,9 +232,9 @@ pub fn mages(name: &str) -> Vec<Vec<u8>> {
 }
 
 // pub fn crate_mage(
-//     name: &str,
-//     mut commands: Commands,
-//     mut mesh: ResMut<Assets<Mesh>>,
+//     name : &str,
+//     mut commands : Commands,
+//     mut mesh : ResMut<Assets<Mesh>>,
 //     mut materials: ResMut<Assets<StandardMaterial>>
 // ) {
 //     let mage = mages(name);
@@ -209,7 +247,7 @@ pub fn mages(name: &str) -> Vec<Vec<u8>> {
 //            } else if *k == 2 {
 //                println!("Fin de ligne")
 //            } else {
-//                println!("Vers lebas");
+//                println!("Vers le bas");
 //            }
 //         }
 //     }

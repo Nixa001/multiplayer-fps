@@ -1,6 +1,6 @@
-use serde::{ Deserialize, Serialize };
-use std::collections::HashMap;
 use crate::*;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 /// The different states a game can be in. (not to be confused with the entire "GameState")
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -12,9 +12,7 @@ pub enum Stage {
 /// The reasons why a game could end
 #[derive(Debug, Clone, Copy, Serialize, PartialEq, Deserialize)]
 pub enum EndGameReason {
-    PlayerWon {
-        winner: u64,
-    },
+    PlayerWon { winner: u64 },
 }
 
 /// A GameState object that is able to keep track of game
@@ -94,11 +92,14 @@ impl GameState {
 
             GameEvent::PlayerJoined { player_id, name } => {
                 // ! updated and define position here
-                self.players.insert(*player_id, Player {
-                    name: name.to_string(),
-                    id: *player_id,
-                    position: Position::default(),
-                });
+                self.players.insert(
+                    *player_id,
+                    Player {
+                        name: name.to_string(),
+                        id: *player_id,
+                        position: Position::default(),
+                    },
+                );
             }
 
             GameEvent::PlayerDisconnected { player_id } => {

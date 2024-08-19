@@ -37,28 +37,12 @@ fn main() {
         return;
     }
 
-    //--------- app
-    let mut app = App::new();
-    app.add_plugins(
-        DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "test".into(),
-                resolution: (100.0, 100.0).into(),
-                resizable: false,
-                ..default()
-            }),
-            ..default()
-        })
-    );
-    app.add_plugins(RenetClientPlugin);
 
     let client = RenetClient::new(ConnectionConfig::default());
     let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
     let client_id = current_time.as_millis() as u64;
-    app.insert_resource(client);
     // Setup the transport layer
 
-    app.add_plugins(NetcodeClientPlugin);
     let mut user_data = [0u8; 256];
     user_data[0..8].copy_from_slice(&(username.len() as u64).to_le_bytes());
     user_data[8..username.len() + 8].copy_from_slice(username.as_bytes());
@@ -72,6 +56,7 @@ fn main() {
 
     let binding = UdpSocket::bind("0.0.0.0:5000");
     if binding.is_err() {
+    
         error!(
             "❌ address already used! Only one client can run on the same machine used as server"
         );
@@ -80,6 +65,22 @@ fn main() {
 
     let socket = binding.unwrap();
     let transport = NetcodeClientTransport::new(current_time, authentication, socket).unwrap();
+    //inialize the client
+    let mut app = App::new();
+    app.add_plugins(
+        DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "test".into(),
+                resolution: (100.0, 100.0).into(),
+                resizable: false,
+                ..default()
+            }),
+            ..default()
+        })
+    );
+    app.add_plugins(RenetClientPlugin);
+    app.insert_resource(client);
+    app.add_plugins(NetcodeClientPlugin);
     app.insert_resource(transport);
 
     app.add_systems(Update, handle_connection);

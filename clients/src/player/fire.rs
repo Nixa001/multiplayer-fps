@@ -1,11 +1,10 @@
-use bevy::prelude::*;
-use bevy::input::mouse::MouseMotion;
-use bevy_rapier3d::prelude::*;
 use crate::player::player::Player;
-use bevy::render::primitives::Sphere;
-use bevy_rapier3d::prelude::{RigidBody, Collider};
 use crate::playing_field::playing_field::Collision;
-
+use bevy::input::mouse::MouseMotion;
+use bevy::prelude::*;
+use bevy::render::primitives::Sphere;
+use bevy_rapier3d::prelude::*;
+use bevy_rapier3d::prelude::{Collider, RigidBody};
 
 #[derive(Component)]
 pub struct Projectile {
@@ -46,7 +45,11 @@ pub fn fire_laser(
                     lifetime: Timer::from_seconds(0.1, TimerMode::Once),
                 },
                 pbr_bundle: PbrBundle {
-                    mesh: meshes.add(Mesh::from(shape::Box::new(laser_width, laser_width, laser_length))),
+                    mesh: meshes.add(Mesh::from(shape::Box::new(
+                        laser_width,
+                        laser_width,
+                        laser_length,
+                    ))),
                     material: materials.add(StandardMaterial {
                         base_color: Color::RED,
                         emissive: Color::rgba_linear(1.0, 0.0, 0.0, 1.0),
@@ -95,54 +98,52 @@ pub fn update_lasers(
 }
 
 // impl Projectile {
-    // pub fn fire_projectile(
-    //     mut commands: Commands,
-    //     keyboard: Res<Input<KeyCode>>,
-    //     query: Query<(&Transform, &Player, &Velocity)>,
-    //     asset_server: Res<AssetServer>,
-    // ) {
-    //     if keyboard.just_pressed(KeyCode::Space) {
-    //         if let Ok((transform, player, player_velocity)) = query.get_single() {
-    //             let forward = transform.forward();
-    //             let spawn_point = transform.translation + forward * 1.0 + Vec3::new(0.0, 0.1, 0.0);
-    //
-    //             let projectile_handle: Handle<Scene> = asset_server.load("projectil/bullet.glb#Scene0");
-    //
-    //             let projectile_velocity = player_velocity.linvel + forward * 20.0;
-    //
-    //             commands.spawn((
-    //                 SceneBundle {
-    //                     scene: projectile_handle,
-    //                     transform: Transform::from_translation(spawn_point)
-    //                         .looking_to(forward, Vec3::Y)
-    //                         .with_scale(Vec3::splat(0.1)),
-    //                     ..default()
-    //                 },
-    //                 Projectile { speed: 5.0 },
-    //                 RigidBody::Dynamic,
-    //                 Collider::ball(0.1),
-    //                 Velocity::linear(projectile_velocity),
-    //             ));
-    //         }
-    //     }
-    // }
+// pub fn fire_projectile(
+//     mut commands: Commands,
+//     keyboard: Res<Input<KeyCode>>,
+//     query: Query<(&Transform, &Player, &Velocity)>,
+//     asset_server: Res<AssetServer>,
+// ) {
+//     if keyboard.just_pressed(KeyCode::Space) {
+//         if let Ok((transform, player, player_velocity)) = query.get_single() {
+//             let forward = transform.forward();
+//             let spawn_point = transform.translation + forward * 1.0 + Vec3::new(0.0, 0.1, 0.0);
+//
+//             let projectile_handle: Handle<Scene> = asset_server.load("projectil/bullet.glb#Scene0");
+//
+//             let projectile_velocity = player_velocity.linvel + forward * 20.0;
+//
+//             commands.spawn((
+//                 SceneBundle {
+//                     scene: projectile_handle,
+//                     transform: Transform::from_translation(spawn_point)
+//                         .looking_to(forward, Vec3::Y)
+//                         .with_scale(Vec3::splat(0.1)),
+//                     ..default()
+//                 },
+//                 Projectile { speed: 5.0 },
+//                 RigidBody::Dynamic,
+//                 Collider::ball(0.1),
+//                 Velocity::linear(projectile_velocity),
+//             ));
+//         }
+//     }
+// }
 
-
-
-    // pub fn update_projectiles(
-    //     mut commands: Commands,
-    //     mut query: Query<(Entity, &mut Transform, &Projectile)>,
-    //     time: Res<Time>,
-    // ) {
-    //     for (entity, mut transform, projectile) in query.iter_mut() {
-    //         let forward = transform.forward();
-    //         transform.translation += forward * projectile.speed * time.delta_seconds();
-    //
-    //         if transform.translation.length() > 100.0 {
-    //             commands.entity(entity).despawn();
-    //         }
-    //     }
-    // }
+// pub fn update_projectiles(
+//     mut commands: Commands,
+//     mut query: Query<(Entity, &mut Transform, &Projectile)>,
+//     time: Res<Time>,
+// ) {
+//     for (entity, mut transform, projectile) in query.iter_mut() {
+//         let forward = transform.forward();
+//         transform.translation += forward * projectile.speed * time.delta_seconds();
+//
+//         if transform.translation.length() > 100.0 {
+//             commands.entity(entity).despawn();
+//         }
+//     }
+// }
 
 // }
 pub fn handle_projectile_collisions(
@@ -152,7 +153,12 @@ pub fn handle_projectile_collisions(
     collider_query: Query<Entity, (With<Collision>, Without<Projectile>)>,
 ) {
     for (projectile_entity, projectile_transform) in projectile_query.iter() {
-        if check_projectile_collision(projectile_entity, projectile_transform, &rapier_context, &collider_query) {
+        if check_projectile_collision(
+            projectile_entity,
+            projectile_transform,
+            &rapier_context,
+            &collider_query,
+        ) {
             commands.entity(projectile_entity).despawn();
         }
     }
