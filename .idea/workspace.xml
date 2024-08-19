@@ -8,20 +8,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9f185197-bf52-4ec3-adf2-3d2c29c07a14" name="Changes" comment="test">
-      <change afterPath="$PROJECT_DIR$/clients/assets/armes/Assault Rifle.glb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clients/assets/armes/Soldier.glb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clients/assets/armes/arme1.glb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clients/assets/armes/arme1_0.glb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clients/assets/map/mages.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clients/assets/map/mod.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clients/assets/mod.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clients/assets/projectil/7.62x39mm.glb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clients/assets/projectil/bullet.glb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clients/src/player/fire.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clients/src/player_2D/mod.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clients/src/player_2D/player_2D.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/clients/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/clients/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/clients/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/clients/src/player/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/player/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clients/src/player/fire.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/player/fire.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/clients/src/player/player.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/player/player.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/clients/src/playing_field/playing_field.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/playing_field/playing_field.rs" afterDir="false" />
     </list>
@@ -38,6 +29,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RESET_MODE" value="MIXED" />
   </component>

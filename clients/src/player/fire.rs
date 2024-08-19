@@ -34,7 +34,7 @@ pub fn fire_laser(
     if keyboard.just_pressed(KeyCode::Space) {
         if let Ok((transform, _player)) = query.get_single() {
             let forward = transform.forward();
-            let spawn_point = transform.translation + forward * 0.5 + Vec3::new(0.0, 0.0, -0.0);
+            let spawn_point = transform.translation + forward * 0.5 + Vec3::new(0.0, 0.0, 0.0);
 
             let laser_length = 3.0; // Longueur maximale du laser
             let laser_width = 0.09; // Largeur du laser
@@ -71,6 +71,7 @@ pub fn update_lasers(
     for (entity, mut laser, mut transform) in laser_query.iter_mut() {
         laser.lifetime.tick(time.delta());
 
+        // Si la duree de vis du
         if laser.lifetime.finished() {
             commands.entity(entity).despawn();
             continue;

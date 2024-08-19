@@ -72,6 +72,15 @@ pub fn move_player(
 
         // Rotation du joueur (et de l'arme)
         transform.rotate_y(-mouse_delta.x * 0.002);
+        // Rotation verticale (limitée)
+        let mut camera_transform = transform.clone();
+        camera_transform.rotate_local_x(-mouse_delta.y * 0.002);
+
+        // Limiter la rotation verticale
+        let up = camera_transform.up();
+        if up.y > 0.1 && up.y < 0.995 {
+            *transform = camera_transform;
+        }
     }
 }
 
@@ -125,12 +134,12 @@ pub fn setup_player_and_camera(
     // commands.entity(player_entity).add_child(player_entity);
 
     // Spawn the camera and attach it to the weapon
-    // commands.spawn((
-    //     Camera3dBundle {
-    //         transform: Transform::from_xyz(0.0, 0.8, 0.0), // Adjust camera position relative to weapon
-    //         ..default()
-    //     },
-    // )).set_parent(player_entity);
+    commands.spawn((
+        Camera3dBundle {
+            transform: Transform::from_xyz(0.0, 0.8, 0.0), // Adjust camera position relative to weapon
+            ..default()
+        },
+    )).set_parent(player_entity);
 
     commands.spawn(
         PointLightBundle {

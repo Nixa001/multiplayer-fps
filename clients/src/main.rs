@@ -6,8 +6,7 @@ use crate::player::player::Player;
 // use bevy_gltf::Gltf;
 mod playing_field;
 mod player;
-
-
+mod player_2D;
 
 
 // #[derive(Component)]
@@ -27,11 +26,12 @@ fn main() {
         }))
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_systems(Startup, (
+            setup,
             player::player::setup_player_and_camera,
             playing_field::playing_field::Fields::spawn_ground,
+            player_2D::player_2D::setup_minimap,
             // playing_field::playing_field::Fields::spawn_object,
             // playing_field::playing_field::Fields::spawn_player,
-            setup,
         ))
         // .add_systems(Startup, setup)
         .add_systems(Update,(
@@ -39,7 +39,8 @@ fn main() {
             player::player::grab_mouse,
             player::fire::fire_laser,
             player::fire::update_lasers,
-            // playing_field::playing_field::handle_collisions,
+            player::fire::handle_projectile_collisions,
+            player_2D::player_2D::update_minimap,
             // handle_gltf_wall_collisions,
             // debug_draw_system,
         ).chain())
@@ -63,10 +64,10 @@ fn setup(
     //     GltfWall,
     // ));
     // Caméra
-    commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(10.0, 45.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..default()
-    });
+    // commands.spawn(Camera3dBundle {
+    //     transform: Transform::from_xyz(10.0, 45.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
+    //     ..default()
+    // });
     // Lumière
     commands.spawn(PointLightBundle {
         point_light: PointLight {
