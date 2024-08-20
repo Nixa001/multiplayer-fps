@@ -21,6 +21,7 @@ pub fn setup_minimap(
                 top: Val::Px(10.0),
                 width: Val::Px(200.0),
                 height: Val::Px(200.0),
+
                 ..default()
             },
             background_color: Color::rgba(0.1, 0.1, 0.1, 0.7).into(),
@@ -34,16 +35,17 @@ pub fn setup_minimap(
         NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
-                top: Val::Px(12.0),
-                right: Val::Px(12.0),
-                width: Val::Px(8.0),
-                height: Val::Px(8.0),
+                // top: Val::Px(12.0),
+                // right: Val::Px(12.0),
+                width: Val::Px(5.0),
+                height: Val::Px(5.0),
                 ..default()
             },
             background_color: Color::RED.into(),
             ..default()
         },
         MinimapElement,
+        MinimapPlayer,
         ));
 }
 
@@ -55,10 +57,12 @@ pub fn update_minimap(
     let window = window.single();
     if let Ok (player_trnsform) = player_query.get_single(){
         if let Ok (mut minimap_style) = minimap_query.get_single_mut(){
+            // Convertir les donnees 3D en 2D
             let minimap_x = (player_trnsform.translation.x + 14.0) * (180.0 / 28.0);
-            let minimap_y = (player_trnsform.translation.y + 14.0) * (180.0 / 28.0);
+            let minimap_y = (player_trnsform.translation.z + 14.0) * (180.0 / 28.0);
 
-            minimap_style.left = Val::Px(minimap_x + 10.0);
+            // Mettre a jour la position du joueur sur la minimap
+            minimap_style.right = Val::Px(minimap_x + 10.0);
             minimap_style.top = Val::Px(minimap_y + 10.0);
         }
     }

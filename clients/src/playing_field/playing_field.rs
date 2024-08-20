@@ -1,3 +1,4 @@
+// code de base
 use bevy::prelude::*;
 use std::default::Default;
 // use bevy::sprite::collide_aabb::collide;
@@ -213,7 +214,7 @@ fn spawn_wall(
 
 
 
-fn spawn_minimap_wall(
+fn  spawn_minimap_wall(
     commands: &mut Commands,
     x: f32,
     z: f32,
