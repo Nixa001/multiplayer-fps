@@ -1,13 +1,12 @@
+use crate::player::player::Player;
 use bevy::prelude::*;
 use bevy_rapier3d::plugin::{NoUserData, RapierPhysicsPlugin};
-use crate::player::player::Player;
 // use bevy::sprite::collide_aabb::collide;
 // use bevy::render::debug::DebugLines;
 // use bevy_gltf::Gltf;
-mod playing_field;
 mod player;
 mod player_2D;
-
+mod playing_field;
 
 // #[derive(Component)]
 // struct GltfWall;
@@ -25,50 +24,57 @@ fn main() {
             ..default()
         }))
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_systems(Startup, (
-            setup,
-            player::player::setup_player_and_camera,
-            playing_field::playing_field::Fields::spawn_ground,
-            player_2D::player_2D::setup_minimap,
-            // playing_field::playing_field::Fields::spawn_object,
-            // playing_field::playing_field::Fields::spawn_player,
-        ))
+        .add_systems(
+            Startup,
+            (
+                setup,
+                player::player::setup_player_and_camera,
+                playing_field::playing_field::Fields::spawn_ground,
+                player_2D::player_2D::setup_minimap,
+                // playing_field::playing_field::Fields::spawn_object,
+                // playing_field::playing_field::Fields::spawn_player,
+            ),
+        )
         // .add_systems(Startup, setup)
-        .add_systems(Update,(
-            player::player::move_player,
-            player::player::grab_mouse,
-            player::fire::fire_laser,
-            player::fire::update_lasers,
-            player::fire::handle_projectile_collisions,
-            player_2D::player_2D::update_minimap,
-            // handle_gltf_wall_collisions,
-            // debug_draw_system,
-        ).chain())
+        .add_systems(
+            Update,
+            (
+                player::player::move_player,
+                player::player::grab_mouse,
+                player::fire::fire_laser,
+                player::fire::update_lasers,
+                player::fire::handle_projectile_collisions,
+                player_2D::player_2D::update_minimap,
+                // handle_gltf_wall_collisions,
+                // debug_draw_system,
+            )
+                .chain(),
+        )
         .run();
 }
 fn setup(
     mut commands: Commands,
     _asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    playing_field::playing_field::create_maze(&mut commands, &mut meshes, &mut materials, "Map1");    // Charger le modèle
-    // let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_2.glb#Scene0");
-    // // Spawner le modèle
-    // commands.spawn((
-    //     SceneBundle {
-    //         scene: scene_handle,
-    //         transform: Transform::from_xyz(-5.0, -2.3, -5.0).with_scale(Vec3::splat(0.8)),
-    //         ..default()
-    //     },
-    //     GltfWall,
-    // ));
-    // Caméra
-    // commands.spawn(Camera3dBundle {
-    //     transform: Transform::from_xyz(10.0, 45.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
-    //     ..default()
-    // });
-    // Lumière
+    playing_field::playing_field::create_maze(&mut commands, &mut meshes, &mut materials, "Map2"); // Charger le modèle
+                                                                                                   // let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_2.glb#Scene0");
+                                                                                                   // // Spawner le modèle
+                                                                                                   // commands.spawn((
+                                                                                                   //     SceneBundle {
+                                                                                                   //         scene: scene_handle,
+                                                                                                   //         transform: Transform::from_xyz(-5.0, -2.3, -5.0).with_scale(Vec3::splat(0.8)),
+                                                                                                   //         ..default()
+                                                                                                   //     },
+                                                                                                   //     GltfWall,
+                                                                                                   // ));
+                                                                                                   // Caméra
+                                                                                                   // commands.spawn(Camera3dBundle {
+                                                                                                   //     transform: Transform::from_xyz(10.0, 45.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
+                                                                                                   //     ..default()
+                                                                                                   // });
+                                                                                                   // Lumière
     commands.spawn(PointLightBundle {
         point_light: PointLight {
             intensity: 1500.0,
@@ -98,7 +104,7 @@ fn setup(
             },
             transform: Transform::from_scale(Vec3::splat(5.0)), // Échelle du joueur sur la minimap
             ..default()
-        }
+        },
     ));
 }
 fn check_model_loaded(asset_server: Res<AssetServer>, scene_assets: Res<Assets<Scene>>) {
@@ -146,7 +152,7 @@ fn check_model_loaded(asset_server: Res<AssetServer>, scene_assets: Res<Assets<S
 //                         bevy::sprite::collide_aabb::Collision::Inside => {
 //                             println!("Main Collision Inside");
 //                             // Gérez le cas où le joueur est à l'intérieur du mur
-//                         }
+//                         }ee
 //                     }
 //                     println!("Player pos: {:?}, Wall pos: {:?}", player_transform.translation, wall_pos);
 //                 }
@@ -171,7 +177,7 @@ fn update_minimap(
 
 pub fn mages(name: &str) -> Vec<Vec<u8>> {
     if name == "Map1" {
-        return  vec![
+        return vec![
             vec![4, 4, 3, 3, 2, 4, 3, 4, 3, 3, 1],
             vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
             vec![1, 2, 4, 3, 3, 3, 2, 1, 3, 1, 1],
@@ -182,16 +188,37 @@ pub fn mages(name: &str) -> Vec<Vec<u8>> {
             vec![1, 3, 4, 1, 1, 1, 4, 2, 1, 2, 1],
             vec![1, 1, 2, 1, 4, 2, 1, 1, 4, 3, 1],
             vec![1, 3, 3, 1, 2, 4, 2, 1, 2, 1, 1],
-            vec![3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 2]
+            vec![3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 2],
         ];
     } else if name == "Map2" {
-        return  vec![
-            vec![],
+        return vec![
+            vec![4, 4, 3, 3, 2, 3, 3, 4, 3, 2, 1],
+            vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
+            vec![1, 2, 4, 3, 3, 2, 2, 1, 3, 1, 1],
+            vec![4, 3, 3, 2, 3, 3, 1, 2, 1, 2, 1],
+            vec![1, 4, 3, 2, 4, 2, 4, 3, 2, 1, 1],
+            vec![4, 2, 4, 3, 4, 3, 2, 4, 2, 1, 1],
+            vec![1, 3, 2, 1, 1, 4, 3, 2, 1, 1, 1],
+            vec![1, 3, 4, 1, 1, 1, 4, 2, 1, 2, 1],
+            vec![1, 1, 2, 1, 2, 2, 1, 1, 4, 3, 1],
+            vec![1, 3, 2, 1, 2, 4, 2, 1, 2, 1, 1],
+            vec![3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 2],
         ];
+    } else {
+        vec![
+            vec![4, 4, 3, 3, 2, 4, 4, 4, 3, 3, 1],
+            vec![1, 4, 1, 3, 3, 2, 1, 1, 3, 1, 4],
+            vec![4, 2, 4, 3, 4, 3, 2, 4, 3, 4, 1],
+            vec![4, 3, 4, 2, 3, 3, 1, 2, 4, 3, 1],
+            vec![1, 4, 4, 2, 4, 2, 4, 4, 3, 1, 1],
+            vec![4, 4, 4, 4, 4, 3, 4, 4, 2, 4, 1],
+            vec![4, 3, 4, 1, 1, 4, 3, 4, 1, 4, 1],
+            vec![1, 4, 4, 1, 4, 4, 4, 2, 4, 2, 1],
+            vec![4, 4, 2, 4, 4, 2, 1, 4, 4, 3, 1],
+            vec![4, 3, 3, 4, 2, 4, 2, 1, 2, 4, 1],
+            vec![4, 4, 4, 4, 4, 2, 4, 4, 4, 3, 2]
+        ]
     }
-    vec![
-        vec![],
-    ]
 }
 
 // pub fn crate_mage(
