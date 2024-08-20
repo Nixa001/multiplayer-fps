@@ -5,9 +5,10 @@
   </component>
   <component name="CargoProjects">
     <cargoProject FILE="$PROJECT_DIR$/clients/Cargo.toml" />
+    <cargoProject FILE="$PROJECT_DIR$/client/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9f185197-bf52-4ec3-adf2-3d2c29c07a14" name="Changes" comment="test" />
+    <list default="true" id="9f185197-bf52-4ec3-adf2-3d2c29c07a14" name="Changes" comment="feat(client): implement basic client networking&#10;&#10;Adds a basic client implementation that allows a client to connect to a server and receive messages.&#10;&#10;Includes:&#10;- Connection setup with username and authentication&#10;- Client update loop for sending and receiving messages&#10;- Message handling with basic logging and example for further development&#10;- Input handling for entering server IP and username&#10;- Integration with the RenetClientPlugin for networking&#10;- Integration with the store crate for shared game state and events&#10;- Basic UI with window setup for future development" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -27,11 +28,17 @@
   <component name="MacroExpansionManager">
     <option name="directoryName" value="vq7ocbta" />
   </component>
+  <component name="ProblemsViewState">
+    <option name="showPreview" value="true" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 1
 }</component>
   <component name="ProjectId" id="2kZHHs2G3IEQJAwrVLXQZXoafYx" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -47,6 +54,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
+    "org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon": "",
     "org.rust.disableDetachedFileInspectionC:/Users/iboug/Projets/Zone01/multiplayer_fps/clients/assets/mages/mages.rs": "true",
     "org.rust.disableDetachedFileInspectionC:/Users/iboug/Projets/Zone01/multiplayer_fps/clients/assets/map/mages.rs": "true",
     "org.rust.first.attach.projects": "true"
@@ -76,6 +84,7 @@
       <workItem from="1723901513263" duration="5462000" />
       <workItem from="1724072619803" duration="396000" />
       <workItem from="1724073039153" duration="7378000" />
+      <workItem from="1724095143251" duration="3983000" />
     </task>
     <task id="LOCAL-00001" summary="test">
       <option name="closed" value="true" />
@@ -85,7 +94,15 @@
       <option name="project" value="LOCAL" />
       <updated>1724082544444</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="feat(client): implement basic client networking&#10;&#10;Adds a basic client implementation that allows a client to connect to a server and receive messages.&#10;&#10;Includes:&#10;- Connection setup with username and authentication&#10;- Client update loop for sending and receiving messages&#10;- Message handling with basic logging and example for further development&#10;- Input handling for entering server IP and username&#10;- Integration with the RenetClientPlugin for networking&#10;- Integration with the store crate for shared game state and events&#10;- Basic UI with window setup for future development">
+      <option name="closed" value="true" />
+      <created>1724099470254</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1724099470254</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -93,6 +110,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="test" />
-    <option name="LAST_COMMIT_MESSAGE" value="test" />
+    <MESSAGE value="feat(client): implement basic client networking&#10;&#10;Adds a basic client implementation that allows a client to connect to a server and receive messages.&#10;&#10;Includes:&#10;- Connection setup with username and authentication&#10;- Client update loop for sending and receiving messages&#10;- Message handling with basic logging and example for further development&#10;- Input handling for entering server IP and username&#10;- Integration with the RenetClientPlugin for networking&#10;- Integration with the store crate for shared game state and events&#10;- Basic UI with window setup for future development" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(client): implement basic client networking&#10;&#10;Adds a basic client implementation that allows a client to connect to a server and receive messages.&#10;&#10;Includes:&#10;- Connection setup with username and authentication&#10;- Client update loop for sending and receiving messages&#10;- Message handling with basic logging and example for further development&#10;- Input handling for entering server IP and username&#10;- Integration with the RenetClientPlugin for networking&#10;- Integration with the store crate for shared game state and events&#10;- Basic UI with window setup for future development" />
   </component>
 </project>

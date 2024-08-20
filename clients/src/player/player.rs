@@ -115,7 +115,7 @@ pub fn setup_player_and_camera(mut commands: Commands, asset_server: Res<AssetSe
                 transform: Transform::from_xyz(-6.2, 0.2, -6.1).with_scale(Vec3::splat(0.4)),
                 ..default()
             },
-            // Controle nanuel du joueur sans se soucier d'influence externe
+            // Controle manuel du joueur sans se soucier d'influence externe
             RigidBody::KinematicPositionBased,
             Collider::ball(0.5),
             Velocity::default(), // Assurez-vous que cette ligne est présente

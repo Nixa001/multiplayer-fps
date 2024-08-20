@@ -65,8 +65,7 @@ pub fn handle_connection(
     if transport.update(GAME_FPS, &mut client).is_err() {
         warn!("Server is unavailable");
         client.disconnect_due_to_transport();
-        // TODO: Implement server shutdown case logic here
-        return;
+        std::process::exit(1);
     }
 
     if client.is_connected() {

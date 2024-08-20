@@ -15,3 +15,10 @@ pub struct Player {
     pub id: u8,
     pub position: Position,
 }
+
+impl Player {
+    pub fn new(name: String, id: u8, position: Position) -> Self {
+        Self { name, id, position }
+    }
+    
+}
