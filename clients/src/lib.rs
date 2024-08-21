@@ -1,18 +1,15 @@
-use bevy::log::{error, info, warn};
+use bevy::log::{ error, info, warn };
 use bevy::prelude::ResMut;
 use bevy_renet::renet::transport::ClientAuthentication;
-use bevy_renet::renet::{ConnectionConfig, DefaultChannel, RenetClient};
+use bevy_renet::renet::{ ConnectionConfig, DefaultChannel, RenetClient };
 use bevy_renet::{
-    renet::transport::NetcodeClientTransport, transport::NetcodeClientPlugin, RenetClientPlugin,
+    renet::transport::NetcodeClientTransport,
+    transport::NetcodeClientPlugin,
+    RenetClientPlugin,
 };
-use bincode::{deserialize, serialize};
-use std::{
-    io::{self, Write},
-    net::{SocketAddr, UdpSocket},
-    thread::sleep,
-    time::SystemTime,
-};
-use store::{GameEvent, GAME_FPS, PROTOCOL_ID};
+use bincode::{ deserialize, serialize };
+use std::{ io::{ self, Write }, net::{ SocketAddr, UdpSocket }, thread::sleep, time::SystemTime };
+use store::{ GameEvent, GAME_FPS, PROTOCOL_ID };
 
 pub fn get_input(prompt: &str) -> String {
     print!("{}", prompt);
@@ -24,12 +21,10 @@ pub fn get_input(prompt: &str) -> String {
 
 pub fn setup_networking(
     server_addr: &SocketAddr,
-    username: &str,
+    username: &str
 ) -> (RenetClient, NetcodeClientTransport) {
     let client = RenetClient::new(ConnectionConfig::default());
-    let current_time = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap();
+    let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
     let client_id = current_time.as_millis() as u64;
 
     let mut user_data = [0u8; 256];
@@ -51,15 +46,16 @@ pub fn setup_networking(
         std::process::exit(1);
     });
 
-    let transport = NetcodeClientTransport::new(current_time, authentication, socket)
-        .expect("Failed to create transport");
+    let transport = NetcodeClientTransport::new(current_time, authentication, socket).expect(
+        "Failed to create transport"
+    );
 
     (client, transport)
 }
 
 pub fn handle_connection(
     mut client: ResMut<RenetClient>,
-    mut transport: ResMut<NetcodeClientTransport>,
+    mut transport: ResMut<NetcodeClientTransport>
 ) {
     client.update(GAME_FPS);
     if transport.update(GAME_FPS, &mut client).is_err() {
@@ -74,16 +70,40 @@ pub fn handle_connection(
         // client.send_message(DefaultChannel::ReliableOrdered, serialize(&event).unwrap());
     }
 
-    transport
-        .send_packets(&mut client)
-        .expect("Error while sending packets to server");
+    transport.send_packets(&mut client).expect("Error while sending packets to server");
     sleep(GAME_FPS);
 }
 
 pub fn handle_server_messages(client: &mut ResMut<RenetClient>) {
     while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
         if let Ok(event) = deserialize::<GameEvent>(&message) {
-            info!("Event from server: {:?}", event);
+            match event {
+                GameEvent::Spawn { player_id, position, lvl } => {
+                    info!(
+                        "i am player [{}] located at \"{}°-{}°-{}°\" on level: {}",
+                        player_id,
+                        position.x,
+                        position.y,
+                        position.z,
+                        lvl
+                    );
+                }
+                GameEvent::PlayerJoined { player_id, name, position, .. } => {
+                    // ! implement logic here
+                    info!(
+                        "{} [{}] joined the party and is located at \"{}°-{}°-{}°\" ",
+                        name,
+                        player_id,
+                        position.x,
+                        position.y,
+                        position.z
+                    );
+                }
+                // ! do the same for other events
+                _ => {
+                    println!("received event from server => {:?}", event);
+                }
+            }
             // Handle server events here
         }
     }

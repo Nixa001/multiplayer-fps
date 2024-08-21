@@ -32,6 +32,7 @@ fn main() {
         eprintln!("❌ Please provide a username");
         return;
     }
+    
     if username.len() > MAX_USERNAME_LENGTH {
         eprintln!(
             "❌ Username is too long (max {} characters)",
