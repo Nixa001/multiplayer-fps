@@ -4,9 +4,9 @@ use bevy::prelude::*;
 // use bevy::ecs::system::ParamSet;
 use bevy_rapier3d::dynamics::{LockedAxes, Velocity};
 use bevy_rapier3d::prelude::{Collider, GravityScale, RapierContext, RigidBody};
+
+use crate::playing_field::playing_field::{check_player_collision, Collision};
 // use bevy::sprite::collide_aabb::Collision;
-use crate::playing_field::playing_field::check_player_collision;
-use crate::playing_field::playing_field::Collision;
 // use bevy_rapier3d::prelude::RapierContext;
 
 #[derive(Component)]
@@ -73,7 +73,6 @@ pub fn move_player(
         let movement = direction * player.speed * 0.016;
 
         // Vérifier la collision avant de déplacer le joueur
-        
 
         // Rotation du joueur (et de l'arme)
         transform.rotate_y(-mouse_delta.x * 0.002);
@@ -87,10 +86,15 @@ pub fn move_player(
         //     *transform = camera_transform;
         //
         // }
-        if !check_player_collision(entity, &transform, movement, &rapier_context, &collider_query) {
+        if !check_player_collision(
+            entity,
+            &transform,
+            movement,
+            &rapier_context,
+            &collider_query,
+        ) {
             transform.translation += movement;
         }
-
 
         // Rotation verticale (limitée)
         // let max_vertical_angle = 0.4 ; // Limite de l'angle de rotation verticale (en radians)
@@ -121,16 +125,28 @@ pub fn grab_mouse(
         window.cursor.visible = true;
     }
 }
-pub fn setup_player_and_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn setup_player_and_camera(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    player_id: u8,
+    x: f32,
+    y: f32,
+    z: f32,
+) {
     // Spawn the player
     let player_handle: Handle<Scene> = asset_server.load("armes/arme1.glb#Scene0");
     // let player_handle:Handle<Scene> = asset_server.load("armes/Soldier.glb#Scene0");
     let player_entity = commands
         .spawn((
-            Player::new(1, "Player".to_string(), 5.0, Vec2::new(0.5, 0.5)),
+            Player::new(
+                player_id as i32,
+                "Player".to_string(),
+                5.0,
+                Vec2::new(0.5, 0.5),
+            ),
             SceneBundle {
                 scene: player_handle,
-                transform: Transform::from_xyz(-6.2, 0.2, -6.1).with_scale(Vec3::splat(0.4)),
+                transform: Transform::from_xyz(x, y, z).with_scale(Vec3::splat(0.4)),
                 ..default()
             },
             // Controls manuel du joueur sans se soucier d'influence externe
@@ -154,12 +170,12 @@ pub fn setup_player_and_camera(mut commands: Commands, asset_server: Res<AssetSe
     // commands.entity(player_entity).add_child(player_entity);
 
     // Spawn the camera and attach it to the weapon
-    commands.spawn((
-        Camera3dBundle {
+    commands
+        .spawn((Camera3dBundle {
             transform: Transform::from_xyz(0.0, 0.8, 0.0), // Adjust camera position relative to a weapon
             ..default()
-        },
-    )).set_parent(player_entity);
+        },))
+        .set_parent(player_entity);
 
     commands
         .spawn(PointLightBundle {

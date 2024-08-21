@@ -62,7 +62,7 @@ fn main() {
         .add_systems(
             Startup,
             (
-                player::player::setup_player_and_camera,
+                //player::player::setup_player_and_camera,
                 playing_field::playing_field::Fields::spawn_ground,
                 player_2d::player_2d::setup_minimap,
                 // playing_field::playing_field::Fields::spawn_object,
@@ -97,7 +97,7 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    playing_field::playing_field::create_maze(&mut commands, &mut meshes, &mut materials, "Map1"); // Charger le modèle
+   // Charger le modèle
     // let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_2.glb#Scene0");
     // // Spawner le modèle
     // commands.spawn((
@@ -215,51 +215,6 @@ fn update_minimap(
     }
 }
 
-pub fn mages(name: &str) -> Vec<Vec<u8>> {
-    if name == "Map1" {
-        vec![
-            vec![4, 4, 3, 3, 2, 4, 3, 4, 3, 3, 1],
-            vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
-            vec![1, 2, 4, 3, 3, 3, 2, 1, 3, 1, 1],
-            vec![4, 3, 3, 2, 3, 3, 1, 2, 1, 3, 1],
-            vec![1, 4, 3, 2, 4, 2, 4, 3, 3, 1, 1],
-            vec![4, 2, 4, 3, 4, 3, 2, 4, 2, 1, 1],
-            vec![1, 3, 2, 1, 1, 4, 3, 3, 1, 1, 1],
-            vec![1, 3, 4, 1, 1, 1, 4, 2, 1, 2, 1],
-            vec![1, 1, 2, 1, 4, 2, 1, 1, 4, 3, 1],
-            vec![1, 3, 3, 1, 2, 4, 2, 1, 2, 1, 1],
-            vec![3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 2],
-        ]
-    } else if name == "Map2" {
-       return vec![
-          vec![4, 4, 3, 3, 2, 3, 3, 4, 3, 2, 1],
-          vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
-          vec![1, 2, 4, 3, 3, 2, 2, 1, 3, 1, 1],
-          vec![4, 3, 3, 2, 3, 3, 1, 2, 1, 2, 1],
-          vec![1, 4, 3, 2, 4, 2, 4, 3, 2, 1, 1],
-          vec![4, 2, 4, 3, 4, 3, 2, 4, 2, 1, 1],
-          vec![1, 3, 2, 1, 1, 4, 3, 2, 1, 1, 1],
-          vec![1, 3, 4, 1, 1, 1, 4, 2, 1, 2, 1],
-          vec![1, 1, 2, 1, 2, 2, 1, 1, 4, 3, 1],
-          vec![1, 3, 2, 1, 2, 4, 2, 1, 2, 1, 1],
-          vec![3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 2],
-       ]
-    }else {
-       vec![
-          vec![4, 4, 3, 3, 2, 4, 4, 4, 3, 3, 1],
-          vec![1, 4, 1, 3, 3, 2, 1, 1, 3, 1, 4],
-          vec![4, 2, 4, 3, 4, 3, 2, 4, 3, 4, 1],
-          vec![4, 3, 4, 2, 3, 3, 1, 2, 4, 3, 1],
-          vec![1, 4, 4, 2, 4, 2, 4, 4, 3, 1, 1],
-          vec![4, 4, 4, 4, 4, 3, 4, 4, 2, 4, 1],
-          vec![4, 3, 4, 1, 1, 4, 3, 4, 1, 4, 1],
-          vec![1, 4, 4, 1, 4, 4, 4, 2, 4, 2, 1],
-          vec![4, 4, 2, 4, 4, 2, 1, 4, 4, 3, 1],
-          vec![4, 3, 3, 4, 2, 4, 2, 1, 2, 4, 1],
-          vec![4, 4, 4, 4, 4, 2, 4, 4, 4, 3, 2]
-       ]
-    }
-}
 
 // pub fn crate_mage(
 //     name : &str,

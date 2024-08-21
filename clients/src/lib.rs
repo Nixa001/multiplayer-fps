@@ -1,15 +1,22 @@
-use bevy::log::{ error, info, warn };
-use bevy::prelude::ResMut;
+use bevy::asset::{AssetServer, Assets};
+use bevy::log::{error, info, warn};
+use bevy::prelude::{Commands, Mesh, Res, ResMut};
 use bevy_renet::renet::transport::ClientAuthentication;
-use bevy_renet::renet::{ ConnectionConfig, DefaultChannel, RenetClient };
-use bevy_renet::{
-    renet::transport::NetcodeClientTransport,
-    transport::NetcodeClientPlugin,
-    RenetClientPlugin,
+use bevy_renet::renet::transport::NetcodeClientTransport;
+use bevy_renet::renet::{ConnectionConfig, DefaultChannel, RenetClient};
+use bincode::deserialize;
+use std::{
+    io::{self, Write},
+    net::{SocketAddr, UdpSocket},
+    thread::sleep,
+    time::SystemTime,
 };
-use bincode::{ deserialize, serialize };
-use std::{ io::{ self, Write }, net::{ SocketAddr, UdpSocket }, thread::sleep, time::SystemTime };
-use store::{ GameEvent, GAME_FPS, PROTOCOL_ID };
+use bevy::pbr::StandardMaterial;
+use store::{GameEvent, GAME_FPS, PROTOCOL_ID};
+mod player;
+mod player_2d;
+mod playing_field;
+use player::player::setup_player_and_camera;
 
 pub fn get_input(prompt: &str) -> String {
     print!("{}", prompt);
@@ -21,10 +28,12 @@ pub fn get_input(prompt: &str) -> String {
 
 pub fn setup_networking(
     server_addr: &SocketAddr,
-    username: &str
+    username: &str,
 ) -> (RenetClient, NetcodeClientTransport) {
     let client = RenetClient::new(ConnectionConfig::default());
-    let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
+    let current_time = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap();
     let client_id = current_time.as_millis() as u64;
 
     let mut user_data = [0u8; 256];
@@ -46,16 +55,19 @@ pub fn setup_networking(
         std::process::exit(1);
     });
 
-    let transport = NetcodeClientTransport::new(current_time, authentication, socket).expect(
-        "Failed to create transport"
-    );
+    let transport = NetcodeClientTransport::new(current_time, authentication, socket)
+        .expect("Failed to create transport");
 
     (client, transport)
 }
 
 pub fn handle_connection(
     mut client: ResMut<RenetClient>,
-    mut transport: ResMut<NetcodeClientTransport>
+    mut transport: ResMut<NetcodeClientTransport>,
+    commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
 ) {
     client.update(GAME_FPS);
     if transport.update(GAME_FPS, &mut client).is_err() {
@@ -65,38 +77,57 @@ pub fn handle_connection(
     }
 
     if client.is_connected() {
-        handle_server_messages(&mut client);
+        handle_server_messages(&mut client, commands, &asset_server,&mut meshes,
+                               &mut materials);
         // Example of sending a message to the server:
         // client.send_message(DefaultChannel::ReliableOrdered, serialize(&event).unwrap());
     }
 
-    transport.send_packets(&mut client).expect("Error while sending packets to server");
+    transport
+        .send_packets(&mut client)
+        .expect("Error while sending packets to server");
     sleep(GAME_FPS);
 }
 
-pub fn handle_server_messages(client: &mut ResMut<RenetClient>) {
+pub fn handle_server_messages(
+    client: &mut ResMut<RenetClient>,
+    mut commands: Commands,
+    asset_server: &Res<AssetServer>,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+) {
     while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
         if let Ok(event) = deserialize::<GameEvent>(&message) {
             match event {
-                GameEvent::Spawn { player_id, position, lvl } => {
+                GameEvent::Spawn {
+                    player_id,
+                    position,
+                    lvl,
+                } => {
                     info!(
-                        "i am player [{}] located at \"{}°-{}°-{}°\" on level: {}",
+                        "i am player [{}] located at \"{}°- {}°- {}°\" on level: {}",
+                        player_id, position.x, position.y, position.z, lvl
+                    );
+                    setup_player_and_camera(
+                        &mut commands,
+                        asset_server,
                         player_id,
                         position.x,
                         position.y,
                         position.z,
-                        lvl
                     );
+                    playing_field::playing_field::create_maze(&mut commands, meshes, materials, format!("Map{}", lvl).as_str());
                 }
-                GameEvent::PlayerJoined { player_id, name, position, .. } => {
+                GameEvent::PlayerJoined {
+                    player_id,
+                    name,
+                    position,
+                    ..
+                } => {
                     // ! implement logic here
                     info!(
-                        "{} [{}] joined the party and is located at \"{}°-{}°-{}°\" ",
-                        name,
-                        player_id,
-                        position.x,
-                        position.y,
-                        position.z
+                        "{} [{}] joined the party and is located at \"{}°- {}°- {}°\" ",
+                        name, player_id, position.x, position.y, position.z
                     );
                 }
                 // ! do the same for other events
