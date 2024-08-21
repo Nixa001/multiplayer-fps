@@ -222,13 +222,12 @@ fn spawn_minimap_wall(
 ) {
     let minimap_x = (x + 14.0) * (180.0 / 28.0);
     let minimap_z = (z + 14.0) * (180.0 / 28.0);
-
     if vertical {
         commands.spawn((
             NodeBundle {
                 style: Style {
                     position_type: PositionType::Absolute,
-                    right: Val::Px(minimap_x + 10.0),
+                    left: Val::Px(minimap_x + 10.0),
                     top: Val::Px(minimap_z + 10.0),
                     width: Val::Px(2.0),
                     height: Val::Px(14.0), // (180/28) * 2
@@ -240,13 +239,12 @@ fn spawn_minimap_wall(
             MinimapElement,
         ));
     }
-
     if horizontal {
         commands.spawn((
             NodeBundle {
                 style: Style {
                     position_type: PositionType::Absolute,
-                    right: Val::Px(minimap_x + 10.0),
+                    left: Val::Px(minimap_x + 10.0),
                     top: Val::Px(minimap_z + 10.0),
                     width: Val::Px(14.0), // (180/28) * 2
                     height: Val::Px(2.0),
