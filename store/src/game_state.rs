@@ -62,7 +62,7 @@ impl GameState {
 
             GameEvent::PlayerJoined { player_id, .. } => {
                 // Check that there isn't another player with the same id
-                if self.players.contains_key(player_id) {
+                if self.players.contains_key(player_id) || self.stage != Stage::PreGame {
                     return false;
                 }
             }
@@ -83,6 +83,7 @@ impl GameState {
                     return false;
                 }
             }
+            _ => unreachable!(),
         }
         true
     }
@@ -98,7 +99,6 @@ impl GameState {
             }
 
             GameEvent::PlayerJoined { player_id, name, position, client_id } => {
-                // ! updated and define position here
                 self.players.insert(*player_id, Player {
                     name: name.to_string(),
                     id: *player_id,

@@ -2,12 +2,9 @@ use bevy::log::{ error, info, warn };
 use bevy::prelude::ResMut;
 use bevy_renet::renet::transport::ClientAuthentication;
 use bevy_renet::renet::{ ConnectionConfig, DefaultChannel, RenetClient };
-use bevy_renet::{
-    renet::transport::NetcodeClientTransport,
-    transport::NetcodeClientPlugin,
-    RenetClientPlugin,
-};
-use bincode::{ deserialize, serialize };
+use bevy_renet::renet::transport::NetcodeClientTransport;
+use bincode::deserialize;
+use std::process::exit;
 use std::{ io::{ self, Write }, net::{ SocketAddr, UdpSocket }, thread::sleep, time::SystemTime };
 use store::{ GameEvent, GAME_FPS, PROTOCOL_ID };
 
@@ -99,6 +96,20 @@ pub fn handle_server_messages(client: &mut ResMut<RenetClient>) {
                         position.z
                     );
                 }
+
+                GameEvent::Timer { duration } => {
+                    info!("🕗 timer tickling => {}", duration);
+                }
+
+                GameEvent::BeginGame => {
+                    info!("Game has begun");
+                }
+
+                GameEvent::AccessForbidden => {
+                    info!("❌ Oops ! ongoing game...");
+                    exit(1);
+                }
+
                 // ! do the same for other events
                 _ => {
                     println!("received event from server => {:?}", event);

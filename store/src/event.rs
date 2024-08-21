@@ -5,11 +5,12 @@ use serde::{ Deserialize, Serialize };
 pub enum GameEvent {
     BeginGame,
     EndGame,
+    AccessForbidden,
     PlayerJoined {
         player_id: u8,
         name: String,
         position: Position,
-        client_id: u64
+        client_id: u64,
     },
     PlayerDisconnected {
         player_id: u8,
@@ -22,5 +23,8 @@ pub enum GameEvent {
         player_id: u8,
         position: Position,
         lvl: usize,
+    },
+    Timer {
+        duration: u8,
     },
 }
