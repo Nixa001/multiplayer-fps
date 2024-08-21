@@ -5,10 +5,17 @@
   </component>
   <component name="CargoProjects">
     <cargoProject FILE="$PROJECT_DIR$/clients/Cargo.toml" />
-    <cargoProject FILE="$PROJECT_DIR$/client/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9f185197-bf52-4ec3-adf2-3d2c29c07a14" name="Changes" comment="feat(client): implement basic client networking&#10;&#10;Adds a basic client implementation that allows a client to connect to a server and receive messages.&#10;&#10;Includes:&#10;- Connection setup with username and authentication&#10;- Client update loop for sending and receiving messages&#10;- Message handling with basic logging and example for further development&#10;- Input handling for entering server IP and username&#10;- Integration with the RenetClientPlugin for networking&#10;- Integration with the store crate for shared game state and events&#10;- Basic UI with window setup for future development" />
+    <list default="true" id="9f185197-bf52-4ec3-adf2-3d2c29c07a14" name="Changes" comment="test">
+      <change afterPath="$PROJECT_DIR$/clients/src/player_2D/mod.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clients/src/player_2D/player_2D.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clients/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clients/src/player/fire.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/player/fire.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clients/src/player/player.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/player/player.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clients/src/playing_field/playing_field.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/playing_field/playing_field.rs" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -22,6 +29,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RESET_MODE" value="MIXED" />
   </component>

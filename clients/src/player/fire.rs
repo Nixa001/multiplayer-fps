@@ -1,10 +1,7 @@
 use crate::player::player::Player;
 use crate::playing_field::playing_field::Collision;
-use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
-use bevy::render::primitives::Sphere;
 use bevy_rapier3d::prelude::*;
-use bevy_rapier3d::prelude::{Collider, RigidBody};
 
 #[derive(Component)]
 pub struct Projectile {
@@ -33,7 +30,7 @@ pub fn fire_laser(
     if keyboard.just_pressed(KeyCode::Space) {
         if let Ok((transform, _player)) = query.get_single() {
             let forward = transform.forward();
-            let spawn_point = transform.translation + forward * 0.5 + Vec3::new(0.0, 0.0, -0.0);
+            let spawn_point = transform.translation + forward * 0.5 + Vec3::new(0.0, 0.0, 0.0);
 
             let laser_length = 3.0; // Longueur maximale du laser
             let laser_width = 0.09; // Largeur du laser
@@ -74,6 +71,7 @@ pub fn update_lasers(
     for (entity, mut laser, mut transform) in laser_query.iter_mut() {
         laser.lifetime.tick(time.delta());
 
+        // Si la durée de vie du
         if laser.lifetime.finished() {
             commands.entity(entity).despawn();
             continue;
@@ -109,7 +107,7 @@ pub fn update_lasers(
 //             let forward = transform.forward();
 //             let spawn_point = transform.translation + forward * 1.0 + Vec3::new(0.0, 0.1, 0.0);
 //
-//             let projectile_handle: Handle<Scene> = asset_server.load("projectil/bullet.glb#Scene0");
+//             let projectile_handle: Handle<Scene> = asset_server.load("projectile/bullet.glb#Scene0");
 //
 //             let projectile_velocity = player_velocity.linvel + forward * 20.0;
 //

@@ -73,18 +73,36 @@ pub fn move_player(
         let movement = direction * player.speed * 0.016;
 
         // Vérifier la collision avant de déplacer le joueur
-        if !check_player_collision(
-            entity,
-            &transform,
-            movement,
-            &rapier_context,
-            &collider_query,
-        ) {
-            transform.translation += movement;
-        }
+        
 
         // Rotation du joueur (et de l'arme)
         transform.rotate_y(-mouse_delta.x * 0.002);
+        // // Rotation verticale (limitée)
+        // let mut camera_transform = transform.clone();
+        // camera_transform.rotate_local_x(-mouse_delta.y * 0.002);
+        // //
+        // // // Limiter la rotation verticale
+        // let up = camera_transform.up();
+        // if up.y > 0.999 && up.y < 0.995 {
+        //     *transform = camera_transform;
+        //
+        // }
+        if !check_player_collision(entity, &transform, movement, &rapier_context, &collider_query) {
+            transform.translation += movement;
+        }
+
+
+        // Rotation verticale (limitée)
+        // let max_vertical_angle = 0.4;  // Limite de l'angle de rotation verticale (en radians)
+        // let rotation_x = -mouse_delta.y * 0.002;
+        // let new_x_rotation = transform.rotation.to_euler(EulerRot::YXZ).0 + rotation_x;
+        //
+        // if new_x_rotation.abs() <= max_vertical_angle {
+        //     transform.rotate_local_x(rotation_x);
+        // }
+        //
+        // // Empêcher tout mouvement vertical involontaire
+        // transform.translation.y = 0.2;  // Assurez-vous que le joueur reste au sol
     }
 }
 
@@ -136,12 +154,12 @@ pub fn setup_player_and_camera(mut commands: Commands, asset_server: Res<AssetSe
     // commands.entity(player_entity).add_child(player_entity);
 
     // Spawn the camera and attach it to the weapon
-    // commands.spawn((
-    //     Camera3dBundle {
-    //         transform: Transform::from_xyz(0.0, 0.8, 0.0), // Adjust camera position relative to weapon
-    //         ..default()
-    //     },
-    // )).set_parent(player_entity);
+    commands.spawn((
+        Camera3dBundle {
+            transform: Transform::from_xyz(0.0, 0.8, 0.0), // Adjust camera position relative to weapon
+            ..default()
+        },
+    )).set_parent(player_entity);
 
     commands
         .spawn(PointLightBundle {

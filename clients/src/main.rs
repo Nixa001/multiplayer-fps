@@ -9,6 +9,7 @@ use std::net::SocketAddr;
 // use bevy::render::debug::DebugLines;
 // use bevy_gltf::Gltf;
 mod player;
+mod player_2d;
 mod playing_field;
 
 // #[derive(Component)]
@@ -63,6 +64,7 @@ fn main() {
             (
                 player::player::setup_player_and_camera,
                 playing_field::playing_field::Fields::spawn_ground,
+                player_2d::player_2d::setup_minimap,
                 // playing_field::playing_field::Fields::spawn_object,
                 // playing_field::playing_field::Fields::spawn_player,
                 setup,
@@ -79,6 +81,8 @@ fn main() {
                 player::player::grab_mouse,
                 player::fire::fire_laser,
                 player::fire::update_lasers,
+                player::fire::handle_projectile_collisions,
+                player_2d::player_2d::update_minimap,
                 // playing_field::playing_field::handle_collisions,
                 // handle_gltf_wall_collisions,
                 // debug_draw_system,
@@ -106,10 +110,10 @@ fn setup(
     // ));
     
     // Caméra
-    commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(10.0, 45.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..default()
-    });
+    //commands.spawn(Camera3dBundle {
+    //    transform: Transform::from_xyz(10.0, 45.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
+    //    ..default()
+    //});
     // Lumière
     commands.spawn(PointLightBundle {
         point_light: PointLight {
@@ -213,7 +217,7 @@ fn update_minimap(
 
 pub fn mages(name: &str) -> Vec<Vec<u8>> {
     if name == "Map1" {
-        return vec![
+        vec![
             vec![4, 4, 3, 3, 2, 4, 3, 4, 3, 3, 1],
             vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
             vec![1, 2, 4, 3, 3, 3, 2, 1, 3, 1, 1],
@@ -225,11 +229,36 @@ pub fn mages(name: &str) -> Vec<Vec<u8>> {
             vec![1, 1, 2, 1, 4, 2, 1, 1, 4, 3, 1],
             vec![1, 3, 3, 1, 2, 4, 2, 1, 2, 1, 1],
             vec![3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 2],
-        ];
+        ]
     } else if name == "Map2" {
-        return vec![vec![]];
+       return vec![
+          vec![4, 4, 3, 3, 2, 3, 3, 4, 3, 2, 1],
+          vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
+          vec![1, 2, 4, 3, 3, 2, 2, 1, 3, 1, 1],
+          vec![4, 3, 3, 2, 3, 3, 1, 2, 1, 2, 1],
+          vec![1, 4, 3, 2, 4, 2, 4, 3, 2, 1, 1],
+          vec![4, 2, 4, 3, 4, 3, 2, 4, 2, 1, 1],
+          vec![1, 3, 2, 1, 1, 4, 3, 2, 1, 1, 1],
+          vec![1, 3, 4, 1, 1, 1, 4, 2, 1, 2, 1],
+          vec![1, 1, 2, 1, 2, 2, 1, 1, 4, 3, 1],
+          vec![1, 3, 2, 1, 2, 4, 2, 1, 2, 1, 1],
+          vec![3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 2],
+       ]
+    }else {
+       vec![
+          vec![4, 4, 3, 3, 2, 4, 4, 4, 3, 3, 1],
+          vec![1, 4, 1, 3, 3, 2, 1, 1, 3, 1, 4],
+          vec![4, 2, 4, 3, 4, 3, 2, 4, 3, 4, 1],
+          vec![4, 3, 4, 2, 3, 3, 1, 2, 4, 3, 1],
+          vec![1, 4, 4, 2, 4, 2, 4, 4, 3, 1, 1],
+          vec![4, 4, 4, 4, 4, 3, 4, 4, 2, 4, 1],
+          vec![4, 3, 4, 1, 1, 4, 3, 4, 1, 4, 1],
+          vec![1, 4, 4, 1, 4, 4, 4, 2, 4, 2, 1],
+          vec![4, 4, 2, 4, 4, 2, 1, 4, 4, 3, 1],
+          vec![4, 3, 3, 4, 2, 4, 2, 1, 2, 4, 1],
+          vec![4, 4, 4, 4, 4, 2, 4, 4, 4, 3, 2]
+       ]
     }
-    vec![vec![]]
 }
 
 // pub fn crate_mage(
