@@ -233,7 +233,7 @@ fn spawn_minimap_wall(
                     height: Val::Px(14.0), // (180/28) * 2
                     ..default()
                 },
-                background_color: Color::WHITE.into(),
+                background_color: Color::GREEN.into(),
                 ..default()
             },
             MinimapElement,
@@ -250,7 +250,7 @@ fn spawn_minimap_wall(
                     height: Val::Px(2.0),
                     ..default()
                 },
-                background_color: Color::WHITE.into(),
+                background_color: Color::GREEN.into(),
                 ..default()
             },
             MinimapElement,

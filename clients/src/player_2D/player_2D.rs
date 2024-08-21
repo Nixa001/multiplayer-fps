@@ -38,8 +38,8 @@ pub fn setup_minimap(
         NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
-                width: Val::Px(5.0),
-                height: Val::Px(5.0),
+                width: Val::Px(4.0),
+                height: Val::Px(4.0),
                 ..default()
             },
             background_color: Color::RED.into(),
@@ -63,8 +63,8 @@ pub fn update_minimap(
             let minimap_z = (player_transform.translation.z + 14.0) * (180.0 / 28.0);
 
             // Mettre à jour la position du joueur sur la minimap
-            minimap_style.right = Val::Px(window.width() - minimap_x - 10.0);
-            minimap_style.top = Val::Px(minimap_z + 10.0);
+            minimap_style.right = Val::Px(window.width() - minimap_x - 14.0);
+            minimap_style.top = Val::Px(minimap_z + 6.0);
         }
     }
 }
