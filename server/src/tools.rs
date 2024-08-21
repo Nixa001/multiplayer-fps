@@ -1,6 +1,6 @@
 use renet::transport::NETCODE_USER_DATA_BYTES;
 use std::io::*;
-/// Utility function for extracting a players name from renet user data
+/// Utility function for extracting a player name from renet user data
 
 pub fn name_from_user_data(user_data: &[u8; NETCODE_USER_DATA_BYTES]) -> String {
     let mut buffer = [0u8; 8];
@@ -21,7 +21,7 @@ pub fn get_input(prompt: &str) -> String {
 pub fn get_level() -> usize {
     println!("######### MULTIPLAYER-FPS: MAZE WARS #########");
     println!("Welcome warrior !");
-    let message = "Pick a level:\n1. lvl 1 (Easy)\n2. lvl2: (Medium)\n3. lvl3 (Hard)\n$";
+    let message = "Pick a level:\n1. lvl 1 (Easy)\n2. lvl 2 (Medium)\n3. lvl 3 (Hard)\n$";
     let mut choice = 0;
     let mut ok = false;
     while !ok {

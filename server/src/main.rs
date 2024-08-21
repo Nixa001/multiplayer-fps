@@ -10,7 +10,7 @@ use server::*;
 use local_ip_address::local_ip;
 
 fn main() {
-    let ip_adress = match local_ip() {
+    let ip_address = match local_ip() {
         Ok(ip) => ip.to_string(), // Convertit l'adresse IP en chaîne de caractères
         Err(e) => {
             eprintln!("❌ Error while retrieving local Ip address: {}", e);
@@ -19,7 +19,7 @@ fn main() {
     };
 
     let port = 8080;
-    let ip_with_port = format!("{}:{}", ip_adress, port);
+    let ip_with_port = format!("{}:{}", ip_address, port);
     let server_addr: SocketAddr = ip_with_port.parse().unwrap();
     let socket: UdpSocket = UdpSocket::bind(server_addr).unwrap();
 
@@ -79,7 +79,7 @@ fn main() {
                     if game_state.players.len() == PLAYER_LIMIT {
                         let event = GameEvent::BeginGame;
                         game_state.consume(&event);
-                        server.broadcast_message(0, bincode::serialize(&event).unwrap());
+                        server.broadcast_message(0, serialize(&event).unwrap());
                         println!("🟩 The game has begun");
                     }
                     break;
@@ -97,7 +97,7 @@ fn main() {
                     if game_state.players.len() == 1 && game_state.stage == Stage::InGame {
                         let event = GameEvent::EndGame;
                         game_state.consume(&event);
-                        server.broadcast_message(0, bincode::serialize(&event).unwrap());
+                        server.broadcast_message(0, serialize(&event).unwrap());
                         println!("🟥 Game has ended");
                     }
                 }
@@ -116,7 +116,7 @@ fn main() {
                         // ^Determine if a player has won the game at each request
                         if let Some(winner) = game_state.determine_winner() {
                             let event = GameEvent::EndGame;
-                            server.broadcast_message(0, bincode::serialize(&event).unwrap());
+                            server.broadcast_message(0, serialize(&event).unwrap());
                             println!("[INFO]: player with id [{}] won !", winner);
                         }
                     } else {

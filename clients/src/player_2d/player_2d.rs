@@ -11,10 +11,10 @@ pub struct MinimapPlayer;
 
 pub fn setup_minimap(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    _asset_server: Res<AssetServer>,
     window: Query<&Window, With<PrimaryWindow>>,
 ) {
-    let window = window.single();
+    let _window = window.single();
 
     // Minimap
     commands.spawn((

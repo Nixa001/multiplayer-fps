@@ -53,7 +53,7 @@ pub fn move_player(
         mouse_delta += ev.delta;
     }
 
-    if let Ok((entity, player, mut transform, mut velocity)) = query.get_single_mut() {
+    if let Ok((entity, player, mut transform, _velocity)) = query.get_single_mut() {
         let mut direction = Vec3::ZERO;
         if keyboard.pressed(KeyCode::W) {
             direction += transform.forward();
@@ -93,16 +93,16 @@ pub fn move_player(
 
 
         // Rotation verticale (limitée)
-        // let max_vertical_angle = 0.4;  // Limite de l'angle de rotation verticale (en radians)
-        // let rotation_x = -mouse_delta.y * 0.002;
-        // let new_x_rotation = transform.rotation.to_euler(EulerRot::YXZ).0 + rotation_x;
+        // let max_vertical_angle = 0.4 ; // Limite de l'angle de rotation verticale (en radians)
+        // let rotation_x = -mouse_delta.y * 0.002 ;
+        // let new_x_rotation = transform.rotation.to_euler(EulerRot::YXZ).0 + rotation_x ;
         //
         // if new_x_rotation.abs() <= max_vertical_angle {
         //     transform.rotate_local_x(rotation_x);
         // }
         //
         // // Empêcher tout mouvement vertical involontaire
-        // transform.translation.y = 0.2;  // Assurez-vous que le joueur reste au sol
+        // transform.translation.y = 0.2; // Assurez-vous que le joueur reste au sol
     }
 }
 
@@ -133,7 +133,7 @@ pub fn setup_player_and_camera(mut commands: Commands, asset_server: Res<AssetSe
                 transform: Transform::from_xyz(-6.2, 0.2, -6.1).with_scale(Vec3::splat(0.4)),
                 ..default()
             },
-            // Controle manuel du joueur sans se soucier d'influence externe
+            // Controls manuel du joueur sans se soucier d'influence externe
             RigidBody::KinematicPositionBased,
             Collider::ball(0.5),
             Velocity::default(), // Assurez-vous que cette ligne est présente
@@ -156,7 +156,7 @@ pub fn setup_player_and_camera(mut commands: Commands, asset_server: Res<AssetSe
     // Spawn the camera and attach it to the weapon
     commands.spawn((
         Camera3dBundle {
-            transform: Transform::from_xyz(0.0, 0.8, 0.0), // Adjust camera position relative to weapon
+            transform: Transform::from_xyz(0.0, 0.8, 0.0), // Adjust camera position relative to a weapon
             ..default()
         },
     )).set_parent(player_entity);

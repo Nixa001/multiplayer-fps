@@ -286,10 +286,10 @@ pub fn check_player_collision(
     weapon_transform: &Transform,
     direction: Vec3,
     rapier_context: &RapierContext,
-    collider_query: &Query<Entity, (With<Collision>, Without<Player>)>,
+    _collider_query: &Query<Entity, (With<Collision>, Without<Player>)>,
 ) -> bool {
     // Position future du joueur
-    let future_position = weapon_transform.translation + direction;
+    let _future_position = weapon_transform.translation + direction;
 
     // Lancer un rayon pour détecter une collision
     let ray_origin = weapon_transform.translation;
