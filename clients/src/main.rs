@@ -94,8 +94,6 @@ fn main() {
 fn setup(
     mut commands: Commands,
     _asset_server: Res<AssetServer>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
    // Charger le modèle
     // let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_2.glb#Scene0");
