@@ -82,7 +82,7 @@ pub fn move_player(
             transform.translation += movement;
         }
 
-
+        println!("Player position: x={:?}, y={:?}, z={:?}", transform.translation.x, transform.translation.y, transform.translation.z );
         // Rotation verticale (limitée)
         // let max_vertical_angle = 0.4;  // Limite de l'angle de rotation verticale (en radians)
         // let rotation_x = -mouse_delta.y * 0.002;
