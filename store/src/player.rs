@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::{ Deserialize, Serialize };
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct Position {
@@ -13,12 +13,12 @@ pub struct Position {
 pub struct Player {
     pub name: String,
     pub id: u8,
+    pub client_id: u64,
     pub position: Position,
 }
 
 impl Player {
-    pub fn new(name: String, id: u8, position: Position) -> Self {
-        Self { name, id, position }
+    pub fn new(name: String, id: u8, position: Position, client_id: u64) -> Self {
+        Self { name, id, position, client_id }
     }
-    
 }

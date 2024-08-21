@@ -32,10 +32,11 @@ fn main() {
         authentication: ServerAuthentication::Unsecure,
     };
     let mut transport = NetcodeServerTransport::new(server_config, socket).unwrap();
+    let mut game_state = GameState::default();
+    let lvl = get_level();
+    game_state.set_lvl(lvl);
 
     println!("🕹 maze server listening on {} 📡", server_addr);
-
-    let mut game_state = GameState::default();
 
     loop {
         // Receive new messages and update clients at desired fps
@@ -47,18 +48,26 @@ fn main() {
                 ServerEvent::ClientConnected { client_id } => {
                     // * ------ connection logic
                     let player_id = game_state.generate_id();
+                    let spawn_coord = game_state.random_spawn();
                     let event = GameEvent::PlayerJoined {
                         player_id,
                         name: "player".to_string(),
+                        position: spawn_coord.clone(),
+                        client_id: client_id.raw(),
                     };
-                    println!("🟢 [{}] joined the server.", client_id.raw());
+                    println!("🟢 [{}] joined the server.", player_id);
                     server.broadcast_message_except(
                         client_id,
                         DefaultChannel::ReliableOrdered,
                         serialize(&event).expect("error while serializing event")
                     );
 
-                    let id_event = GameEvent::SetId { player_id };
+                    let id_event = GameEvent::Spawn {
+                        player_id,
+                        position: spawn_coord.clone(),
+                        lvl: game_state.lvl,
+                    };
+
                     server.send_message(
                         client_id,
                         DefaultChannel::ReliableOrdered,
@@ -78,11 +87,12 @@ fn main() {
 
                 ServerEvent::ClientDisconnected { client_id, reason } => {
                     // * -------- disconnection logic
+                    let player_id = game_state.get_player_id(client_id.raw());
                     // First consume a disconnect event
-                    let event = GameEvent::PlayerDisconnected { player_id: client_id.raw() as u8 };
+                    let event = GameEvent::PlayerDisconnected { player_id };
                     game_state.consume(&event);
                     server.broadcast_message(0, serialize(&event).unwrap());
-                    println!("🔻 Player [{}] disconnected due to \"{}\"", client_id.raw(), reason);
+                    println!("🔻 Player [{}] disconnected due to \"{}\"", player_id, reason);
 
                     if game_state.players.len() == 1 && game_state.stage == Stage::InGame {
                         let event = GameEvent::EndGame;

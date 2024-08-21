@@ -1,5 +1,6 @@
 use crate::*;
-use serde::{Deserialize, Serialize};
+use rand::*;
+use serde::{ Deserialize, Serialize };
 use std::collections::HashMap;
 
 /// The different states a game can be in. (not to be confused with the entire "GameState")
@@ -12,7 +13,9 @@ pub enum Stage {
 /// The reasons why a game could end
 #[derive(Debug, Clone, Copy, Serialize, PartialEq, Deserialize)]
 pub enum EndGameReason {
-    PlayerWon { winner: u64 },
+    PlayerWon {
+        winner: u64,
+    },
 }
 
 /// A GameState object that is able to keep track of game
@@ -22,6 +25,8 @@ pub struct GameState {
     pub players: HashMap<u8, Player>,
     pub history: Vec<GameEvent>,
     pub id_counter: u8,
+    pub lvl: usize,
+    pub spawn_positions: Vec<Position>,
 }
 
 impl Default for GameState {
@@ -31,6 +36,8 @@ impl Default for GameState {
             players: HashMap::new(),
             history: Vec::new(),
             id_counter: 0,
+            lvl: 1,
+            spawn_positions: Vec::new(),
         }
     }
 }
@@ -53,7 +60,7 @@ impl GameState {
                 }
             }
 
-            GameEvent::PlayerJoined { player_id, name: _ } => {
+            GameEvent::PlayerJoined { player_id, .. } => {
                 // Check that there isn't another player with the same id
                 if self.players.contains_key(player_id) {
                     return false;
@@ -71,7 +78,7 @@ impl GameState {
                     return false;
                 }
             }
-            GameEvent::SetId { player_id: _ } => {
+            GameEvent::Spawn { .. } => {
                 if self.stage != Stage::PreGame {
                     return false;
                 }
@@ -90,16 +97,14 @@ impl GameState {
                 self.stage = Stage::Ended;
             }
 
-            GameEvent::PlayerJoined { player_id, name } => {
+            GameEvent::PlayerJoined { player_id, name, position, client_id } => {
                 // ! updated and define position here
-                self.players.insert(
-                    *player_id,
-                    Player {
-                        name: name.to_string(),
-                        id: *player_id,
-                        position: Position::default(),
-                    },
-                );
+                self.players.insert(*player_id, Player {
+                    name: name.to_string(),
+                    id: *player_id,
+                    position: position.clone(),
+                    client_id: client_id.clone(),
+                });
             }
 
             GameEvent::PlayerDisconnected { player_id } => {
@@ -129,6 +134,26 @@ impl GameState {
     pub fn generate_id(&mut self) -> u8 {
         let id = self.id_counter;
         self.id_counter += 1;
+        id
+    }
+    pub fn set_lvl(&mut self, lvl: usize) {
+        self.lvl = lvl;
+        self.spawn_positions = get_spawn_positions(lvl);
+    }
+
+    pub fn random_spawn(&mut self) -> Position {
+        let mut rng = thread_rng();
+        let gen = rng.gen_range(0..self.spawn_positions.len());
+        self.spawn_positions.remove(gen)
+    }
+    pub fn get_player_id(&self, client_id: u64) -> u8 {
+        let mut id: u8 = 0;
+        for (k, v) in &self.players {
+            if v.client_id.eq(&client_id) {
+                id = k.clone();
+                break;
+            }
+        }
         id
     }
 }
