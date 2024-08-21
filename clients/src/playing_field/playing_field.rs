@@ -257,7 +257,7 @@ fn spawn_minimap_wall(
 }
 
 
-pub fn get_mazes(name: &str) -> Vec<Vec<u8>> {
+fn get_mazes(name: &str) -> Vec<Vec<u8>> {
     if name == "Map1" {
         vec![
             vec![4, 4, 3, 3, 2, 4, 3, 4, 3, 3, 1],
@@ -273,7 +273,7 @@ pub fn get_mazes(name: &str) -> Vec<Vec<u8>> {
             vec![3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 2],
         ]
     } else if name == "Map2" {
-        return vec![
+        vec![
             vec![4, 4, 3, 3, 2, 3, 3, 4, 3, 2, 1],
             vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
             vec![1, 2, 4, 3, 3, 2, 2, 1, 3, 1, 1],
