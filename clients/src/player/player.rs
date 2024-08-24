@@ -129,9 +129,9 @@ pub fn setup_player_and_camera(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
     player_id: u8,
-    x: f32,
-    y: f32,
-    z: f32,
+    _x: f32,
+    _y: f32,
+    _z: f32,
 ) {
     // Spawn the player
     let player_handle: Handle<Scene> = asset_server.load("armes/arme1.glb#Scene0");
@@ -146,7 +146,7 @@ pub fn setup_player_and_camera(
             ),
             SceneBundle {
                 scene: player_handle,
-                transform: Transform::from_xyz(x, y, z).with_scale(Vec3::splat(0.4)),
+                transform: Transform::from_xyz(-6.2, 0.2, -6.1).with_scale(Vec3::splat(0.4)),
                 ..default()
             },
             // Controls manuel du joueur sans se soucier d'influence externe
