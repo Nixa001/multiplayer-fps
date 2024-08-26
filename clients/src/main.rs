@@ -2,11 +2,16 @@ use crate::player::player::Player;
 use bevy::prelude::*;
 use bevy_rapier3d::plugin::{NoUserData, RapierPhysicsPlugin};
 // use bevy::sprite::collide_aabb::collide;
+use bevy::{diagnostic, prelude::*};
+use bevy::sprite::collide_aabb::collide;
+use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 // use bevy::render::debug::DebugLines;
 // use bevy_gltf::Gltf;
+use crate::games::fps::*;
+mod games;
+mod  playing_field;
 mod player;
 mod player_2D;
-mod playing_field;
 
 // #[derive(Component)]
 // struct GltfWall;
@@ -24,6 +29,8 @@ fn main() {
             ..default()
         }))
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugins(FrameTimeDiagnosticsPlugin::default())
+        .add_plugins(LogDiagnosticsPlugin::default())
         .add_systems(
             Startup,
             (
@@ -31,6 +38,7 @@ fn main() {
                 player::player::setup_player_and_camera,
                 playing_field::playing_field::Fields::spawn_ground,
                 player_2D::player_2D::setup_minimap,
+                setupfps,
                 // playing_field::playing_field::Fields::spawn_object,
                 // playing_field::playing_field::Fields::spawn_player,
             ),
@@ -45,6 +53,7 @@ fn main() {
                 player::fire::update_lasers,
                 player::fire::handle_projectile_collisions,
                 player_2D::player_2D::update_minimap,
+                fps_display_system,
                 // handle_gltf_wall_collisions,
                 // debug_draw_system,
             )
@@ -58,7 +67,7 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    playing_field::playing_field::create_maze(&mut commands, &mut meshes, &mut materials, "Map2"); // Charger le modèle
+    playing_field::playing_field::create_maze(&mut commands, &mut meshes, &mut materials, "Map3"); // Charger le modèle
                                                                                                    // let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_2.glb#Scene0");
                                                                                                    // // Spawner le modèle
                                                                                                    // commands.spawn((
@@ -177,46 +186,46 @@ fn update_minimap(
 
 pub fn mages(name: &str) -> Vec<Vec<u8>> {
     if name == "Map1" {
-        return vec![
-            vec![4, 4, 3, 3, 2, 4, 3, 4, 3, 3, 1],
+        return  vec![
+            vec![4, 3, 2, 3, 3, 3, 3, 4, 3, 3, 1],
             vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
-            vec![1, 2, 4, 3, 3, 3, 2, 1, 3, 1, 1],
-            vec![4, 3, 3, 2, 3, 3, 1, 2, 1, 3, 1],
-            vec![1, 4, 3, 2, 4, 2, 4, 3, 3, 1, 1],
-            vec![4, 2, 4, 3, 4, 3, 2, 4, 2, 1, 1],
-            vec![1, 3, 2, 1, 1, 4, 3, 3, 1, 1, 1],
-            vec![1, 3, 4, 1, 1, 1, 4, 2, 1, 2, 1],
-            vec![1, 1, 2, 1, 4, 2, 1, 1, 4, 3, 1],
-            vec![1, 3, 3, 1, 2, 4, 2, 1, 2, 1, 1],
-            vec![3, 3, 3, 3, 3, 2, 3, 3, 3, 3, 2],
-        ];
+            vec![1, 2, 2, 2, 3, 3, 2, 2, 2, 3, 1],
+            vec![1, 3, 3, 2, 3, 3, 1, 2, 3, 2, 1],
+            vec![1, 1, 3, 2, 3, 2, 3, 2, 3, 1, 2],
+            vec![2, 3, 3, 2, 1, 2, 3, 3, 2, 1, 1],
+            vec![1, 3, 3, 2, 1, 2, 2, 1, 2, 1, 1],
+            vec![1, 2, 3, 1, 1, 2, 3, 2, 1, 2, 1],
+            vec![1, 3, 2, 2, 3, 2, 1, 2, 1, 2, 1],
+            vec![1, 3, 3, 3, 2, 4, 2, 2, 2, 3, 1],
+            vec![3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 2]
+        ]
     } else if name == "Map2" {
         return vec![
-            vec![4, 4, 3, 3, 2, 3, 3, 4, 3, 2, 1],
+            vec![4, 3, 2, 3, 3, 4, 3, 4, 3, 3, 1],
             vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
-            vec![1, 2, 4, 3, 3, 2, 2, 1, 3, 1, 1],
-            vec![4, 3, 3, 2, 3, 3, 1, 2, 1, 2, 1],
-            vec![1, 4, 3, 2, 4, 2, 4, 3, 2, 1, 1],
-            vec![4, 2, 4, 3, 4, 3, 2, 4, 2, 1, 1],
-            vec![1, 3, 2, 1, 1, 4, 3, 2, 1, 1, 1],
-            vec![1, 3, 4, 1, 1, 1, 4, 2, 1, 2, 1],
-            vec![1, 1, 2, 1, 2, 2, 1, 1, 4, 3, 1],
-            vec![1, 3, 2, 1, 2, 4, 2, 1, 2, 1, 1],
-            vec![3, 3, 3, 3, 3, 2, 3, 2, 3, 3, 2],
+            vec![1, 2, 2, 3, 3, 3, 2, 1, 2, 3, 1],
+            vec![1, 3, 3, 2, 3, 3, 1, 2, 3, 2, 1],
+            vec![1, 1, 3, 2, 3, 2, 3, 2, 3, 1, 1],
+            vec![1, 3, 3, 2, 1, 2, 3, 3, 2, 1, 1],
+            vec![1, 3, 3, 2, 1, 2, 2, 1, 1, 1, 1],
+            vec![1, 2, 3, 1, 4, 2, 3, 2, 4, 2, 1],
+            vec![1, 3, 2, 2, 3, 2, 1, 2, 4, 2, 1],
+            vec![1, 3, 3, 3, 2, 4, 2, 2, 2, 3, 1],
+            vec![3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 2]
         ];
-    } else {
+    }else {
         vec![
-            vec![4, 4, 3, 3, 2, 4, 4, 4, 3, 3, 1],
-            vec![1, 4, 1, 3, 3, 2, 1, 1, 3, 1, 4],
-            vec![4, 2, 4, 3, 4, 3, 2, 4, 3, 4, 1],
-            vec![4, 3, 4, 2, 3, 3, 1, 2, 4, 3, 1],
-            vec![1, 4, 4, 2, 4, 2, 4, 4, 3, 1, 1],
-            vec![4, 4, 4, 4, 4, 3, 4, 4, 2, 4, 1],
-            vec![4, 3, 4, 1, 1, 4, 3, 4, 1, 4, 1],
-            vec![1, 4, 4, 1, 4, 4, 4, 2, 4, 2, 1],
-            vec![4, 4, 2, 4, 4, 2, 1, 4, 4, 3, 1],
-            vec![4, 3, 3, 4, 2, 4, 2, 1, 2, 4, 1],
-            vec![4, 4, 4, 4, 4, 2, 4, 4, 4, 3, 2]
+            vec![4, 3, 3, 3, 3, 4, 3, 4, 3, 3, 1],
+            vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
+            vec![1, 2, 4, 3, 4, 3, 2, 1, 3, 3, 1],
+            vec![1, 3, 3, 2, 3, 3, 1, 2, 3, 3, 1],
+            vec![1, 1, 3, 2, 4, 2, 3, 2, 3, 1, 1],
+            vec![1, 3, 3, 2, 4, 3, 3, 3, 2, 1, 1],
+            vec![1, 3, 3, 2, 1, 4, 2, 4, 1, 1, 1],
+            vec![1, 4, 3, 1, 4, 2, 3, 2, 4, 2, 1],
+            vec![1, 3, 2, 4, 3, 2, 1, 4, 4, 2, 1],
+            vec![1, 3, 3, 3, 2, 4, 2, 2, 2, 3, 1],
+            vec![3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2]
         ]
     }
 }
@@ -432,5 +441,43 @@ pub fn mages(name: &str) -> Vec<Vec<u8>> {
 //             font_size: 40.0,
 //             color: Color::WHITE,
 //         },
+//     ));
+// }
+
+
+// #[derive(Component)]
+// struct FpsText;
+// fn fps_display_system(diagnostics: Res<DiagnosticsStore>, mut query: Query<&mut Text, With<FpsText>>) {
+//     if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
+//         if let Some(average) = fps.average() {
+//             for mut text in query.iter_mut() {
+//                 text.sections[0].value = format!("{:.2} FPS", average);
+//             }
+//         }
+//     }
+// }
+
+// fn setupfps(mut commands: Commands, asset_server: Res<AssetServer>) {
+//     commands.spawn((
+//         TextBundle {
+//             text: Text::from_sections([
+//                 TextSection::new(
+//                     "0 FPS",
+//                     TextStyle {
+//                         font: asset_server.load("fonts/EduAUVICWANTHand-VariableFont_wght.ttf"),
+//                         font_size: 20.0,
+//                         color: Color::BLACK,
+//                     },
+//                 ),
+//             ]),
+//             style: Style {
+//                 position_type: PositionType::Absolute,
+//                 top: Val::Px(30.0),
+//                 right: Val::Px(30.0),
+//                 ..default()
+//             },
+//             ..default()
+//         },
+//         FpsText,
 //     ));
 // }
