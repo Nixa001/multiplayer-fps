@@ -1,6 +1,6 @@
 use bevy::asset::{AssetServer, Assets};
 use bevy::log::{error, info, warn};
-use bevy::prelude::{Commands, Mesh, Res, ResMut};
+use bevy::prelude::{Commands, Mesh, Query, Res, ResMut, Resource, Transform, With};
 use bevy_renet::renet::transport::ClientAuthentication;
 use bevy_renet::renet::transport::NetcodeClientTransport;
 use bevy_renet::renet::{ConnectionConfig, DefaultChannel, RenetClient};
@@ -11,13 +11,20 @@ use std::{
     thread::sleep,
     time::SystemTime,
 };
+use bevy::math::Vec3;
 use bevy::pbr::StandardMaterial;
 use store::{GameEvent, GAME_FPS, PROTOCOL_ID};
 mod player;
 mod player_2d;
 mod playing_field;
 use player::player::setup_player_and_camera;
+use crate::player::player::Player;
 
+#[derive(Resource)]
+pub struct PlayerSpawnInfo {
+    pub player_id: Option<u8>,
+    pub position: Option<Vec3>,
+}
 pub fn get_input(prompt: &str) -> String {
     print!("{}", prompt);
     io::stdout().flush().unwrap();
@@ -64,6 +71,8 @@ pub fn setup_networking(
 pub fn handle_connection(
     mut client: ResMut<RenetClient>,
     mut transport: ResMut<NetcodeClientTransport>,
+    mut player_query: Query<&mut Transform, With<Player>>,
+    mut spawn_info: ResMut<PlayerSpawnInfo>,
     commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -78,7 +87,31 @@ pub fn handle_connection(
 
     if client.is_connected() {
         handle_server_messages(&mut client, commands, &asset_server,&mut meshes,
-                               &mut materials);
+                               &mut materials, player_query, spawn_info);
+
+        // while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
+        //     if let Ok(event) = deserialize::<GameEvent>(&message) {
+        //         match event {
+        //             GameEvent::Spawn {
+        //                 player_id,
+        //                 position,
+        //                 lvl,
+        //             } => {
+        //                 info!(
+        //                     "i am player [{}] located at \"{}°- {}°- {}°\" on level: {}",
+        //                     player_id, position.x, position.y, position.z, lvl
+        //                 );
+        // 
+        //             
+        //                 // Créer le labyrinthe
+        //                 
+        //                 // playing_field::playing_field::create_maze(&mut commands, meshes, materials, format!("Map{}", lvl).as_str());
+        //             },
+        //             // ... autres cas
+        //             _ => panic!(),
+        //         }
+        //     }
+        // }
         // Example of sending a message to the server:
         // client.send_message(DefaultChannel::ReliableOrdered, serialize(&event).unwrap());
     }
@@ -95,6 +128,8 @@ pub fn handle_server_messages(
     asset_server: &Res<AssetServer>,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
+    mut player_query: Query<&mut Transform, With<Player>>,
+    mut spawn_info: ResMut<PlayerSpawnInfo>,
 ) {
     while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
         if let Ok(event) = deserialize::<GameEvent>(&message) {
@@ -108,14 +143,23 @@ pub fn handle_server_messages(
                         "i am player [{}] located at \"{}°- {}°- {}°\" on level: {}",
                         player_id, position.x, position.y, position.z, lvl
                     );
-                    setup_player_and_camera(
-                        &mut commands,
-                        asset_server,
-                        player_id,
-                        position.x,
-                        position.y,
-                        position.z,
-                    );
+                    // setup_player_and_camera(
+                    //     &mut commands,
+                    //     asset_server,
+                    //     player_id,
+                    //     position.x,
+                    //     position.y,
+                    //     position.z,
+                    // );
+                    // Mettre à jour la position du joueur
+                    if let Ok(mut transform) = player_query.get_single_mut() {
+                        transform.translation = Vec3::new(position.x, position.y, position.z);
+                    }
+
+                    // Stocker les informations de spawn
+                    spawn_info.player_id = Some(player_id);
+                    spawn_info.position = Some(Vec3::new(position.x, position.y, position.z));
+
                     playing_field::playing_field::create_maze(&mut commands, meshes, materials, format!("Map{}", lvl).as_str());
                 }
                 GameEvent::PlayerJoined {

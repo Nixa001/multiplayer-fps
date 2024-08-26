@@ -2,7 +2,7 @@ use crate::player::player::Player;
 use bevy::prelude::*;
 use bevy_rapier3d::plugin::{NoUserData, RapierPhysicsPlugin};
 use bevy_renet::{transport::NetcodeClientPlugin, RenetClientPlugin};
-use multiplayer_fps::{get_input, handle_connection, setup_networking};
+use multiplayer_fps::{get_input, handle_connection, PlayerSpawnInfo, setup_networking};
 use std::net::SocketAddr;
 
 // use bevy::sprite::collide_aabb::collide;
@@ -93,7 +93,7 @@ fn main() {
 }
 fn setup(
     mut commands: Commands,
-    _asset_server: Res<AssetServer>,
+    asset_server: Res<AssetServer>,
 ) {
    // Charger le modèle
     // let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_2.glb#Scene0");
@@ -144,6 +144,19 @@ fn setup(
             ..default()
         },
     ));
+
+    commands.insert_resource(PlayerSpawnInfo {
+        player_id: None,
+        position: None,
+    });
+
+    // Créez le joueur avec une position par défaut
+    player::player::setup_player_and_camera(
+        &mut commands,
+        &asset_server,
+        0, // ID temporaire
+        0.0, 0.0, 0.0, // Position par défaut
+    );
 }
 fn check_model_loaded(asset_server: Res<AssetServer>, scene_assets: Res<Assets<Scene>>) {
     let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_3.glb#Scene0");

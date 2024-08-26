@@ -52,8 +52,8 @@ pub fn move_player(
     for ev in mouse_motion.read() {
         mouse_delta += ev.delta;
     }
-
-    if let Ok((entity, player, mut transform, _velocity)) = query.get_single_mut() {
+    
+    for (entity, player, mut transform, mut velocity) in query.iter_mut() {
         let mut direction = Vec3::ZERO;
         if keyboard.pressed(KeyCode::W) {
             direction += transform.forward();
@@ -106,7 +106,8 @@ pub fn move_player(
         // }
         //
         // // Empêcher tout mouvement vertical involontaire
-        // transform.translation.y = 0.2; // Assurez-vous que le joueur reste au sol
+        // Assurez-vous que le joueur reste au sol
+        transform.translation.y = 0.2;
     }
 }
 
