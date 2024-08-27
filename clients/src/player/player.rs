@@ -1,11 +1,16 @@
+use std::u8;
+
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 // use crate::playing_field::playing_field::Collision;
 // use bevy::ecs::system::ParamSet;
-use bevy_rapier3d::dynamics::{LockedAxes, Velocity};
-use bevy_rapier3d::prelude::{Collider, GravityScale, RapierContext, RigidBody};
+use bevy_rapier3d::dynamics::{ LockedAxes, Velocity };
+use bevy_rapier3d::prelude::{ Collider, GravityScale, RapierContext, RigidBody };
+use bevy_renet::renet::{ DefaultChannel, RenetClient };
+use bincode::serialize;
+use store::{ GameEvent, Position };
 
-use crate::playing_field::playing_field::{check_player_collision, Collision};
+use crate::playing_field::playing_field::{ check_player_collision, Collision };
 // use bevy::sprite::collide_aabb::Collision;
 // use bevy_rapier3d::prelude::RapierContext;
 
@@ -36,12 +41,13 @@ impl Player {
 }
 
 pub fn move_player(
+    mut client: ResMut<RenetClient>,
     mut query: Query<(Entity, &Player, &mut Transform, &mut Velocity)>,
     keyboard: Res<Input<KeyCode>>,
     mut mouse_motion: EventReader<MouseMotion>,
     windows: Query<&Window>,
     rapier_context: Res<RapierContext>,
-    collider_query: Query<Entity, (With<Collision>, Without<Player>)>,
+    collider_query: Query<Entity, (With<Collision>, Without<Player>)>
 ) {
     let window = windows.single();
     if window.cursor.grab_mode == bevy::window::CursorGrabMode::None {
@@ -52,7 +58,7 @@ pub fn move_player(
     for ev in mouse_motion.read() {
         mouse_delta += ev.delta;
     }
-    
+
     for (entity, player, mut transform, mut velocity) in query.iter_mut() {
         let mut direction = Vec3::ZERO;
         if keyboard.pressed(KeyCode::W) {
@@ -86,13 +92,7 @@ pub fn move_player(
         //     *transform = camera_transform;
         //
         // }
-        if !check_player_collision(
-            entity,
-            &transform,
-            movement,
-            &rapier_context,
-            &collider_query,
-        ) {
+        if !check_player_collision(entity, &transform, movement, &rapier_context, &collider_query) {
             transform.translation += movement;
         }
 
@@ -108,13 +108,34 @@ pub fn move_player(
         // // Empêcher tout mouvement vertical involontaire
         // Assurez-vous que le joueur reste au sol
         transform.translation.y = 0.2;
+        // println!(
+        //     "Player position: x={:?}, y={:?}, z={:?}",
+        //     transform.translation.x,
+        //     transform.translation.y,
+        //     transform.translation.z
+        // );
+        if client.is_connected() {
+            client.send_message(
+                DefaultChannel::ReliableOrdered,
+                serialize(
+                    &(GameEvent::PlayerMove {
+                        at: Position::new(
+                            transform.translation.x,
+                            transform.translation.y,
+                            transform.translation.z
+                        ),
+                        player_id: u8::MAX,
+                    })
+                ).unwrap()
+            );
+        }
     }
 }
 
 pub fn grab_mouse(
     mut windows: Query<&mut Window>,
     mouse: Res<Input<MouseButton>>,
-    key: Res<Input<KeyCode>>,
+    key: Res<Input<KeyCode>>
 ) {
     let mut window = windows.single_mut();
     if mouse.just_pressed(MouseButton::Left) {
@@ -132,19 +153,14 @@ pub fn setup_player_and_camera(
     player_id: u8,
     _x: f32,
     _y: f32,
-    _z: f32,
+    _z: f32
 ) {
     // Spawn the player
     let player_handle: Handle<Scene> = asset_server.load("armes/arme1.glb#Scene0");
     // let player_handle:Handle<Scene> = asset_server.load("armes/Soldier.glb#Scene0");
     let player_entity = commands
         .spawn((
-            Player::new(
-                player_id as i32,
-                "Player".to_string(),
-                5.0,
-                Vec2::new(0.5, 0.5),
-            ),
+            Player::new(player_id as i32, "Player".to_string(), 5.0, Vec2::new(0.5, 0.5)),
             SceneBundle {
                 scene: player_handle,
                 transform: Transform::from_xyz(-6.2, 0.2, -6.1).with_scale(Vec3::splat(0.4)),
@@ -172,10 +188,12 @@ pub fn setup_player_and_camera(
 
     // Spawn the camera and attach it to the weapon
     commands
-        .spawn((Camera3dBundle {
-            transform: Transform::from_xyz(0.0, 0.8, 0.0), // Adjust camera position relative to a weapon
-            ..default()
-        },))
+        .spawn((
+            Camera3dBundle {
+                transform: Transform::from_xyz(0.0, 0.8, 0.0), // Adjust camera position relative to a weapon
+                ..default()
+            },
+        ))
         .set_parent(player_entity);
 
     commands

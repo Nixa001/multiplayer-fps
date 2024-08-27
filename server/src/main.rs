@@ -74,11 +74,11 @@ fn main() {
                         serialize(&id_event).expect("error while sending id to client")
                     );
 
-                    game_state.consume(&event);
+                    game_state.consume(&event, client_id.raw());
 
                     if game_state.players.len() == PLAYER_LIMIT {
                         let event = GameEvent::BeginGame;
-                        game_state.consume(&event);
+                        game_state.consume(&event, client_id.raw());
                         server.broadcast_message(0, serialize(&event).unwrap());
                         println!("🟩 The game has begun");
                     }
@@ -90,13 +90,13 @@ fn main() {
                     let player_id = game_state.get_player_id(client_id.raw());
                     // First consume a disconnect event
                     let event = GameEvent::PlayerDisconnected { player_id };
-                    game_state.consume(&event);
+                    game_state.consume(&event, client_id.raw());
                     server.broadcast_message(0, serialize(&event).unwrap());
                     println!("🔻 Player [{}] disconnected due to \"{}\"", player_id, reason);
 
                     if game_state.players.len() == 1 && game_state.stage == Stage::InGame {
                         let event = GameEvent::EndGame;
-                        game_state.consume(&event);
+                        game_state.consume(&event, client_id.raw());
                         server.broadcast_message(0, serialize(&event).unwrap());
                         println!("🟥 Game has ended");
                     }
@@ -106,17 +106,40 @@ fn main() {
 
         // ! Receive GameEvents from clients. Broadcast valid events.
         for client_id in server.clients_id().into_iter() {
-            while let Some(message) = server.receive_message(client_id, 0) {
+            while
+                let Some(message) = server.receive_message(
+                    client_id,
+                    DefaultChannel::ReliableOrdered
+                )
+            {
                 if let Ok(event) = deserialize::<GameEvent>(&message) {
-                    if game_state.validate(&event) {
-                        game_state.consume(&event);
-                        println!("[EVENT]: Player {} sent:\n\t{:#?}", client_id, event);
-                        server.broadcast_message(0, serialize(&event).unwrap());
+                    if game_state.validate(&event, client_id.raw()) {
+                        let broad_event = game_state.consume(&event, client_id.raw());
+                        println!("[EVENT]: Client {} sent:\n\t{:#?}", client_id, broad_event);
+                        match broad_event {
+                            GameEvent::PlayerMove { player_id: _, at: _ } => {
+                                server.broadcast_message_except(
+                                    client_id,
+                                    DefaultChannel::ReliableOrdered,
+                                    serialize(&broad_event).unwrap()
+                                );
+                            }
+                            _ => {
+                                server.broadcast_message(
+                                    DefaultChannel::ReliableOrdered,
+                                    serialize(&broad_event).unwrap()
+                                );
+                            }
+                        }
 
                         // ^Determine if a player has won the game at each request
                         if let Some(winner) = game_state.determine_winner() {
                             let event = GameEvent::EndGame;
-                            server.broadcast_message(0, serialize(&event).unwrap());
+                            game_state.stage = Stage::Ended;
+                            server.broadcast_message(
+                                DefaultChannel::ReliableOrdered,
+                                serialize(&event).unwrap()
+                            );
                             println!("[INFO]: player with id [{}] won !", winner);
                         }
                     } else {
