@@ -152,12 +152,14 @@ pub fn handle_server_messages(
                     // );
                     // Mettre à jour la position du joueur
                     if let Ok(mut transform) = player_query.get_single_mut() {
+                        eprintln!("ddfdf");
                         transform.translation = Vec3::new(position.x, position.y, position.z);
                     }
 
                     // Stocker les informations de spawn
                     spawn_info.player_id = Some(player_id);
                     spawn_info.position = Some(Vec3::new(position.x, position.y, position.z));
+                    println!("received 💢 {:?}", position);
 
                     playing_field::playing_field::create_maze(
                         &mut commands,
@@ -179,7 +181,6 @@ pub fn handle_server_messages(
                 }
 
                 GameEvent::PlayerMove { player_id, at } => {
-                
                     info!(
                         "Player [{}] is heading towards '{}°*{}°*{}'",
                         player_id,
