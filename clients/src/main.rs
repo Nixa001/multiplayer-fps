@@ -1,9 +1,10 @@
 use crate::player::player::Player;
 use bevy::prelude::*;
-use bevy_rapier3d::plugin::{NoUserData, RapierPhysicsPlugin};
-use bevy_renet::{transport::NetcodeClientPlugin, RenetClientPlugin};
-use multiplayer_fps::{get_input, handle_connection, PlayerSpawnInfo, setup_networking};
+use bevy_rapier3d::plugin::{ NoUserData, RapierPhysicsPlugin };
+use bevy_renet::{ transport::NetcodeClientPlugin, RenetClientPlugin };
+use multiplayer_fps::{ get_input, handle_connection, PlayerSpawnInfo, setup_networking };
 use std::net::SocketAddr;
+use multiplayer_fps::Position;
 
 // use bevy::sprite::collide_aabb::collide;
 // use bevy::render::debug::DebugLines;
@@ -14,6 +15,7 @@ mod playing_field;
 
 // #[derive(Component)]
 // struct GltfWall;
+
 #[derive(Component)]
 struct MinimapPlayer;
 
@@ -33,45 +35,42 @@ fn main() {
         eprintln!("❌ Please provide a username");
         return;
     }
-    
+
     if username.len() > MAX_USERNAME_LENGTH {
-        eprintln!(
-            "❌ Username is too long (max {} characters)",
-            MAX_USERNAME_LENGTH
-        );
+        eprintln!("❌ Username is too long (max {} characters)", MAX_USERNAME_LENGTH);
         return;
     }
 
     let (client, transport) = setup_networking(&server_addr, &username);
-
+    let position = Position::default();
     App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "IBG".into(),
-                resolution: (1500.0, 1000.0).into(),
-                resizable: false,
+        .insert_resource(client)
+        .insert_resource(transport)
+        .insert_resource(position)
+        .add_plugins(
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "IBG".into(),
+                    resolution: (1500.0, 1000.0).into(),
+                    resizable: false,
+                    ..default()
+                }),
                 ..default()
-            }),
-            ..default()
-        }))
+            })
+        )
         .add_plugins((
             RenetClientPlugin,
             NetcodeClientPlugin,
             RapierPhysicsPlugin::<NoUserData>::default(),
         ))
-        .add_systems(
-            Startup,
-            (
-                //player::player::setup_player_and_camera,
-                playing_field::playing_field::Fields::spawn_ground,
-                player_2d::player_2d::setup_minimap,
-                // playing_field::playing_field::Fields::spawn_object,
-                // playing_field::playing_field::Fields::spawn_player,
-                setup,
-            ),
-        )
-        .insert_resource(client)
-        .insert_resource(transport)
+        .add_systems(Startup, (
+            //player::player::setup_player_and_camera,
+            playing_field::playing_field::Fields::spawn_ground,
+            player_2d::player_2d::setup_minimap,
+            // playing_field::playing_field::Fields::spawn_object,
+            // playing_field::playing_field::Fields::spawn_player,
+            setup,
+        ))
         // .add_systems(Startup, setup)
         .add_systems(
             Update,
@@ -86,16 +85,12 @@ fn main() {
                 // playing_field::playing_field::handle_collisions,
                 // handle_gltf_wall_collisions,
                 // debug_draw_system,
-            )
-                .chain(),
+            ).chain()
         )
         .run();
 }
-fn setup(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
-   // Charger le modèle
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>, mut location: ResMut<Position>) {
+    // Charger le modèle
     // let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_2.glb#Scene0");
     // // Spawner le modèle
     // commands.spawn((
@@ -106,7 +101,7 @@ fn setup(
     //     },
     //     GltfWall,
     // ));
-    
+
     // Caméra
     //commands.spawn(Camera3dBundle {
     //    transform: Transform::from_xyz(10.0, 45.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
@@ -155,7 +150,10 @@ fn setup(
         &mut commands,
         &asset_server,
         0, // ID temporaire
-        0.0, 0.0, 0.0, // Position par défaut
+        location.x,
+        location.y,
+        location.z
+        // Position par défaut
     );
 }
 fn check_model_loaded(asset_server: Res<AssetServer>, scene_assets: Res<Assets<Scene>>) {
@@ -212,7 +210,7 @@ fn check_model_loaded(asset_server: Res<AssetServer>, scene_assets: Res<Assets<S
 //     }
 fn update_minimap(
     player_query: Query<&Transform, With<Player>>,
-    mut minimap_query: Query<&mut Transform, With<MinimapPlayer>>,
+    mut minimap_query: Query<&mut Transform, With<MinimapPlayer>>
 ) {
     if let Ok(player_transform) = player_query.get_single() {
         if let Ok(mut minimap_transform) = minimap_query.get_single_mut() {
@@ -220,12 +218,11 @@ fn update_minimap(
             minimap_transform.translation = Vec3::new(
                 200.0 + player_transform.translation.x * 10.0, // Ajuste l'échelle pour la minimap
                 200.0 + player_transform.translation.z * 10.0,
-                0.0,
+                0.0
             );
         }
     }
 }
-
 
 // pub fn crate_mage(
 //     name : &str,

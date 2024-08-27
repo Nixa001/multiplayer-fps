@@ -1,25 +1,27 @@
-use bevy::asset::{AssetServer, Assets};
-use bevy::log::{error, info, warn};
-use bevy::prelude::{Commands, Mesh, Query, Res, ResMut, Resource, Transform, With};
+use bevy::asset::{ AssetServer, Assets };
+use bevy::log::{ error, info, warn };
+use bevy::prelude::{ Commands, Mesh, Query, Res, ResMut, Resource, Transform, With };
 use bevy_renet::renet::transport::ClientAuthentication;
 use bevy_renet::renet::transport::NetcodeClientTransport;
-use bevy_renet::renet::{ConnectionConfig, DefaultChannel, RenetClient};
+use bevy_renet::renet::{ ConnectionConfig, DefaultChannel, RenetClient };
 use bincode::deserialize;
-use std::{
-    io::{self, Write},
-    net::{SocketAddr, UdpSocket},
-    thread::sleep,
-    time::SystemTime,
-};
+
+use std::{ io::{ self, Write }, net::{ SocketAddr, UdpSocket }, thread::sleep, time::SystemTime };
 use bevy::math::Vec3;
 use bevy::pbr::StandardMaterial;
-use store::{GameEvent, GAME_FPS, PROTOCOL_ID};
+use store::{ GameEvent, GAME_FPS, PROTOCOL_ID };
 mod player;
 mod player_2d;
 mod playing_field;
 use player::player::setup_player_and_camera;
 use crate::player::player::Player;
 
+#[derive(Debug, Default, Resource)]
+pub struct Position {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+}
 #[derive(Resource)]
 pub struct PlayerSpawnInfo {
     pub player_id: Option<u8>,
@@ -35,12 +37,10 @@ pub fn get_input(prompt: &str) -> String {
 
 pub fn setup_networking(
     server_addr: &SocketAddr,
-    username: &str,
+    username: &str
 ) -> (RenetClient, NetcodeClientTransport) {
     let client = RenetClient::new(ConnectionConfig::default());
-    let current_time = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap();
+    let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
     let client_id = current_time.as_millis() as u64;
 
     let mut user_data = [0u8; 256];
@@ -62,8 +62,9 @@ pub fn setup_networking(
         std::process::exit(1);
     });
 
-    let transport = NetcodeClientTransport::new(current_time, authentication, socket)
-        .expect("Failed to create transport");
+    let transport = NetcodeClientTransport::new(current_time, authentication, socket).expect(
+        "Failed to create transport"
+    );
 
     (client, transport)
 }
@@ -77,6 +78,7 @@ pub fn handle_connection(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
+    mut location: ResMut<Position>
 ) {
     client.update(GAME_FPS);
     if transport.update(GAME_FPS, &mut client).is_err() {
@@ -86,8 +88,19 @@ pub fn handle_connection(
     }
 
     if client.is_connected() {
-        handle_server_messages(&mut client, commands, &asset_server,&mut meshes,
-                               &mut materials, player_query, spawn_info);
+        //  println!("counting in handle conn => {}", counter.x);
+        //  println!("prev poz => {}*{}*{}", location.x, location.y, location.z);
+        handle_server_messages(
+            &mut client,
+            commands,
+            &asset_server,
+            &mut meshes,
+            &mut materials,
+            player_query,
+            spawn_info,
+            &mut location
+        );
+        println!("position stored in the resource => {}*{}*{}", location.x, location.y, location.z);
 
         // while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
         //     if let Ok(event) = deserialize::<GameEvent>(&message) {
@@ -101,10 +114,10 @@ pub fn handle_connection(
         //                     "i am player [{}] located at \"{}°- {}°- {}°\" on level: {}",
         //                     player_id, position.x, position.y, position.z, lvl
         //                 );
-        // 
-        //             
+        //
+        //
         //                 // Créer le labyrinthe
-        //                 
+        //
         //                 // playing_field::playing_field::create_maze(&mut commands, meshes, materials, format!("Map{}", lvl).as_str());
         //             },
         //             // ... autres cas
@@ -116,9 +129,7 @@ pub fn handle_connection(
         // client.send_message(DefaultChannel::ReliableOrdered, serialize(&event).unwrap());
     }
 
-    transport
-        .send_packets(&mut client)
-        .expect("Error while sending packets to server");
+    transport.send_packets(&mut client).expect("Error while sending packets to server");
     sleep(GAME_FPS);
 }
 
@@ -130,18 +141,19 @@ pub fn handle_server_messages(
     materials: &mut ResMut<Assets<StandardMaterial>>,
     mut player_query: Query<&mut Transform, With<Player>>,
     mut spawn_info: ResMut<PlayerSpawnInfo>,
+    location: &mut ResMut<Position>
 ) {
     while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
         if let Ok(event) = deserialize::<GameEvent>(&message) {
             match event {
-                GameEvent::Spawn {
-                    player_id,
-                    position,
-                    lvl,
-                } => {
+                GameEvent::Spawn { player_id, position, lvl } => {
                     info!(
                         "i am player [{}] located at \"{}°- {}°- {}°\" on level: {}",
-                        player_id, position.x, position.y, position.z, lvl
+                        player_id,
+                        position.x,
+                        position.y,
+                        position.z,
+                        lvl
                     );
                     // setup_player_and_camera(
                     //     &mut commands,
@@ -155,23 +167,29 @@ pub fn handle_server_messages(
                     if let Ok(mut transform) = player_query.get_single_mut() {
                         transform.translation = Vec3::new(position.x, position.y, position.z);
                     }
-
+                    location.x = position.x;
+                    location.y = position.y;
+                    location.z = position.z;
                     // Stocker les informations de spawn
                     spawn_info.player_id = Some(player_id);
                     spawn_info.position = Some(Vec3::new(position.x, position.y, position.z));
 
-                    playing_field::playing_field::create_maze(&mut commands, meshes, materials, format!("Map{}", lvl).as_str());
+                    playing_field::playing_field::create_maze(
+                        &mut commands,
+                        meshes,
+                        materials,
+                        format!("Map{}", lvl).as_str()
+                    );
                 }
-                GameEvent::PlayerJoined {
-                    player_id,
-                    name,
-                    position,
-                    ..
-                } => {
+                GameEvent::PlayerJoined { player_id, name, position, .. } => {
                     // ! implement logic here
                     info!(
                         "{} [{}] joined the party and is located at \"{}°- {}°- {}°\" ",
-                        name, player_id, position.x, position.y, position.z
+                        name,
+                        player_id,
+                        position.x,
+                        position.y,
+                        position.z
                     );
                 }
                 // ! do the same for other events
