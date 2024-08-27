@@ -6,11 +6,15 @@ use multiplayer_fps::{get_input, handle_connection, PlayerSpawnInfo, setup_netwo
 use std::net::SocketAddr;
 
 // use bevy::sprite::collide_aabb::collide;
+// use bevy::sprite::collide_aabb::collide;
+use bevy::diagnostic::{ FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 // use bevy::render::debug::DebugLines;
 // use bevy_gltf::Gltf;
+use crate::games::fps::*;
+mod games;
+mod  playing_field;
 mod player;
 mod player_2d;
-mod playing_field;
 
 // #[derive(Component)]
 // struct GltfWall;
@@ -49,7 +53,7 @@ fn main() {
             primary_window: Some(Window {
                 title: "IBG".into(),
                 resolution: (1500.0, 1000.0).into(),
-                resizable: false,
+                resizable: true,
                 ..default()
             }),
             ..default()
@@ -58,16 +62,20 @@ fn main() {
             RenetClientPlugin,
             NetcodeClientPlugin,
             RapierPhysicsPlugin::<NoUserData>::default(),
+            FrameTimeDiagnosticsPlugin::default(),
+            LogDiagnosticsPlugin::default(),
         ))
         .add_systems(
             Startup,
             (
-                //player::player::setup_player_and_camera,
+                // player::player::setup_player_and_camera,
                 playing_field::playing_field::Fields::spawn_ground,
                 player_2d::player_2d::setup_minimap,
+                setup,
+                setupfps,
                 // playing_field::playing_field::Fields::spawn_object,
                 // playing_field::playing_field::Fields::spawn_player,
-                setup,
+            
             ),
         )
         .insert_resource(client)
@@ -76,6 +84,7 @@ fn main() {
         .add_systems(
             Update,
             (
+                fps_display_system,
                 handle_connection,
                 player::player::move_player,
                 player::player::grab_mouse,
@@ -438,5 +447,43 @@ fn update_minimap(
 //             font_size: 40.0,
 //             color: Color::WHITE,
 //         },
+//     ));
+// }
+
+
+// #[derive(Component)]
+// struct FpsText;
+// fn fps_display_system(diagnostics: Res<DiagnosticsStore>, mut query: Query<&mut Text, With<FpsText>>) {
+//     if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
+//         if let Some(average) = fps.average() {
+//             for mut text in query.iter_mut() {
+//                 text.sections[0].value = format!("{:.2} FPS", average);
+//             }
+//         }
+//     }
+// }
+
+// fn setupfps(mut commands: Commands, asset_server: Res<AssetServer>) {
+//     commands.spawn((
+//         TextBundle {
+//             text: Text::from_sections([
+//                 TextSection::new(
+//                     "0 FPS",
+//                     TextStyle {
+//                         font: asset_server.load("fonts/EduAUVICWANTHand-VariableFont_wght.ttf"),
+//                         font_size: 20.0,
+//                         color: Color::BLACK,
+//                     },
+//                 ),
+//             ]),
+//             style: Style {
+//                 position_type: PositionType::Absolute,
+//                 top: Val::Px(30.0),
+//                 right: Val::Px(30.0),
+//                 ..default()
+//             },
+//             ..default()
+//         },
+//         FpsText,
 //     ));
 // }
