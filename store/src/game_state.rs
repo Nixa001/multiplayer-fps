@@ -151,7 +151,7 @@ impl GameState {
     }
     pub fn set_lvl(&mut self, lvl: usize) {
         self.lvl = lvl;
-        self.spawn_positions = get_spawn_positions(lvl);
+        self.spawn_positions = get_spawn_positions();
     }
 
     pub fn random_spawn(&mut self) -> Position {
