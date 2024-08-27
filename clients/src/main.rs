@@ -34,10 +34,10 @@ fn main() {
         .add_systems(
             Startup,
             (
-                setup,
                 player::player::setup_player_and_camera,
                 playing_field::playing_field::Fields::spawn_ground,
                 player_2D::player_2D::setup_minimap,
+                setup,
                 setupfps,
                 // playing_field::playing_field::Fields::spawn_object,
                 // playing_field::playing_field::Fields::spawn_player,
