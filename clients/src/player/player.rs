@@ -1,11 +1,14 @@
+use std::collections::HashMap;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 // use crate::playing_field::playing_field::Collision;
 // use bevy::ecs::system::ParamSet;
 use bevy_rapier3d::dynamics::{ LockedAxes, Velocity };
 use bevy_rapier3d::prelude::{ Collider, GravityScale, RapierContext, RigidBody };
-use crate::{Position, Counter};
-
+use crate::{PositionInitial, Counter};
+use bevy_renet::renet::{ DefaultChannel, RenetClient };
+use bincode::serialize;
+use store::{ GameEvent, Position };
 
 use crate::playing_field::playing_field::{ check_player_collision, Collision };
 // use bevy::sprite::collide_aabb::Collision;
@@ -33,19 +36,20 @@ impl Player {
             speed,
             camera_offset: Vec3::new(0.0, 0.2, 0.8),
             size,
-            
+
         }
     }
 }
 
 pub fn move_player(
+    mut client: ResMut<RenetClient>,
     mut query: Query<(Entity, &Player, &mut Transform, &mut Velocity)>,
     keyboard: Res<Input<KeyCode>>,
     mut mouse_motion: EventReader<MouseMotion>,
     windows: Query<&Window>,
     rapier_context: Res<RapierContext>,
     collider_query: Query<Entity, (With<Collision>, Without<Player>)>,
-    mut location: ResMut<Position>,
+    mut location: ResMut<PositionInitial>,
     mut counter: ResMut<Counter>,
 ) {
     let window = windows.single();
@@ -58,15 +62,15 @@ pub fn move_player(
         mouse_delta += ev.delta;
     }
     //println!("counting in move player => {}", counter.x);
-    
+
     for (entity, player, mut transform, mut velocity) in query.iter_mut() {
         let a = counter.val;
         if a < 1 {
             transform.translation = Vec3::new(location.x, location.y, location.z);
         }
         counter.val += 1;
-        
-        
+
+
         let mut direction = Vec3::ZERO;
         if keyboard.pressed(KeyCode::W) {
             direction += transform.forward();
@@ -89,7 +93,7 @@ pub fn move_player(
 
         // Rotation du joueur (et de l'arme)
         transform.rotate_y(-mouse_delta.x * 0.002);
-        
+
         if !check_player_collision(entity, &transform, movement, &rapier_context, &collider_query) {
             transform.translation += movement;
         }
@@ -106,6 +110,23 @@ pub fn move_player(
         // // Empêcher tout mouvement vertical involontaire
         // Assurez-vous que le joueur reste au sol
         transform.translation.y = 0.2;
+
+        if client.is_connected() {
+            client.send_message(
+                DefaultChannel::ReliableOrdered,
+                serialize(
+                    &(GameEvent::PlayerMove {
+                        at: Position::new(
+                            transform.translation.x,
+                            transform.translation.y,
+                            transform.translation.z
+                        ),
+                        player_id: u8::MAX,
+                        player_list: HashMap::new(),
+                    })
+                ).unwrap()
+            );
+        }
     }
 }
 
@@ -151,7 +172,7 @@ pub fn setup_player_and_camera(
             GravityScale(0.0),
         ))
         .id();
-    
+
 
     // Spawn the camera and attach it to the weapon
     commands

@@ -1,9 +1,10 @@
 use renet::transport::{ ServerAuthentication, ServerConfig, NetcodeServerTransport };
-use renet::{ ConnectionConfig, DefaultChannel, RenetServer, ServerEvent };
+use renet::{ ClientId, ConnectionConfig, DefaultChannel, RenetServer, ServerEvent };
 use store::GameState;
 use std::net::{ SocketAddr, UdpSocket };
-use std::time::SystemTime;
-use std::thread::*;
+use std::time::{ Duration, Instant, SystemTime };
+use std::thread::{ self, * };
+use std::u64;
 use store::{ PROTOCOL_ID, GAME_FPS, * };
 use bincode::*;
 use server::*;
@@ -33,10 +34,13 @@ fn main() {
     };
     let mut transport = NetcodeServerTransport::new(server_config, socket).unwrap();
     let mut game_state = GameState::default();
+
     let lvl = get_level();
     game_state.set_lvl(lvl);
-
     println!("🕹 maze server listening on {} 📡", server_addr);
+
+    let mut timer = Instant::now();
+    let mut count_sec = 20;
 
     loop {
         // Receive new messages and update clients at desired fps
@@ -47,6 +51,15 @@ fn main() {
             match event {
                 ServerEvent::ClientConnected { client_id } => {
                     // * ------ connection logic
+                    if game_state.stage != Stage::PreGame {
+                        server.send_message(
+                            client_id,
+                            DefaultChannel::ReliableOrdered,
+                            serialize(&GameEvent::AccessForbidden).unwrap()
+                        );
+                        continue;
+                    }
+
                     let player_id = game_state.generate_id();
                     let spawn_coord = game_state.random_spawn();
                     let event = GameEvent::PlayerJoined {
@@ -74,11 +87,13 @@ fn main() {
                         serialize(&id_event).expect("error while sending id to client")
                     );
 
-                    game_state.consume(&event);
+                    game_state.consume(&event, client_id.raw());
 
                     if game_state.players.len() == PLAYER_LIMIT {
-                        let event = GameEvent::BeginGame;
-                        game_state.consume(&event);
+                        let event = GameEvent::BeginGame {
+                            player_list: game_state.players.clone(),
+                        };
+                        game_state.consume(&event, client_id.raw());
                         server.broadcast_message(0, serialize(&event).unwrap());
                         println!("🟩 The game has begun");
                     }
@@ -90,13 +105,13 @@ fn main() {
                     let player_id = game_state.get_player_id(client_id.raw());
                     // First consume a disconnect event
                     let event = GameEvent::PlayerDisconnected { player_id };
-                    game_state.consume(&event);
+                    game_state.consume(&event, client_id.raw());
                     server.broadcast_message(0, serialize(&event).unwrap());
                     println!("🔻 Player [{}] disconnected due to \"{}\"", player_id, reason);
 
                     if game_state.players.len() == 1 && game_state.stage == Stage::InGame {
                         let event = GameEvent::EndGame;
-                        game_state.consume(&event);
+                        game_state.consume(&event, client_id.raw());
                         server.broadcast_message(0, serialize(&event).unwrap());
                         println!("🟥 Game has ended");
                     }
@@ -106,23 +121,77 @@ fn main() {
 
         // ! Receive GameEvents from clients. Broadcast valid events.
         for client_id in server.clients_id().into_iter() {
-            while let Some(message) = server.receive_message(client_id, 0) {
+            while
+                let Some(message) = server.receive_message(
+                    client_id,
+                    DefaultChannel::ReliableOrdered
+                )
+            {
                 if let Ok(event) = deserialize::<GameEvent>(&message) {
-                    if game_state.validate(&event) {
-                        game_state.consume(&event);
-                        println!("[EVENT]: Player {} sent:\n\t{:#?}", client_id, event);
-                        server.broadcast_message(0, serialize(&event).unwrap());
+                    if game_state.validate(&event, client_id.raw()) {
+                        let broad_event = game_state.consume(&event, client_id.raw());
+                        println!("[EVENT]: Client {} sent:\n\t{:#?}", client_id, broad_event);
+                        match broad_event {
+                            GameEvent::PlayerMove { .. } => {
+                                server.broadcast_message_except(
+                                    client_id,
+                                    DefaultChannel::ReliableOrdered,
+                                    serialize(&broad_event).unwrap()
+                                );
+                            }
+                            _ => {
+                                server.broadcast_message(
+                                    DefaultChannel::ReliableOrdered,
+                                    serialize(&broad_event).unwrap()
+                                );
+                            }
+                        }
 
                         // ^Determine if a player has won the game at each request
                         if let Some(winner) = game_state.determine_winner() {
                             let event = GameEvent::EndGame;
-                            server.broadcast_message(0, serialize(&event).unwrap());
+                            game_state.stage = Stage::Ended;
+                            server.broadcast_message(
+                                DefaultChannel::ReliableOrdered,
+                                serialize(&event).unwrap()
+                            );
                             println!("[INFO]: player with id [{}] won !", winner);
                         }
                     } else {
                         eprintln!("❌ Player {} sent invalid event:\n\t{:#?}", client_id, event);
                     }
                 }
+            }
+        }
+
+        if game_state.stage == Stage::PreGame {
+            if
+                timer.elapsed() > Duration::from_secs(1) &&
+                game_state.players.len() >= 2 &&
+                count_sec > 0
+            {
+                timer = Instant::now();
+                let timer_event = GameEvent::Timer { duration: count_sec };
+                for (_id, player) in &game_state.players {
+                    server.send_message(
+                        ClientId::from_raw(player.client_id),
+                        DefaultChannel::ReliableOrdered,
+                        serialize(&timer_event).unwrap()
+                    );
+                }
+
+                count_sec -= 1;
+                println!("tickling");
+            }
+
+            if count_sec == 0 {
+                println!("game has started");
+                let event = GameEvent::BeginGame { player_list: game_state.players.clone() };
+                game_state.consume(&event, u64::MAX); //sets game stage to InGame
+                server.broadcast_message(
+                    DefaultChannel::ReliableOrdered,
+                    serialize(&event).unwrap()
+                );
             }
         }
         transport.send_packets(&mut server);

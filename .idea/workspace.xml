@@ -8,8 +8,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9f185197-bf52-4ec3-adf2-3d2c29c07a14" name="Changes" comment="feat(playing_field): make mazes private&#10;&#10;The function `get_mazes` was publicly accessible, but only used&#10;internally. This change makes the function private. This helps to&#10;ensure the playing field module's internal logic is not accessible&#10;from outside and promotes encapsulation.">
+      <change afterPath="$PROJECT_DIR$/clients/assets/fonts/Atop-R99O3.ttf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clients/src/games/fps.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clients/src/games/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/games/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clients/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/lib.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clients/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/main.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/clients/src/player/player.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/player/player.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clients/src/playing_field/playing_field.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/playing_field/playing_field.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/src/event.rs" beforeDir="false" afterPath="$PROJECT_DIR$/store/src/event.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/src/game_state.rs" beforeDir="false" afterPath="$PROJECT_DIR$/store/src/game_state.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/src/lvl.rs" beforeDir="false" afterPath="$PROJECT_DIR$/store/src/lvl.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/store/src/player.rs" beforeDir="false" afterPath="$PROJECT_DIR$/store/src/player.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,24 +66,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.rust.reset.selective.auto.import&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/iboug/Projets/Zone01/multiplayer_fps/clients/assets/projectil&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,
-    &quot;org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon&quot;: &quot;&quot;,
-    &quot;org.rust.disableDetachedFileInspectionC:/Users/iboug/Projets/Zone01/multiplayer_fps/clients/assets/mages/mages.rs&quot;: &quot;true&quot;,
-    &quot;org.rust.disableDetachedFileInspectionC:/Users/iboug/Projets/Zone01/multiplayer_fps/clients/assets/map/mages.rs&quot;: &quot;true&quot;,
-    &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;language.rust.cargo.check&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.rust.reset.selective.auto.import": "true",
+    "git-widget-placeholder": "Merging master",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/iboug/Projets/Zone01/multiplayer_fps/clients/assets/projectil",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
+    "org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon": "",
+    "org.rust.disableDetachedFileInspectionC:/Users/iboug/Projets/Zone01/multiplayer_fps/clients/assets/mages/mages.rs": "true",
+    "org.rust.disableDetachedFileInspectionC:/Users/iboug/Projets/Zone01/multiplayer_fps/clients/assets/map/mages.rs": "true",
+    "org.rust.first.attach.projects": "true",
+    "settings.editor.selected.configurable": "language.rust.cargo.check"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\iboug\Projets\Zone01\multiplayer_fps\clients\assets\projectil" />

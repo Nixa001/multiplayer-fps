@@ -5,19 +5,25 @@ use bevy_renet::renet::transport::ClientAuthentication;
 use bevy_renet::renet::transport::NetcodeClientTransport;
 use bevy_renet::renet::{ ConnectionConfig, DefaultChannel, RenetClient };
 use bincode::deserialize;
-
-use std::{ io::{ self, Write }, net::{ SocketAddr, UdpSocket }, thread::sleep, time::SystemTime };
+use std::{
+    io::{ self, Write },
+    net::{ SocketAddr, UdpSocket },
+    thread::sleep,
+    time::SystemTime,
+    process::*,
+};
 use bevy::math::Vec3;
 use bevy::pbr::StandardMaterial;
 use store::{ GameEvent, GAME_FPS, PROTOCOL_ID };
 mod player;
 mod player_2d;
 mod playing_field;
-use player::player::setup_player_and_camera;
 use crate::player::player::Player;
 
+
+
 #[derive(Debug, Default, Resource)]
-pub struct Position {
+pub struct PositionInitial {
     pub x: f32,
     pub y: f32,
     pub z: f32,
@@ -82,7 +88,7 @@ pub fn handle_connection(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
-    mut location: ResMut<Position>
+    mut location: ResMut<PositionInitial>
 ) {
     client.update(GAME_FPS);
     if transport.update(GAME_FPS, &mut client).is_err() {
@@ -106,7 +112,7 @@ pub fn handle_connection(
         );
         println!("position stored in the resource => {}*{}*{}", location.x, location.y, location.z);
 
-       
+
         // Example of sending a message to the server:
         // client.send_message(DefaultChannel::ReliableOrdered, serialize(&event).unwrap());
     }
@@ -114,6 +120,7 @@ pub fn handle_connection(
     transport.send_packets(&mut client).expect("Error while sending packets to server");
     sleep(GAME_FPS);
 }
+
 
 pub fn handle_server_messages(
     client: &mut ResMut<RenetClient>,
@@ -123,7 +130,7 @@ pub fn handle_server_messages(
     materials: &mut ResMut<Assets<StandardMaterial>>,
     mut player_query: Query<&mut Transform, With<Player>>,
     mut spawn_info: ResMut<PlayerSpawnInfo>,
-    location: &mut ResMut<Position>
+    location: &mut ResMut<PositionInitial>
 ) {
     while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
         if let Ok(event) = deserialize::<GameEvent>(&message) {
@@ -137,7 +144,7 @@ pub fn handle_server_messages(
                         position.z,
                         lvl
                     );
-                   
+
                     // Mettre à jour la position du joueur
                     if let Ok(mut transform) = player_query.get_single_mut() {
                         transform.translation = Vec3::new(position.x, position.y, position.z);
@@ -167,6 +174,23 @@ pub fn handle_server_messages(
                         position.z
                     );
                 }
+
+                GameEvent::PlayerMove { player_list, .. } => {
+                    info!("Move detected = > {:#?}", player_list);
+                }
+                GameEvent::Timer { duration } => {
+                    info!("🕗 timer tickling => {}", duration);
+                }
+
+                GameEvent::BeginGame { player_list } => {
+                    info!("Game has begun with warriors => {:#?}", player_list);
+                }
+
+                GameEvent::AccessForbidden => {
+                    info!("❌ Oops ! ongoing game...");
+                    exit(1);
+                }
+
                 // ! do the same for other events
                 _ => {
                     println!("received event from server => {:?}", event);

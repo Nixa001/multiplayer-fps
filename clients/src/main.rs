@@ -2,10 +2,9 @@ use crate::player::player::Player;
 use bevy::prelude::*;
 use bevy_rapier3d::plugin::{ NoUserData, RapierPhysicsPlugin };
 use bevy_renet::{ transport::NetcodeClientPlugin, RenetClientPlugin };
-use multiplayer_fps::{Counter, get_input, handle_connection, PlayerSpawnInfo, setup_networking};
+use multiplayer_fps::{Counter, get_input, handle_connection, PlayerSpawnInfo, PositionInitial, setup_networking};
 use std::net::SocketAddr;
-use multiplayer_fps::Position;
-
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 // use bevy::sprite::collide_aabb::collide;
 // use bevy::render::debug::DebugLines;
 // use bevy_gltf::Gltf;
@@ -13,6 +12,11 @@ mod player;
 mod player_2d;
 mod playing_field;
 
+mod games;
+// use bevy::diagnostic::{ FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+// use bevy::render::debug::DebugLines;
+// use bevy_gltf::Gltf;
+// use crate::games::fps::*;
 // #[derive(Component)]
 // struct GltfWall;
 
@@ -42,7 +46,7 @@ fn main() {
     }
 
     let (client, transport) = setup_networking(&server_addr, &username);
-    let position = Position::default();
+    let position = PositionInitial::default();
     let counter = Counter::default();
     App::new()
         .insert_resource(client)
@@ -64,6 +68,8 @@ fn main() {
             RenetClientPlugin,
             NetcodeClientPlugin,
             RapierPhysicsPlugin::<NoUserData>::default(),
+            LogDiagnosticsPlugin::default(),
+            FrameTimeDiagnosticsPlugin::default(),
         ))
         .add_systems(Startup, (
             //player::player::setup_player_and_camera,
@@ -72,11 +78,13 @@ fn main() {
             // playing_field::playing_field::Fields::spawn_object,
             // playing_field::playing_field::Fields::spawn_player,
             setup,
+            games::fps::setupfps,
         ))
         // .add_systems(Startup, setup)
         .add_systems(
             Update,
             (
+                games::fps::fps_display_system,
                 handle_connection,
                 player::player::move_player,
                 player::player::grab_mouse,
@@ -92,10 +100,10 @@ fn main() {
         .run();
 }
 fn setup(
-    mut commands: Commands, 
+    mut commands: Commands,
     asset_server: Res<AssetServer>)
-     {
-  
+{
+
 
     // Caméra
     //commands.spawn(Camera3dBundle {
@@ -146,7 +154,7 @@ fn setup(
         &asset_server,
         0, // ID temporaire
         0.0,
-    0.0,
+        0.0,
         0.0
         // Position par défaut
     );

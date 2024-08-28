@@ -1,7 +1,7 @@
 use crate::*;
 use rand::*;
 use serde::{ Deserialize, Serialize };
-use std::collections::HashMap;
+use std::{ collections::HashMap, u8 };
 
 /// The different states a game can be in. (not to be confused with the entire "GameState")
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -44,9 +44,9 @@ impl Default for GameState {
 
 impl GameState {
     /// Determines whether an event is valid considering the current GameState
-    pub fn validate(&self, event: &GameEvent) -> bool {
+    pub fn validate(&self, event: &GameEvent, client_id: u64) -> bool {
         match event {
-            GameEvent::BeginGame => {
+            GameEvent::BeginGame { .. } => {
                 // Check that the game hasn't started yet. (we don't want to double start a game)
                 if self.stage != Stage::PreGame {
                     return false;
@@ -62,7 +62,7 @@ impl GameState {
 
             GameEvent::PlayerJoined { player_id, .. } => {
                 // Check that there isn't another player with the same id
-                if self.players.contains_key(player_id) {
+                if self.players.contains_key(player_id) || self.stage != Stage::PreGame {
                     return false;
                 }
             }
@@ -73,8 +73,9 @@ impl GameState {
                 }
             }
 
-            GameEvent::PlayerMove { player_id, at: _ } => {
-                if !self.players.contains_key(player_id) {
+            GameEvent::PlayerMove { at: _, .. } => {
+                let id = self.get_player_id(client_id);
+                if !self.players.contains_key(&id) && id != u8::MAX {
                     return false;
                 }
             }
@@ -83,47 +84,59 @@ impl GameState {
                     return false;
                 }
             }
+            _ => unreachable!(),
         }
         true
     }
 
-    pub fn consume(&mut self, valid_event: &GameEvent) {
+    pub fn consume(&mut self, valid_event: &GameEvent, client_id: u64) -> GameEvent {
+        let mut eve: GameEvent = GameEvent::BeginGame { player_list: HashMap::new() };
         match valid_event {
-            GameEvent::BeginGame => {
+            GameEvent::BeginGame { player_list } => {
                 self.stage = Stage::InGame;
+                eve = GameEvent::BeginGame { player_list: player_list.clone() };
             }
 
             GameEvent::EndGame => {
                 self.stage = Stage::Ended;
+                eve = GameEvent::EndGame;
             }
 
             GameEvent::PlayerJoined { player_id, name, position, client_id } => {
-                // ! updated and define position here
                 self.players.insert(*player_id, Player {
                     name: name.to_string(),
                     id: *player_id,
                     position: position.clone(),
                     client_id: client_id.clone(),
                 });
+
+                eve = GameEvent::PlayerJoined {
+                    player_id: *player_id,
+                    name: name.to_string(),
+                    position: position.clone(),
+                    client_id: client_id.clone(),
+                };
             }
 
             GameEvent::PlayerDisconnected { player_id } => {
                 self.players.remove(player_id);
+                eve = GameEvent::PlayerDisconnected { player_id: player_id.clone() };
             }
 
-            GameEvent::PlayerMove { player_id, at } => {
-                // ! must check this part for coming features
-                let player = self.players.get_mut(player_id).unwrap();
+            GameEvent::PlayerMove { at, .. } => {
+                let id = self.get_player_id(client_id);
+                let player = self.players.get_mut(&id).unwrap();
                 player.position = at.clone();
+                eve = GameEvent::PlayerMove { player_id: id, at: at.clone(), player_list: self.players.clone() };
             }
             _ => {}
         }
-
         self.history.push(valid_event.clone());
+        eve
     }
 
     pub fn determine_winner(&self) -> Option<u8> {
-        if self.players.len() == 1 {
+        if self.players.len() == 1 && self.stage == Stage::InGame {
             for (id, _) in &self.players {
                 return Some(*id);
             }
@@ -138,7 +151,7 @@ impl GameState {
     }
     pub fn set_lvl(&mut self, lvl: usize) {
         self.lvl = lvl;
-        self.spawn_positions = get_spawn_positions(lvl);
+        self.spawn_positions = get_spawn_positions();
     }
 
     pub fn random_spawn(&mut self) -> Position {
@@ -147,7 +160,7 @@ impl GameState {
         self.spawn_positions.remove(gen)
     }
     pub fn get_player_id(&self, client_id: u64) -> u8 {
-        let mut id: u8 = 0;
+        let mut id: u8 = u8::MAX;
         for (k, v) in &self.players {
             if v.client_id.eq(&client_id) {
                 id = k.clone();
