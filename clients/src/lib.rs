@@ -22,6 +22,10 @@ pub struct Position {
     pub y: f32,
     pub z: f32,
 }
+#[derive(Debug, Default, Resource)]
+pub struct Counter {
+    pub val: i32,
+}
 #[derive(Resource)]
 pub struct PlayerSpawnInfo {
     pub player_id: Option<u8>,
@@ -72,8 +76,8 @@ pub fn setup_networking(
 pub fn handle_connection(
     mut client: ResMut<RenetClient>,
     mut transport: ResMut<NetcodeClientTransport>,
-    mut player_query: Query<&mut Transform, With<Player>>,
-    mut spawn_info: ResMut<PlayerSpawnInfo>,
+    player_query: Query<&mut Transform, With<Player>>,
+    spawn_info: ResMut<PlayerSpawnInfo>,
     commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -102,29 +106,7 @@ pub fn handle_connection(
         );
         println!("position stored in the resource => {}*{}*{}", location.x, location.y, location.z);
 
-        // while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
-        //     if let Ok(event) = deserialize::<GameEvent>(&message) {
-        //         match event {
-        //             GameEvent::Spawn {
-        //                 player_id,
-        //                 position,
-        //                 lvl,
-        //             } => {
-        //                 info!(
-        //                     "i am player [{}] located at \"{}°- {}°- {}°\" on level: {}",
-        //                     player_id, position.x, position.y, position.z, lvl
-        //                 );
-        //
-        //
-        //                 // Créer le labyrinthe
-        //
-        //                 // playing_field::playing_field::create_maze(&mut commands, meshes, materials, format!("Map{}", lvl).as_str());
-        //             },
-        //             // ... autres cas
-        //             _ => panic!(),
-        //         }
-        //     }
-        // }
+       
         // Example of sending a message to the server:
         // client.send_message(DefaultChannel::ReliableOrdered, serialize(&event).unwrap());
     }
@@ -155,14 +137,7 @@ pub fn handle_server_messages(
                         position.z,
                         lvl
                     );
-                    // setup_player_and_camera(
-                    //     &mut commands,
-                    //     asset_server,
-                    //     player_id,
-                    //     position.x,
-                    //     position.y,
-                    //     position.z,
-                    // );
+                   
                     // Mettre à jour la position du joueur
                     if let Ok(mut transform) = player_query.get_single_mut() {
                         transform.translation = Vec3::new(position.x, position.y, position.z);

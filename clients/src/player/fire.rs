@@ -1,3 +1,4 @@
+use bevy::input::mouse;
 use crate::{player::player::Player, playing_field::playing_field::Collision};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
@@ -23,13 +24,14 @@ pub fn fire_laser(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    keyboard: Res<Input<KeyCode>>,
+    mouse: Res<Input<MouseButton>>,
+    // keyboard: Res<Input<KeyCode>>,
     query: Query<(&Transform, &Player)>,
 ) {
-    if keyboard.just_pressed(KeyCode::Space) {
+    if mouse.just_pressed(MouseButton::Left) {
         if let Ok((transform, _player)) = query.get_single() {
             let forward = transform.forward();
-            let spawn_point = transform.translation + forward * 0.5 + Vec3::new(0.0, 0.0, 0.0);
+            let spawn_point = transform.translation + forward * 3.5 + Vec3::new(0.0, 0.0, 0.0);
 
             let laser_length = 3.0; // Longueur maximale du laser
             let laser_width = 0.09; // Largeur du laser

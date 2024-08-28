@@ -4,6 +4,8 @@ use bevy::prelude::*;
 // use bevy::ecs::system::ParamSet;
 use bevy_rapier3d::dynamics::{ LockedAxes, Velocity };
 use bevy_rapier3d::prelude::{ Collider, GravityScale, RapierContext, RigidBody };
+use crate::{Position, Counter};
+
 
 use crate::playing_field::playing_field::{ check_player_collision, Collision };
 // use bevy::sprite::collide_aabb::Collision;
@@ -31,6 +33,7 @@ impl Player {
             speed,
             camera_offset: Vec3::new(0.0, 0.2, 0.8),
             size,
+            
         }
     }
 }
@@ -42,6 +45,8 @@ pub fn move_player(
     windows: Query<&Window>,
     rapier_context: Res<RapierContext>,
     collider_query: Query<Entity, (With<Collision>, Without<Player>)>,
+    mut location: ResMut<Position>,
+    mut counter: ResMut<Counter>,
 ) {
     let window = windows.single();
     if window.cursor.grab_mode == bevy::window::CursorGrabMode::None {
@@ -53,7 +58,15 @@ pub fn move_player(
         mouse_delta += ev.delta;
     }
     //println!("counting in move player => {}", counter.x);
+    
     for (entity, player, mut transform, mut velocity) in query.iter_mut() {
+        let a = counter.val;
+        if a < 1 {
+            transform.translation = Vec3::new(location.x, location.y, location.z);
+        }
+        counter.val += 1;
+        
+        
         let mut direction = Vec3::ZERO;
         if keyboard.pressed(KeyCode::W) {
             direction += transform.forward();
@@ -76,16 +89,7 @@ pub fn move_player(
 
         // Rotation du joueur (et de l'arme)
         transform.rotate_y(-mouse_delta.x * 0.002);
-        // // Rotation verticale (limitée)
-        // let mut camera_transform = transform.clone();
-        // camera_transform.rotate_local_x(-mouse_delta.y * 0.002);
-        // //
-        // // // Limiter la rotation verticale
-        // let up = camera_transform.up();
-        // if up.y > 0.999 && up.y < 0.995 {
-        //     *transform = camera_transform;
-        //
-        // }
+        
         if !check_player_collision(entity, &transform, movement, &rapier_context, &collider_query) {
             transform.translation += movement;
         }
@@ -147,17 +151,7 @@ pub fn setup_player_and_camera(
             GravityScale(0.0),
         ))
         .id();
-    // Spawn the weapon and attach it to the player
-    // let weapon_handle: Handle<Scene> = asset_server.load("armes/arme1.glb#Scene0");
-    // let weapon_entity = commands.spawn((
-    //     Weapon,
-    //     SceneBundle {
-    //         scene: weapon_handle,
-    //         transform: Transform::from_xyz(0.0, 0.2, 2.5).with_scale(Vec3::splat(0.3)),
-    //         ..default()
-    //     },
-    // )).id();
-    // commands.entity(player_entity).add_child(player_entity);
+    
 
     // Spawn the camera and attach it to the weapon
     commands
