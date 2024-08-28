@@ -53,7 +53,7 @@ fn main() {
             primary_window: Some(Window {
                 title: "IBG".into(),
                 resolution: (1500.0, 1000.0).into(),
-                resizable: true,
+                resizable: false,
                 ..default()
             }),
             ..default()

@@ -12,7 +12,6 @@ use store::{ GameEvent, GAME_FPS, PROTOCOL_ID };
 mod player;
 mod player_2d;
 mod playing_field;
-use player::player::setup_player_and_camera;
 use crate::player::player::Player;
 
 #[derive(Resource)]
@@ -118,7 +117,7 @@ pub fn handle_connection(
     }
 
     transport.send_packets(&mut client).expect("Error while sending packets to server");
-    sleep(GAME_FPS);
+    // sleep(GAME_FPS);
 }
 
 pub fn handle_server_messages(
