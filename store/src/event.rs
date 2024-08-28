@@ -1,15 +1,20 @@
+use std::collections::HashMap;
+
 use crate::*;
 use serde::{ Deserialize, Serialize };
 /// An event that progresses the GameState forward
 #[derive(Debug, Clone, Serialize, PartialEq, Deserialize)]
 pub enum GameEvent {
-    BeginGame,
+    BeginGame {
+        player_list: HashMap<u8, Player>,
+    },
     EndGame,
+    AccessForbidden,
     PlayerJoined {
         player_id: u8,
         name: String,
         position: Position,
-        client_id: u64
+        client_id: u64,
     },
     PlayerDisconnected {
         player_id: u8,
@@ -17,10 +22,14 @@ pub enum GameEvent {
     PlayerMove {
         player_id: u8,
         at: Position,
+        player_list: HashMap<u8, Player>
     },
     Spawn {
         player_id: u8,
         position: Position,
         lvl: usize,
+    },
+    Timer {
+        duration: u8,
     },
 }

@@ -5,7 +5,13 @@ use bevy_renet::renet::transport::ClientAuthentication;
 use bevy_renet::renet::transport::NetcodeClientTransport;
 use bevy_renet::renet::{ ConnectionConfig, DefaultChannel, RenetClient };
 use bincode::deserialize;
-use std::{ io::{ self, Write }, net::{ SocketAddr, UdpSocket }, thread::sleep, time::SystemTime };
+use std::{
+    io::{ self, Write },
+    net::{ SocketAddr, UdpSocket },
+    thread::sleep,
+    time::SystemTime,
+    process::*,
+};
 use bevy::math::Vec3;
 use bevy::pbr::StandardMaterial;
 use store::{ GameEvent, GAME_FPS, PROTOCOL_ID };
@@ -179,15 +185,23 @@ pub fn handle_server_messages(
                     );
                 }
 
-                GameEvent::PlayerMove { player_id, at } => {
-                    info!(
-                        "Player [{}] is heading towards '{}°*{}°*{}'",
-                        player_id,
-                        at.x,
-                        at.y,
-                        at.z
-                    );
+                GameEvent::PlayerMove { player_list, .. } => {
+                    info!("Move detected = > {:#?}", player_list);
                 }
+                GameEvent::Timer { duration } => {
+                    info!("🕗 timer tickling => {}", duration);
+                }
+
+                GameEvent::BeginGame { player_list } => {
+                    info!("Game has begun with warriors => {:#?}", player_list);
+                }
+
+                GameEvent::AccessForbidden => {
+                    info!("❌ Oops ! ongoing game...");
+                    exit(1);
+                }
+
+                // ! do the same for other events
                 _ => {
                     println!("received event from server => {:?}", event);
                 }

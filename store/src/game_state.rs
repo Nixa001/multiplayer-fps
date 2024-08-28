@@ -46,7 +46,7 @@ impl GameState {
     /// Determines whether an event is valid considering the current GameState
     pub fn validate(&self, event: &GameEvent, client_id: u64) -> bool {
         match event {
-            GameEvent::BeginGame => {
+            GameEvent::BeginGame { .. } => {
                 // Check that the game hasn't started yet. (we don't want to double start a game)
                 if self.stage != Stage::PreGame {
                     return false;
@@ -62,7 +62,7 @@ impl GameState {
 
             GameEvent::PlayerJoined { player_id, .. } => {
                 // Check that there isn't another player with the same id
-                if self.players.contains_key(player_id) {
+                if self.players.contains_key(player_id) || self.stage != Stage::PreGame {
                     return false;
                 }
             }
@@ -84,16 +84,17 @@ impl GameState {
                     return false;
                 }
             }
+            _ => unreachable!(),
         }
         true
     }
 
     pub fn consume(&mut self, valid_event: &GameEvent, client_id: u64) -> GameEvent {
-        let mut eve: GameEvent = GameEvent::BeginGame;
+        let mut eve: GameEvent = GameEvent::BeginGame { player_list: HashMap::new() };
         match valid_event {
-            GameEvent::BeginGame => {
+            GameEvent::BeginGame { player_list } => {
                 self.stage = Stage::InGame;
-                eve = GameEvent::BeginGame;
+                eve = GameEvent::BeginGame { player_list: player_list.clone() };
             }
 
             GameEvent::EndGame => {
@@ -102,7 +103,6 @@ impl GameState {
             }
 
             GameEvent::PlayerJoined { player_id, name, position, client_id } => {
-                // ! updated and define position here
                 self.players.insert(*player_id, Player {
                     name: name.to_string(),
                     id: *player_id,
@@ -127,7 +127,7 @@ impl GameState {
                 let id = self.get_player_id(client_id);
                 let player = self.players.get_mut(&id).unwrap();
                 player.position = at.clone();
-                eve = GameEvent::PlayerMove { player_id: id, at: at.clone() };
+                eve = GameEvent::PlayerMove { player_id: id, at: at.clone(), player_list: self.players.clone() };
             }
             _ => {}
         }

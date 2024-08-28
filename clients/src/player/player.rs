@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::u8;
 
 use bevy::input::mouse::MouseMotion;
@@ -125,6 +126,7 @@ pub fn move_player(
                             transform.translation.z
                         ),
                         player_id: u8::MAX,
+                        player_list: HashMap::new(),
                     })
                 ).unwrap()
             );
