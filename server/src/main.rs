@@ -1,6 +1,7 @@
 use renet::transport::{ ServerAuthentication, ServerConfig, NetcodeServerTransport };
 use renet::{ ClientId, ConnectionConfig, DefaultChannel, RenetServer, ServerEvent };
 use store::GameState;
+use std::collections::HashMap;
 use std::net::{ SocketAddr, UdpSocket };
 use std::time::{ Duration, Instant, SystemTime };
 use std::thread::{ self, * };
@@ -188,10 +189,22 @@ fn main() {
                 println!("game has started");
                 let event = GameEvent::BeginGame { player_list: game_state.players.clone() };
                 game_state.consume(&event, u64::MAX); //sets game stage to InGame
-                server.broadcast_message(
-                    DefaultChannel::ReliableOrdered,
-                    serialize(&event).unwrap()
-                );
+
+                for client_id in server.clients_id().into_iter() {
+                    let mut player_list: HashMap<u8, Players> = HashMap::new();
+                    let id = game_state.get_player_id(client_id.raw());
+                    for (idp, value) in game_state.players.clone() {
+                        if !idp.eq(&id) {
+                            player_list.insert(idp, value);
+                        }
+                    }
+                    let begin_event = GameEvent::BeginGame { player_list };
+                    server.send_message(
+                        client_id,
+                        DefaultChannel::ReliableOrdered,
+                        serialize(&begin_event).unwrap()
+                    );
+                }
             }
         }
         transport.send_packets(&mut server);
