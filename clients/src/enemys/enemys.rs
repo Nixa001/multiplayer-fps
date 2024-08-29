@@ -24,7 +24,7 @@ pub fn create_enemys(
     list_player: Res<ListPlayer>,
     asset_server: Res<AssetServer>,
 ) {
-    println!("Enemys {:?}", list_player.list);
+    
     for (&id, player) in list_player.list.iter() {
         let enemy_model: Handle<Scene> = asset_server.load("soldier/Soldier.glb#Scene0");
         commands.spawn((
@@ -46,6 +46,7 @@ pub fn update_enemys_position(
     mut query: Query<(&mut Transform, &mut Enemy)>,
     list_player: Res<ListPlayer>,
 ) {
+    println!("------------Enemys----------- {:?}", list_player.list);
     for (mut transform, mut enemy) in query.iter_mut() {
         if let Some(player) = list_player.list.get(&enemy.id) {
             enemy.position = player.position.clone();
