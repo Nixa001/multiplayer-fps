@@ -48,7 +48,7 @@ pub fn update_enemys_position(
     asset_server: Res<AssetServer>,
     mut counter: ResMut<Counter>,
 ) {
-    // println!("------------Enemys----------- {:?}", list_player.list);
+    // println!("------------Enemys-------{:?}", list_player.list);
     let count = counter.val;
     if !(list_player.list.is_empty()){
         
