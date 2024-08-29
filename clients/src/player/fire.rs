@@ -1,7 +1,8 @@
-use bevy::input::mouse;
 use crate::{player::player::Player, playing_field::playing_field::Collision};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
+use bevy::window::Window;
+use bevy::input::mouse::MouseButton;
 
 #[derive(Component)]
 pub struct Projectile {
@@ -25,43 +26,53 @@ pub fn fire_laser(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mouse: Res<Input<MouseButton>>,
-    // keyboard: Res<Input<KeyCode>>,
     query: Query<(&Transform, &Player)>,
+    windows: Query<&Window>,
+        camera_query: Query<(&Camera, &GlobalTransform)>,
 ) {
     if mouse.just_pressed(MouseButton::Left) {
-        if let Ok((transform, _player)) = query.get_single() {
-            let forward = transform.forward();
-            let spawn_point = transform.translation + forward * 3.5 + Vec3::new(0.0, 0.0, 0.0);
+        if let Ok((player_transform, _player)) = query.get_single() {
+            if let Ok((camera, camera_transform)) = camera_query.get_single() {
+                let window = windows.single();                
+                if let Some(ray) = ray_from_screenspace(
+                    &window,
+                    &camera,
+                    &camera_transform,
+                    Vec2::new(window.width() / 2.0, window.height() / 2.0),
+                ) {
+                    let spawn_point = player_transform.translation + player_transform.forward() * 3.5;
+                    let laser_direction = ray.direction;
+                    let laser_length = 3.0;
+                    let laser_width = 0.09;
 
-            let laser_length = 3.0; // Longueur maximale du laser
-            let laser_width = 0.09; // Largeur du laser
-
-            commands.spawn(LaserBundle {
-                laser: Laser {
-                    max_distance: laser_length,
-                    // Le laser dure 0.1 seconde
-                    lifetime: Timer::from_seconds(0.1, TimerMode::Once),
-                },
-                pbr_bundle: PbrBundle {
-                    mesh: meshes.add(Mesh::from(shape::Box::new(
-                        laser_width,
-                        laser_width,
-                        laser_length,
-                    ))),
-                    material: materials.add(StandardMaterial {
-                        base_color: Color::RED,
-                        emissive: Color::rgba_linear(1.0, 0.0, 0.0, 1.0),
-                        ..default()
-                    }),
-                    transform: Transform::from_translation(spawn_point)
-                        .looking_to(forward, Vec3::Y)
-                        .with_scale(Vec3::new(0.07, 0.09, -1.0)),
-                    ..default()
-                },
-            });
+                    commands.spawn(LaserBundle {
+                        laser: Laser {
+                            max_distance: laser_length,
+                            lifetime: Timer::from_seconds(0.1, TimerMode::Once),
+                        },
+                        pbr_bundle: PbrBundle {
+                            mesh: meshes.add(Mesh::from(shape::Box::new(
+                                laser_width,
+                                laser_width,
+                                laser_length,
+                            ))),
+                            material: materials.add(StandardMaterial {
+                                base_color: Color::RED,
+                                emissive: Color::rgba_linear(1.0, 0.0, 0.0, 1.0),
+                                ..default()
+                            }),
+                            transform: Transform::from_translation(spawn_point)
+                                .looking_to(laser_direction, Vec3::Y)
+                                .with_scale(Vec3::new(0.07, 0.09, -1.0)),
+                            ..default()
+                        },
+                    });
+                }
+            }
         }
     }
 }
+
 
 pub fn update_lasers(
     mut commands: Commands,
@@ -95,7 +106,14 @@ pub fn update_lasers(
         }
     }
 }
-
+fn ray_from_screenspace(
+    window: &Window,
+    camera: &Camera,
+    camera_transform: &GlobalTransform,
+    cursor_position: Vec2,
+) -> Option<Ray> {
+    camera.viewport_to_world(camera_transform, cursor_position)
+}
 // impl Projectile {
 // pub fn fire_projectile(
 //     mut commands: Commands,

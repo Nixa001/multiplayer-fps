@@ -102,7 +102,7 @@ pub fn move_player(
         // let max_vertical_angle = 0.4 ; // Limite de l'angle de rotation verticale (en radians)
         // let rotation_x = -mouse_delta.y * 0.002 ;
         // let new_x_rotation = transform.rotation.to_euler(EulerRot::YXZ).0 + rotation_x ;
-        //
+        
         // if new_x_rotation.abs() <= max_vertical_angle {
         //     transform.rotate_local_x(rotation_x);
         // }
@@ -178,7 +178,7 @@ pub fn setup_player_and_camera(
     commands
         .spawn((
             Camera3dBundle {
-                transform: Transform::from_xyz(0.0, 0.8, 0.0), // Adjust camera position relative to a weapon
+                transform: Transform::from_xyz(-0.3, 0.7, 0.0), // Adjust camera position relative to a weapon
                 ..default()
             },
         ))
