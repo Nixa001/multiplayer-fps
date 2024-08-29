@@ -66,6 +66,7 @@ fn main() {
         )
         .add_systems(Startup, setup_crosshair)
         .add_systems(Update, update_crosshair_position)
+        // .add_systems(Update, (fire_projectile, update_projectiles))
         .add_plugins((
             RenetClientPlugin,
             NetcodeClientPlugin,
@@ -90,9 +91,9 @@ fn main() {
                 handle_connection,
                 player::player::move_player,
                 player::player::grab_mouse,
-                player::fire::fire_laser,
-                player::fire::update_lasers,
-                player::fire::handle_projectile_collisions,
+                player::fire::fire_projectile,
+                player::fire::update_projectiles,
+                // player::fire::handle_projectile_collisions,
                 player_2d::player_2d::update_minimap,
                 // playing_field::playing_field::handle_collisions,
                 // handle_gltf_wall_collisions,
