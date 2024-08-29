@@ -54,7 +54,7 @@ pub fn update_enemys_position(
         
         create_enemys(&mut commands, &list_player, &asset_server);
     }
-    println!("---- Counte ----  = {}", count);
+    println!("---- Counte ------  = {}", count);
     counter.val += 1;
     for (mut transform, mut enemy) in query.iter_mut() {
         if let Some(player) = list_player.list.get(&enemy.id) {
