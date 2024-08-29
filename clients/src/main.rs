@@ -82,7 +82,7 @@ fn main() {
             // playing_field::playing_field::Fields::spawn_player,
             setup,
             games::fps::setupfps,
-            enemys::enemys::create_enemys,
+            // enemys::enemys::create_enemys,
         ))
         // .add_systems(Startup, setup)
         .add_systems(
