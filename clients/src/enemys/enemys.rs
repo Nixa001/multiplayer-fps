@@ -34,7 +34,7 @@ pub fn create_enemys(
                 Enemy::new(id, format!("Enemy_{}", id), player.position.clone()),
                 SceneBundle {
                     scene: player_handle,
-                    transform: Transform::from_xyz(player.position.x, player.position.y, player.position.z).with_scale(Vec3::splat(0.1)),
+                    transform: Transform::from_xyz(player.position.x, player.position.y, player.position.z).with_scale(Vec3::splat(0.5)),
                     ..default()
                 },
         ));

@@ -176,13 +176,13 @@ pub fn setup_player_and_camera(
 
     // Spawn the camera and attach it to the weapon
     // commands
-    //     .spawn((
-    //         Camera3dBundle {
-    //             transform: Transform::from_xyz(0.0, 0.8, 0.0), // Adjust camera position relative to a weapon
-    //             ..default()
-    //         },
-    //     ))
-    //     .set_parent(player_entity);
+        .spawn((
+            Camera3dBundle {
+                transform: Transform::from_xyz(0.0, 0.8, 0.0), // Adjust camera position relative to a weapon
+                ..default()
+            },
+        ))
+        .set_parent(player_entity);
 
     commands
         .spawn(PointLightBundle {
