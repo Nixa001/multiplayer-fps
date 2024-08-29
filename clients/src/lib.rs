@@ -21,7 +21,7 @@ mod player_2d;
 mod playing_field;
 use crate::player::player::Player;
 
-#[derive(Default, Resource)]
+#[derive(Default, Resource, Debug)]
 pub struct ListPlayer {
     pub list: HashMap<u8, Players>,
 }
@@ -116,7 +116,7 @@ pub fn handle_connection(
             &mut location,
             &mut liste_player,
         );
-        println!("position stored in the resource => {}*{}*{}", location.x, location.y, location.z);
+        // println!("position stored in the resource => {}*{}*{}", location.x, location.y, location.z);
 
 
         // Example of sending a message to the server:

@@ -24,9 +24,9 @@ pub fn create_enemys(
     list_player: Res<ListPlayer>,
     asset_server: Res<AssetServer>,
 ) {
+    println!("Enemys {:?}", list_player.list);
     for (&id, player) in list_player.list.iter() {
         let enemy_model: Handle<Scene> = asset_server.load("soldier/Soldier.glb#Scene0");
-
         commands.spawn((
             Enemy::new(id, format!("Enemy_{}", id), player.position.clone()),
             SceneBundle {
