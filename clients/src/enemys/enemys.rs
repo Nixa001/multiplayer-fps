@@ -27,7 +27,7 @@ pub fn create_enemys(
     asset_server: &AssetServer,
 ) {
     for (&id, player) in list_player.list.iter() {
-        let player_handle: Handle<Scene> = asset_server.load("soldier/soldier.glb#Scene0");
+        let player_handle: Handle<Scene> = asset_server.load("soldier/Pistol.glb#Scene0");
         // let player_handle:Handle<Scene> = asset_server.load("armes/Soldier.glb#Scene0");
         let player_entity = commands
             .spawn((
