@@ -27,7 +27,7 @@ pub fn create_enemys(
     asset_server: &AssetServer,
 ) {
     for (&id, player) in list_player.list.iter() {
-        let player_handle: Handle<Scene> = asset_server.load("armes/arme1.glb#Scene0");
+        let player_handle: Handle<Scene> = asset_server.load("soldier/Soldier.glb#Scene0");
         // let player_handle:Handle<Scene> = asset_server.load("armes/Soldier.glb#Scene0");
         let player_entity = commands
             .spawn((
@@ -50,9 +50,10 @@ pub fn update_enemys_position(
 ) {
     println!("------------Enemys----------- {:?}", list_player.list);
     let count = counter.val;
-    if count < 1 {
+    // if count < 1 {
+        
         create_enemys(&mut commands, &list_player, &asset_server);
-    }
+    // }
     counter.val += 1;
     for (mut transform, mut enemy) in query.iter_mut() {
         if let Some(player) = list_player.list.get(&enemy.id) {
