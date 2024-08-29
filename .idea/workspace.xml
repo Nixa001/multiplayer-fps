@@ -8,19 +8,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9f185197-bf52-4ec3-adf2-3d2c29c07a14" name="Changes" comment="feat(playing_field): make mazes private&#10;&#10;The function `get_mazes` was publicly accessible, but only used&#10;internally. This change makes the function private. This helps to&#10;ensure the playing field module's internal logic is not accessible&#10;from outside and promotes encapsulation.">
-      <change afterPath="$PROJECT_DIR$/clients/assets/fonts/Atop-R99O3.ttf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clients/src/games/fps.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clients/assets/soldier/Soldier.glb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/clients/src/enemys/mod.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/clients/src/games/mod.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/games/mod.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clients/src/enemys/enemys.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/enemys/enemys.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/clients/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/lib.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/clients/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/main.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/clients/src/player/player.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/player/player.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/clients/src/playing_field/playing_field.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/playing_field/playing_field.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clients/src/player/fire.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/player/fire.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/store/src/event.rs" beforeDir="false" afterPath="$PROJECT_DIR$/store/src/event.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/store/src/game_state.rs" beforeDir="false" afterPath="$PROJECT_DIR$/store/src/game_state.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/store/src/lvl.rs" beforeDir="false" afterPath="$PROJECT_DIR$/store/src/lvl.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/store/src/player.rs" beforeDir="false" afterPath="$PROJECT_DIR$/store/src/player.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -70,9 +66,9 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.rust.reset.selective.auto.import": "true",
-    "git-widget-placeholder": "Merging master",
+    "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/iboug/Projets/Zone01/multiplayer_fps/clients/assets/projectil",
+    "last_opened_file_path": "C:/Users/iboug/Projets/Zone01/multiplayer_fps/clients/assets/soldier",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
@@ -118,6 +114,9 @@
       <workItem from="1724266041695" duration="3104000" />
       <workItem from="1724270411696" duration="4357000" />
       <workItem from="1724461990857" duration="102000" />
+      <workItem from="1724867734373" duration="2895000" />
+      <workItem from="1724934390724" duration="64000" />
+      <workItem from="1724934467336" duration="5552000" />
     </task>
     <task id="LOCAL-00001" summary="test">
       <option name="closed" value="true" />

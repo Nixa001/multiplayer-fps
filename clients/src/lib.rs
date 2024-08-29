@@ -12,15 +12,19 @@ use std::{
     time::SystemTime,
     process::*,
 };
+use std::collections::HashMap;
 use bevy::math::Vec3;
 use bevy::pbr::StandardMaterial;
-use store::{ GameEvent, GAME_FPS, PROTOCOL_ID };
+use store::{GameEvent, GAME_FPS, PROTOCOL_ID, Players};
 mod player;
 mod player_2d;
 mod playing_field;
 use crate::player::player::Player;
 
-
+#[derive(Default, Resource)]
+pub struct ListPlayer {
+    pub list: HashMap<u8, Players>,
+}
 
 #[derive(Debug, Default, Resource)]
 pub struct PositionInitial {
@@ -88,7 +92,8 @@ pub fn handle_connection(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
-    mut location: ResMut<PositionInitial>
+    mut location: ResMut<PositionInitial>,
+    mut liste_player: ResMut<ListPlayer>,
 ) {
     client.update(GAME_FPS);
     if transport.update(GAME_FPS, &mut client).is_err() {
@@ -108,7 +113,8 @@ pub fn handle_connection(
             &mut materials,
             player_query,
             spawn_info,
-            &mut location
+            &mut location,
+            &mut liste_player,
         );
         println!("position stored in the resource => {}*{}*{}", location.x, location.y, location.z);
 
@@ -130,7 +136,9 @@ pub fn handle_server_messages(
     materials: &mut ResMut<Assets<StandardMaterial>>,
     mut player_query: Query<&mut Transform, With<Player>>,
     mut spawn_info: ResMut<PlayerSpawnInfo>,
-    location: &mut ResMut<PositionInitial>
+    location: &mut ResMut<PositionInitial>,
+    liste_player: &mut ResMut<ListPlayer>,
+
 ) {
     while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
         if let Ok(event) = deserialize::<GameEvent>(&message) {
@@ -146,9 +154,9 @@ pub fn handle_server_messages(
                     );
 
                     // Mettre à jour la position du joueur
-                    if let Ok(mut transform) = player_query.get_single_mut() {
-                        transform.translation = Vec3::new(position.x, position.y, position.z);
-                    }
+                    // if let Ok(mut transform) = player_query.get_single_mut() {
+                    //     transform.translation = Vec3::new(position.x, position.y, position.z);
+                    // }
                     location.x = position.x;
                     location.y = position.y;
                     location.z = position.z;
@@ -177,6 +185,7 @@ pub fn handle_server_messages(
 
                 GameEvent::PlayerMove { player_list, .. } => {
                     info!("Move detected = > {:#?}", player_list);
+                    liste_player.list = player_list;
                 }
                 GameEvent::Timer { duration } => {
                     info!("🕗 timer tickling => {}", duration);

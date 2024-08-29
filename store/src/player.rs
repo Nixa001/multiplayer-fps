@@ -16,14 +16,14 @@ impl Position {
 /// Struct for storing player related data.
 /// In tic-tac-toe the only thing we need is the name and the piece the player will be placing
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Player {
+pub struct Players {
     pub name: String,
     pub id: u8,
     pub client_id: u64,
     pub position: Position,
 }
 
-impl Player {
+impl Players {
     pub fn new(name: String, id: u8, position: Position, client_id: u64) -> Self {
         Self { name, id, position, client_id }
     }

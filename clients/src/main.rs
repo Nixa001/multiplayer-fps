@@ -2,7 +2,7 @@ use crate::player::player::Player;
 use bevy::prelude::*;
 use bevy_rapier3d::plugin::{ NoUserData, RapierPhysicsPlugin };
 use bevy_renet::{ transport::NetcodeClientPlugin, RenetClientPlugin };
-use multiplayer_fps::{Counter, get_input, handle_connection, PlayerSpawnInfo, PositionInitial, setup_networking};
+use multiplayer_fps::{Counter, get_input, handle_connection, ListPlayer, PlayerSpawnInfo, PositionInitial, setup_networking};
 use std::net::SocketAddr;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 // use bevy::sprite::collide_aabb::collide;
@@ -11,6 +11,7 @@ use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 mod player;
 mod player_2d;
 mod playing_field;
+mod enemys;
 
 mod games;
 // use bevy::diagnostic::{ FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
@@ -48,11 +49,13 @@ fn main() {
     let (client, transport) = setup_networking(&server_addr, &username);
     let position = PositionInitial::default();
     let counter = Counter::default();
+    let list_user = ListPlayer::default();
     App::new()
         .insert_resource(client)
         .insert_resource(transport)
         .insert_resource(position)
         .insert_resource(counter)
+        .insert_resource(list_user)
         .add_plugins(
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
@@ -79,6 +82,7 @@ fn main() {
             // playing_field::playing_field::Fields::spawn_player,
             setup,
             games::fps::setupfps,
+            enemys::enemys::create_enemys,
         ))
         // .add_systems(Startup, setup)
         .add_systems(
@@ -95,6 +99,7 @@ fn main() {
                 // playing_field::playing_field::handle_collisions,
                 // handle_gltf_wall_collisions,
                 // debug_draw_system,
+                enemys::enemys::update_enemys_position,
             ).chain()
         )
         .run();

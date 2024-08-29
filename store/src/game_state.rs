@@ -22,7 +22,7 @@ pub enum EndGameReason {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct GameState {
     pub stage: Stage,
-    pub players: HashMap<u8, Player>,
+    pub players: HashMap<u8, Players>,
     pub history: Vec<GameEvent>,
     pub id_counter: u8,
     pub lvl: usize,
@@ -103,7 +103,7 @@ impl GameState {
             }
 
             GameEvent::PlayerJoined { player_id, name, position, client_id } => {
-                self.players.insert(*player_id, Player {
+                self.players.insert(*player_id, Players {
                     name: name.to_string(),
                     id: *player_id,
                     position: position.clone(),

@@ -6,7 +6,7 @@ use serde::{ Deserialize, Serialize };
 #[derive(Debug, Clone, Serialize, PartialEq, Deserialize)]
 pub enum GameEvent {
     BeginGame {
-        player_list: HashMap<u8, Player>,
+        player_list: HashMap<u8, Players>,
     },
     EndGame,
     AccessForbidden,
@@ -22,7 +22,7 @@ pub enum GameEvent {
     PlayerMove {
         player_id: u8,
         at: Position,
-        player_list: HashMap<u8, Player>
+        player_list: HashMap<u8, Players>
     },
     Spawn {
         player_id: u8,
