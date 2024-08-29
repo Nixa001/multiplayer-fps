@@ -27,14 +27,14 @@ pub fn create_enemys(
     asset_server: &AssetServer,
 ) {
     for (&id, player) in list_player.list.iter() {
-        let player_handle: Handle<Scene> = asset_server.load("soldier/Soldier.glb#Scene0");
+        let player_handle: Handle<Scene> = asset_server.load("soldier/soldier.glb#Scene0");
         // let player_handle:Handle<Scene> = asset_server.load("armes/Soldier.glb#Scene0");
         let player_entity = commands
             .spawn((
                 Enemy::new(id, format!("Enemy_{}", id), player.position.clone()),
                 SceneBundle {
                     scene: player_handle,
-                    transform: Transform::from_xyz(player.position.x, player.position.y, player.position.z).with_scale(Vec3::splat(0.4)),
+                    transform: Transform::from_xyz(player.position.x, player.position.y, player.position.z).with_scale(Vec3::splat(0.1)),
                     ..default()
                 },
         ));
@@ -48,12 +48,13 @@ pub fn update_enemys_position(
     asset_server: Res<AssetServer>,
     mut counter: ResMut<Counter>,
 ) {
-    println!("------------Enemys----------- {:?}", list_player.list);
+    // println!("------------Enemys----------- {:?}", list_player.list);
     let count = counter.val;
-    // if count < 1 {
+    if !(list_player.list.is_empty()){
         
         create_enemys(&mut commands, &list_player, &asset_server);
-    // }
+    }
+    println!("---- Counte ----  = {}", count);
     counter.val += 1;
     for (mut transform, mut enemy) in query.iter_mut() {
         if let Some(player) = list_player.list.get(&enemy.id) {
