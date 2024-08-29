@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use store::Position;
 use multiplayer_fps::Counter;
 use crate::ListPlayer;
+use crate::player::player::Player;
 
 #[derive(Component)]
 pub struct Enemy {
@@ -26,18 +27,16 @@ pub fn create_enemys(
     asset_server: &AssetServer,
 ) {
     for (&id, player) in list_player.list.iter() {
-        let enemy_model: Handle<Scene> = asset_server.load("soldier/Soldier.glb#Scene0");
-        commands.spawn((
-            Enemy::new(id, format!("Enemy_{}", id), player.position.clone()),
-            SceneBundle {
-                scene: enemy_model,
-                transform: Transform::from_translation(Vec3::new(
-                    player.position.x,
-                    player.position.y,
-                    player.position.z
-                )),
-                ..default()
-            },
+        let player_handle: Handle<Scene> = asset_server.load("armes/arme1.glb#Scene0");
+        // let player_handle:Handle<Scene> = asset_server.load("armes/Soldier.glb#Scene0");
+        let player_entity = commands
+            .spawn((
+                Enemy::new(id, format!("Enemy_{}", id), player.position.clone()),
+                SceneBundle {
+                    scene: player_handle,
+                    transform: Transform::from_xyz(player.position.x, player.position.y, player.position.z).with_scale(Vec3::splat(0.4)),
+                    ..default()
+                },
         ));
     }
 }
