@@ -27,14 +27,14 @@ pub fn create_enemys(
     asset_server: &AssetServer,
 ) {
     for (&id, player) in list_player.list.iter() {
-        let player_handle: Handle<Scene> = asset_server.load("soldier/Pistol.glb#Scene0");
+        let player_handle: Handle<Scene> = asset_server.load("soldier/enemy.glb#Scene0");
         // let player_handle:Handle<Scene> = asset_server.load("armes/Soldier.glb#Scene0");
         let player_entity = commands
             .spawn((
                 Enemy::new(id, format!("Enemy_{}", id), player.position.clone()),
                 SceneBundle {
                     scene: player_handle,
-                    transform: Transform::from_xyz(player.position.x, player.position.y, player.position.z).with_scale(Vec3::splat(0.5)),
+                    transform: Transform::from_xyz(player.position.x, player.position.y, player.position.z).with_scale(Vec3::splat(0.01)),
                     ..default()
                 },
         ));

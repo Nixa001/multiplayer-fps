@@ -88,7 +88,7 @@ fn main() {
         .add_systems(
             Update,
             (
-                games::fps::fps_display_system,
+                // games::fps::fps_display_system,
                 handle_connection,
                 player::player::move_player,
                 player::player::grab_mouse,
