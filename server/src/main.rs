@@ -134,11 +134,21 @@ fn main() {
                         println!("[EVENT]: Client {} sent:\n\t{:#?}", client_id, broad_event);
                         match broad_event {
                             GameEvent::PlayerMove { .. } => {
-                                server.broadcast_message_except(
-                                    client_id,
-                                    DefaultChannel::ReliableOrdered,
-                                    serialize(&broad_event).unwrap()
-                                );
+                                for client_id_p in server.clients_id().into_iter() {
+                                    let mut player_list: HashMap<u8, Players> = HashMap::new();
+                                    let id = game_state.get_player_id(client_id_p.raw());
+                                    for (idp, value) in game_state.players.clone() {
+                                        if !idp.eq(&id) {
+                                            player_list.insert(idp, value);
+                                        }
+                                    }
+                                    let begin_event = GameEvent::BeginGame { player_list };
+                                    server.send_message(
+                                        client_id_p,
+                                        DefaultChannel::ReliableOrdered,
+                                        serialize(&begin_event).unwrap()
+                                    );
+                                }
                             }
                             _ => {
                                 server.broadcast_message(
