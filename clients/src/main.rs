@@ -165,7 +165,6 @@ fn setup(
 
 
 fn setup_crosshair(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // Chargez l'image du viseur
     let crosshair_image = asset_server.load("viseur.png");
     
     commands.spawn((
