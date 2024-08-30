@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::net::{ SocketAddr, UdpSocket };
 use std::time::{ Duration, Instant, SystemTime };
 use std::thread::{ self, * };
-use std::u64;
+use std::{ u64, u8 };
 use store::{ PROTOCOL_ID, GAME_FPS, * };
 use bincode::*;
 use server::*;
@@ -142,7 +142,11 @@ fn main() {
                                             player_list.insert(idp, value);
                                         }
                                     }
-                                    let begin_event = GameEvent::BeginGame { player_list };
+                                    let begin_event = GameEvent::PlayerMove {
+                                        player_id: u8::MAX,
+                                        at: Position::default(),
+                                        player_list,
+                                    };
                                     server.send_message(
                                         client_id_p,
                                         DefaultChannel::ReliableOrdered,

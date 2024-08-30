@@ -15,7 +15,7 @@ use std::{
 use std::collections::HashMap;
 use bevy::math::Vec3;
 use bevy::pbr::StandardMaterial;
-use store::{GameEvent, GAME_FPS, PROTOCOL_ID, Players};
+use store::{ GameEvent, GAME_FPS, PROTOCOL_ID, Players };
 mod player;
 mod player_2d;
 mod playing_field;
@@ -93,7 +93,7 @@ pub fn handle_connection(
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
     mut location: ResMut<PositionInitial>,
-    mut liste_player: ResMut<ListPlayer>,
+    mut liste_player: ResMut<ListPlayer>
 ) {
     client.update(GAME_FPS);
     if transport.update(GAME_FPS, &mut client).is_err() {
@@ -114,10 +114,9 @@ pub fn handle_connection(
             player_query,
             spawn_info,
             &mut location,
-            &mut liste_player,
+            &mut liste_player
         );
         // println!("position stored in the resource => {}*{}*{}", location.x, location.y, location.z);
-
 
         // Example of sending a message to the server:
         // client.send_message(DefaultChannel::ReliableOrdered, serialize(&event).unwrap());
@@ -126,7 +125,6 @@ pub fn handle_connection(
     transport.send_packets(&mut client).expect("Error while sending packets to server");
     sleep(GAME_FPS);
 }
-
 
 pub fn handle_server_messages(
     client: &mut ResMut<RenetClient>,
@@ -137,8 +135,7 @@ pub fn handle_server_messages(
     mut player_query: Query<&mut Transform, With<Player>>,
     mut spawn_info: ResMut<PlayerSpawnInfo>,
     location: &mut ResMut<PositionInitial>,
-    liste_player: &mut ResMut<ListPlayer>,
-
+    liste_player: &mut ResMut<ListPlayer>
 ) {
     while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
         if let Ok(event) = deserialize::<GameEvent>(&message) {
@@ -184,16 +181,16 @@ pub fn handle_server_messages(
                 }
 
                 GameEvent::PlayerMove { player_list, .. } => {
-                    info!("Move detected = > {:#?}", player_list);
+                    println!("****************FROM SERVER => {:#?}***************", player_list);
                     liste_player.list = player_list;
                 }
-                GameEvent::Timer { duration } => {
-                    info!("🕗 timer tickling => {}", duration);
-                }
+                // GameEvent::Timer { duration } => {
+                //     info!("🕗 timer tickling => {}", duration);
+                // }
 
-                GameEvent::BeginGame { player_list } => {
-                    info!("Game has begun with warriors => {:#?}", player_list);
-                }
+                // GameEvent::BeginGame { player_list } => {
+                //     // info!("Game has begun with warriors => {:#?}", player_list);
+                // }
 
                 GameEvent::AccessForbidden => {
                     info!("❌ Oops ! ongoing game...");
@@ -207,5 +204,6 @@ pub fn handle_server_messages(
             }
             // Handle server events here
         }
+        // info!("Move detected = > {:#?}", liste_player.list);
     }
 }
