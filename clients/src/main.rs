@@ -1,4 +1,3 @@
-use crate::player::player::Player;
 use bevy::prelude::*;
 use bevy_rapier3d::plugin::{ NoUserData, RapierPhysicsPlugin };
 use bevy_renet::{ transport::NetcodeClientPlugin, RenetClientPlugin };
@@ -35,7 +34,8 @@ mod games;
 
 #[derive(Component)]
 struct MinimapPlayer;
-
+#[derive(Component)]
+struct Crosshair;
 const MAX_USERNAME_LENGTH: usize = 248;
 fn main() {
     let server_ip = get_input("Enter server IP address: ");
@@ -85,6 +85,9 @@ fn main() {
                 ..default()
             })
         )
+        .add_systems(Startup, setup_crosshair)
+        .add_systems(Update, update_crosshair_position)
+        // .add_systems(Update, (fire_projectile, update_projectiles))
         .add_plugins((
             RenetClientPlugin,
             NetcodeClientPlugin,
@@ -113,9 +116,9 @@ fn main() {
                 handle_connection,
                 player::player::move_player,
                 player::player::grab_mouse,
-                player::fire::fire_laser,
-                player::fire::update_lasers,
-                player::fire::handle_projectile_collisions,
+                player::fire::fire_projectile,
+                player::fire::update_projectiles,
+                // player::fire::handle_projectile_collisions,
                 player_2d::player_2d::update_minimap,
                 // playing_field::playing_field::handle_collisions,
                 // handle_gltf_wall_collisions,
@@ -180,27 +183,31 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         // Position par défaut
     );
 }
-fn check_model_loaded(asset_server: Res<AssetServer>, scene_assets: Res<Assets<Scene>>) {
-    let scene_handle: Handle<Scene> = asset_server.load("mages/mage1_3.glb#Scene0");
-    if scene_assets.contains(&scene_handle) {
-        println!("Le modèle GLTF a été chargé avec succès!");
-    } else {
-        println!("Le modèle GLTF n'est pas encore chargé...");
-    }
+
+
+fn setup_crosshair(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let crosshair_image = asset_server.load("viseur.png");
+    
+    commands.spawn((
+        Crosshair,
+        ImageBundle {
+            image: UiImage::new(crosshair_image),
+            style: Style {
+                position_type: PositionType::Absolute,
+                ..default()
+            },
+            ..default()
+        },
+    ));
 }
 
-fn update_minimap(
-    player_query: Query<&Transform, With<Player>>,
-    mut minimap_query: Query<&mut Transform, With<MinimapPlayer>>
+fn update_crosshair_position(
+    mut crosshair_query: Query<&mut Style, With<Crosshair>>,
+    windows: Query<&Window>,
 ) {
-    if let Ok(player_transform) = player_query.get_single() {
-        if let Ok(mut minimap_transform) = minimap_query.get_single_mut() {
-            // Met à jour la position du joueur sur la minimap
-            minimap_transform.translation = Vec3::new(
-                200.0 + player_transform.translation.x * 10.0, // Ajuste l'échelle pour la minimap
-                200.0 + player_transform.translation.z * 10.0,
-                0.0
-            );
-        }
+    let window = windows.single();
+    if let Ok(mut style) = crosshair_query.get_single_mut() {
+        style.left = Val::Px(window.width() / 2.0);
+        style.top = Val::Px(window.height() / 2.0);
     }
 }
