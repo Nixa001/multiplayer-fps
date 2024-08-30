@@ -166,7 +166,7 @@ pub fn setup_player_and_camera(
             Player::new(player_id as i32, "Player".to_string(), 5.0, Vec2::new(0.5, 0.5), 3),
             SceneBundle {
                 scene: player_handle,
-                transform: Transform::from_xyz(x, y + 1.0, z).with_scale(Vec3::splat(0.4)),
+                transform: Transform::from_xyz(x, y, z).with_scale(Vec3::splat(0.4)),
                 ..default()
             },
             // Controls manuel du joueur sans se soucier d'influence externe
