@@ -64,7 +64,7 @@ fn main() {
     let list_user = ListPlayer::default();
     let timer = GameTimer { sec: i32::MAX };
     let game_state = GameState::new();
-    let ennemy_created = EnnemyCreated { val: false };
+    let ennemy_created = EnnemyCreated { val: true };
     App::new()
         .insert_resource(client)
         .insert_resource(transport)
