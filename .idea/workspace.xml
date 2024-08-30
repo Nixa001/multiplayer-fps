@@ -7,7 +7,7 @@
     <cargoProject FILE="$PROJECT_DIR$/clients/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9f185197-bf52-4ec3-adf2-3d2c29c07a14" name="Changes" comment="debug &quot;2.9&quot;" />
+    <list default="true" id="9f185197-bf52-4ec3-adf2-3d2c29c07a14" name="Changes" comment="debug &quot;3.0&quot;" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -172,7 +172,15 @@
       <option name="project" value="LOCAL" />
       <updated>1725044190098</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="debug &quot;3.0&quot;">
+      <option name="closed" value="true" />
+      <created>1725044557966</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1725044557966</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -197,6 +205,7 @@
     <MESSAGE value="feat(playing_field): make mazes private&#10;&#10;The function `get_mazes` was publicly accessible, but only used&#10;internally. This change makes the function private. This helps to&#10;ensure the playing field module's internal logic is not accessible&#10;from outside and promotes encapsulation." />
     <MESSAGE value="debug &quot;2.8&quot;" />
     <MESSAGE value="debug &quot;2.9&quot;" />
-    <option name="LAST_COMMIT_MESSAGE" value="debug &quot;2.9&quot;" />
+    <MESSAGE value="debug &quot;3.0&quot;" />
+    <option name="LAST_COMMIT_MESSAGE" value="debug &quot;3.0&quot;" />
   </component>
 </project>

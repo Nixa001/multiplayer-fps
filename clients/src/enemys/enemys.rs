@@ -67,7 +67,7 @@ pub fn update_enemys_position(
     for (mut transform, mut enemy) in query.iter_mut() {
         if let Some(player) = list_player.list.get(&enemy.id) {
             enemy.position = player.position.clone();
-            transform.translation = Vec3::new(enemy.position.x, enemy.position.y - 1.0, enemy.position.z);
+            transform.translation = Vec3::new(enemy.position.x, enemy.position.y - 0.2, enemy.position.z);
         }
     }
 }
