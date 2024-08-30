@@ -38,7 +38,7 @@ pub fn create_enemys(
                     player.position.x,
                     player.position.y,
                     player.position.z
-                ).with_scale(Vec3::splat(0.1)),
+                ).with_scale(Vec3::splat(0.01)),
                 ..default()
             },
         ));
