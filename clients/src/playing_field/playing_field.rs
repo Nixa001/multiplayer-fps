@@ -39,6 +39,22 @@ impl Fields {
         // Plane
         let arena_size = 28.0;
 
+        // Ground
+        commands.spawn((
+            PbrBundle {
+                mesh: meshes.add(Mesh::from(shape::Plane::from_size(arena_size))),
+                material: materials.add(StandardMaterial {
+                    base_color: Color::rgb(0.3, 0.5, 0.3),
+                    ..Default::default()
+                }),
+                transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                ..Default::default()
+            },
+            RigidBody::Fixed,
+            Collider::cuboid(arena_size * 0.5, 0.1, arena_size * 0.5),
+            Collision::Ground,
+        ));
+
         let wall_height = 5.0;
         let wall_thickness = 0.5;
 
@@ -90,7 +106,11 @@ impl Fields {
 
         // Light
         commands.spawn(DirectionalLightBundle {
-            transform: Transform::from_translation(Vec3::ONE).looking_at(Vec3::ZERO, Vec3::Y),
+            transform: Transform::from_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_4)),
+            directional_light: DirectionalLight {
+                shadows_enabled: true,
+                ..default()
+            },
             ..Default::default()
         });
     }

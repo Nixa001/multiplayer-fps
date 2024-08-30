@@ -7,7 +7,9 @@
     <cargoProject FILE="$PROJECT_DIR$/clients/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9f185197-bf52-4ec3-adf2-3d2c29c07a14" name="Changes" comment="debug &quot;3.0&quot;" />
+    <list default="true" id="9f185197-bf52-4ec3-adf2-3d2c29c07a14" name="Changes" comment="debug &quot;3.0&quot;">
+      <change beforePath="$PROJECT_DIR$/clients/src/playing_field/playing_field.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/playing_field/playing_field.rs" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
