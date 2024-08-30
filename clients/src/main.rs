@@ -8,6 +8,7 @@ use multiplayer_fps::{
     handle_connection,
     setup_networking,
     Counter,
+    EnnemyCreated,
     GameState,
     GameTimer,
     ListPlayer,
@@ -63,6 +64,7 @@ fn main() {
     let list_user = ListPlayer::default();
     let timer = GameTimer { sec: i32::MAX };
     let game_state = GameState::new();
+    let ennemy_created = EnnemyCreated { val: false };
     App::new()
         .insert_resource(client)
         .insert_resource(transport)
@@ -71,6 +73,7 @@ fn main() {
         .insert_resource(list_user)
         .insert_resource(timer)
         .insert_resource(game_state)
+        .insert_resource(ennemy_created)
         .add_plugins(
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {

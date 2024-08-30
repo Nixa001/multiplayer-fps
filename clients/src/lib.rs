@@ -1,4 +1,4 @@
-use bevy::asset::{AssetServer, Assets};
+use bevy::asset::{ AssetServer, Assets };
 use bevy::log::{ error, info, warn };
 use bevy::prelude::{ Commands, Mesh, Query, ResMut, Res, Resource, Transform, With };
 use bevy_renet::renet::transport::ClientAuthentication;
@@ -36,6 +36,10 @@ pub struct PositionInitial {
 #[derive(Debug, Default, Resource)]
 pub struct Counter {
     pub val: i32,
+}
+#[derive(Debug,Resource)]
+pub struct EnnemyCreated {
+    pub val: bool,
 }
 
 #[derive(Debug, Default, Resource)]
@@ -145,7 +149,7 @@ pub fn handle_connection(
             &mut liste_player,
             &mut game_state,
             &mut game_timer
-    );
+        );
     }
 
     transport.send_packets(&mut client).expect("Error while sending packets to server");
@@ -201,7 +205,7 @@ pub fn handle_server_messages(
                 }
 
                 GameEvent::PlayerMove { player_list, .. } => {
-                    println!("****************FROM SERVER => {:#?}***************", player_list);
+                    //println!("****************FROM SERVER => {:#?}***************", player_list);
                     liste_player.list = player_list;
                 }
                 GameEvent::Timer { duration } => {
