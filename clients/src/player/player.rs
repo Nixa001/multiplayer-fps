@@ -23,21 +23,26 @@ pub struct Player {
     pub speed: f32,
     pub camera_offset: Vec3,
     pub size: Vec2,
+    pub lives: i8,
 }
 #[derive(Component)]
 pub struct PlayerCamera;
 #[derive(Component)]
 pub struct Weapon;
 impl Player {
-    pub fn new(id: i32, name: String, speed: f32, size: Vec2) -> Self {
+    pub fn new(id: i32, name: String, speed: f32, size: Vec2, lives:i8) -> Self {
         Player {
             id,
             name,
             speed,
             camera_offset: Vec3::new(0.0, 0.2, 0.8),
             size,
+            lives,
 
         }
+    }
+    pub fn player_lives(&self) -> i8{
+        self.lives
     }
 }
 
@@ -158,7 +163,7 @@ pub fn setup_player_and_camera(
     // let player_handle:Handle<Scene> = asset_server.load("armes/Soldier.glb#Scene0");
     let player_entity = commands
         .spawn((
-            Player::new(player_id as i32, "Player".to_string(), 5.0, Vec2::new(0.5, 0.5)),
+            Player::new(player_id as i32, "Player".to_string(), 5.0, Vec2::new(0.5, 0.5), 3),
             SceneBundle {
                 scene: player_handle,
                 transform: Transform::from_xyz(x, y, z).with_scale(Vec3::splat(0.4)),

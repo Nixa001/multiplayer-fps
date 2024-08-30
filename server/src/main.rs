@@ -4,8 +4,8 @@ use store::GameState;
 use std::collections::HashMap;
 use std::net::{ SocketAddr, UdpSocket };
 use std::time::{ Duration, Instant, SystemTime };
-use std::thread::{ self, * };
 use std::{ u64, u8 };
+use std::thread::*;
 use store::{ PROTOCOL_ID, GAME_FPS, * };
 use bincode::*;
 use server::*;
@@ -131,7 +131,7 @@ fn main() {
                 if let Ok(event) = deserialize::<GameEvent>(&message) {
                     if game_state.validate(&event, client_id.raw()) {
                         let broad_event = game_state.consume(&event, client_id.raw());
-                        println!("[EVENT]: Client {} sent:\n\t{:#?}", client_id, broad_event);
+                        //println!("[EVENT]: Client {} sent:\n\t{:#?}", client_id, broad_event);
                         match broad_event {
                             GameEvent::PlayerMove { .. } => {
                                 for client_id_p in server.clients_id().into_iter() {

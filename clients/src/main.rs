@@ -2,9 +2,20 @@ use crate::player::player::Player;
 use bevy::prelude::*;
 use bevy_rapier3d::plugin::{ NoUserData, RapierPhysicsPlugin };
 use bevy_renet::{ transport::NetcodeClientPlugin, RenetClientPlugin };
-use multiplayer_fps::{Counter, get_input, handle_connection, ListPlayer, PlayerSpawnInfo, PositionInitial, setup_networking};
-use std::net::SocketAddr;
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+use games::{ gamestate::{ setup_timer, display_timer }, fps::*, live::* };
+use multiplayer_fps::{
+    get_input,
+    handle_connection,
+    setup_networking,
+    Counter,
+    GameState,
+    GameTimer,
+    ListPlayer,
+    PlayerSpawnInfo,
+    PositionInitial,
+};
+use std::{ i32, net::SocketAddr };
+use bevy::diagnostic::{ FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin };
 // use bevy::sprite::collide_aabb::collide;
 // use bevy::render::debug::DebugLines;
 // use bevy_gltf::Gltf;
@@ -50,18 +61,22 @@ fn main() {
     let position = PositionInitial::default();
     let counter = Counter::default();
     let list_user = ListPlayer::default();
+    let timer = GameTimer { sec: i32::MAX };
+    let game_state = GameState::new();
     App::new()
         .insert_resource(client)
         .insert_resource(transport)
         .insert_resource(position)
         .insert_resource(counter)
         .insert_resource(list_user)
+        .insert_resource(timer)
+        .insert_resource(game_state)
         .add_plugins(
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
                     title: "IBG".into(),
                     resolution: (1500.0, 1000.0).into(),
-                    resizable: false,
+                    resizable: true,
                     ..default()
                 }),
                 ..default()
@@ -81,14 +96,17 @@ fn main() {
             // playing_field::playing_field::Fields::spawn_object,
             // playing_field::playing_field::Fields::spawn_player,
             setup,
-            games::fps::setupfps,
-            // enemys::enemys::create_enemys,
+            setup_timer,
+            setupfps,
+            setuplives,
         ))
         // .add_systems(Startup, setup)
         .add_systems(
             Update,
             (
-                // games::fps::fps_display_system,
+                fps_display_system,
+                display_lives,
+                display_timer,
                 handle_connection,
                 player::player::move_player,
                 player::player::grab_mouse,
@@ -104,12 +122,7 @@ fn main() {
         )
         .run();
 }
-fn setup(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>)
-{
-
-
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Caméra
     // commands.spawn(Camera3dBundle {
     //    transform: Transform::from_xyz(10.0, 45.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),

@@ -1,6 +1,6 @@
-use bevy::asset::{ AssetServer, Assets };
+use bevy::asset::{AssetServer, Assets};
 use bevy::log::{ error, info, warn };
-use bevy::prelude::{ Commands, Mesh, Query, Res, ResMut, Resource, Transform, With };
+use bevy::prelude::{ Commands, Mesh, Query, ResMut, Res, Resource, Transform, With };
 use bevy_renet::renet::transport::ClientAuthentication;
 use bevy_renet::renet::transport::NetcodeClientTransport;
 use bevy_renet::renet::{ ConnectionConfig, DefaultChannel, RenetClient };
@@ -19,6 +19,7 @@ use store::{ GameEvent, GAME_FPS, PROTOCOL_ID, Players };
 mod player;
 mod player_2d;
 mod playing_field;
+mod games;
 use crate::player::player::Player;
 
 #[derive(Default, Resource, Debug)]
@@ -36,11 +37,39 @@ pub struct PositionInitial {
 pub struct Counter {
     pub val: i32,
 }
+
+#[derive(Debug, Default, Resource)]
+pub struct GameTimer {
+    pub sec: i32,
+}
+#[derive(Debug, Resource)]
+pub struct GameState {
+    pub is_waiting: bool,
+    pub has_started: bool,
+    pub has_ended: bool,
+}
+impl GameState {
+    pub fn new() -> Self {
+        Self { is_waiting: true, has_ended: false, has_started: false }
+    }
+    pub fn start_game(&mut self) {
+        self.is_waiting = false;
+        self.has_started = true;
+        self.has_ended = false;
+    }
+
+    pub fn end_game(&mut self) {
+        self.is_waiting = false;
+        self.has_started = false;
+        self.has_ended = true;
+    }
+}
 #[derive(Resource)]
 pub struct PlayerSpawnInfo {
     pub player_id: Option<u8>,
     pub position: Option<Vec3>,
 }
+
 pub fn get_input(prompt: &str) -> String {
     print!("{}", prompt);
     io::stdout().flush().unwrap();
@@ -93,7 +122,9 @@ pub fn handle_connection(
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
     mut location: ResMut<PositionInitial>,
-    mut liste_player: ResMut<ListPlayer>
+    mut liste_player: ResMut<ListPlayer>,
+    mut game_state: ResMut<GameState>,
+    mut game_timer: ResMut<GameTimer>
 ) {
     client.update(GAME_FPS);
     if transport.update(GAME_FPS, &mut client).is_err() {
@@ -103,23 +134,18 @@ pub fn handle_connection(
     }
 
     if client.is_connected() {
-        //  println!("counting in handle conn => {}", counter.x);
-        //  println!("prev poz => {}*{}*{}", location.x, location.y, location.z);
         handle_server_messages(
             &mut client,
             commands,
-            &asset_server,
             &mut meshes,
             &mut materials,
             player_query,
             spawn_info,
             &mut location,
-            &mut liste_player
-        );
-        // println!("position stored in the resource => {}*{}*{}", location.x, location.y, location.z);
-
-        // Example of sending a message to the server:
-        // client.send_message(DefaultChannel::ReliableOrdered, serialize(&event).unwrap());
+            &mut liste_player,
+            &mut game_state,
+            &mut game_timer
+    );
     }
 
     transport.send_packets(&mut client).expect("Error while sending packets to server");
@@ -129,13 +155,14 @@ pub fn handle_connection(
 pub fn handle_server_messages(
     client: &mut ResMut<RenetClient>,
     mut commands: Commands,
-    asset_server: &Res<AssetServer>,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
     mut player_query: Query<&mut Transform, With<Player>>,
     mut spawn_info: ResMut<PlayerSpawnInfo>,
     location: &mut ResMut<PositionInitial>,
-    liste_player: &mut ResMut<ListPlayer>
+    liste_player: &mut ResMut<ListPlayer>,
+    game_state: &mut ResMut<GameState>,
+    game_timer: &mut ResMut<GameTimer>
 ) {
     while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
         if let Ok(event) = deserialize::<GameEvent>(&message) {
@@ -168,29 +195,23 @@ pub fn handle_server_messages(
                         format!("Map{}", lvl).as_str()
                     );
                 }
-                GameEvent::PlayerJoined { player_id, name, position, .. } => {
+                GameEvent::PlayerJoined { player_id, name: _, position: _, .. } => {
                     // ! implement logic here
-                    info!(
-                        "{} [{}] joined the party and is located at \"{}°- {}°- {}°\" ",
-                        name,
-                        player_id,
-                        position.x,
-                        position.y,
-                        position.z
-                    );
+                    info!("[{}] joined the war ", player_id);
                 }
 
                 GameEvent::PlayerMove { player_list, .. } => {
                     println!("****************FROM SERVER => {:#?}***************", player_list);
                     liste_player.list = player_list;
                 }
-                // GameEvent::Timer { duration } => {
-                //     info!("🕗 timer tickling => {}", duration);
-                // }
+                GameEvent::Timer { duration } => {
+                    game_timer.sec = duration as i32;
+                }
 
-                // GameEvent::BeginGame { player_list } => {
-                //     // info!("Game has begun with warriors => {:#?}", player_list);
-                // }
+                GameEvent::BeginGame { player_list } => {
+                    game_state.start_game();
+                    info!("Game has begun with warriors => {:#?}", player_list);
+                }
 
                 GameEvent::AccessForbidden => {
                     info!("❌ Oops ! ongoing game...");
