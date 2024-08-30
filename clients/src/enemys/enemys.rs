@@ -28,7 +28,7 @@ pub fn create_enemys(
 ) {
     println!("------------Enemys-------{:?}", list_player.list);
     for (&id, player) in list_player.list.iter() {
-        let player_handle: Handle<Scene> = asset_server.load("soldier/soldier.glb#Scene0");
+        let player_handle: Handle<Scene> = asset_server.load("soldier/soldier2.glb#Scene0");
         // let player_handle:Handle<Scene> = asset_server.load("armes/Soldier.glb#Scene0");
         let player_entity = commands.spawn((
             Enemy::new(id, format!("Enemy_{}", id), player.position.clone()),
@@ -38,7 +38,7 @@ pub fn create_enemys(
                     player.position.x,
                     player.position.y,
                     player.position.z
-                ).with_scale(Vec3::splat(0.01)),
+                ).with_scale(Vec3::splat(0.02)),
                 ..default()
             },
         ));

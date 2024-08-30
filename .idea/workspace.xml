@@ -7,7 +7,10 @@
     <cargoProject FILE="$PROJECT_DIR$/clients/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9f185197-bf52-4ec3-adf2-3d2c29c07a14" name="Changes" comment="feat(playing_field): make mazes private&#10;&#10;The function `get_mazes` was publicly accessible, but only used&#10;internally. This change makes the function private. This helps to&#10;ensure the playing field module's internal logic is not accessible&#10;from outside and promotes encapsulation." />
+    <list default="true" id="9f185197-bf52-4ec3-adf2-3d2c29c07a14" name="Changes" comment="debug &quot;2.8&quot;">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clients/src/enemys/enemys.rs" beforeDir="false" afterPath="$PROJECT_DIR$/clients/src/enemys/enemys.rs" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -148,11 +151,38 @@
       <option name="project" value="LOCAL" />
       <updated>1724273709531</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="feat(playing_field): make mazes private&#10;&#10;The function `get_mazes` was publicly accessible, but only used&#10;internally. This change makes the function private. This helps to&#10;ensure the playing field module's internal logic is not accessible&#10;from outside and promotes encapsulation.">
+      <option name="closed" value="true" />
+      <created>1725043421692</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1725043421692</updated>
+    </task>
+    <task id="LOCAL-00007" summary="debug &quot;2.8&quot;">
+      <option name="closed" value="true" />
+      <created>1725043531105</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1725043531105</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="test" />
@@ -160,6 +190,7 @@
     <MESSAGE value="&#10;chore(store, clients): Update player position data type to f32&#10;&#10;Update player position data type to f32 for smoother movement and more accurate positioning.&#10;&#10;This change updates the `Position` struct in the `store` crate to use f32 for x, y, and z coordinates. It also makes corresponding adjustments in the `clients` crate to handle the change in the data type.&#10;&#10;This change allows for smoother movement and more accurate positioning of players in the game." />
     <MESSAGE value="&#10;chore(clients): Remove unused imports&#10;&#10;This commit removes unused imports in the `clients/src/main.rs` file." />
     <MESSAGE value="feat(playing_field): make mazes private&#10;&#10;The function `get_mazes` was publicly accessible, but only used&#10;internally. This change makes the function private. This helps to&#10;ensure the playing field module's internal logic is not accessible&#10;from outside and promotes encapsulation." />
-    <option name="LAST_COMMIT_MESSAGE" value="feat(playing_field): make mazes private&#10;&#10;The function `get_mazes` was publicly accessible, but only used&#10;internally. This change makes the function private. This helps to&#10;ensure the playing field module's internal logic is not accessible&#10;from outside and promotes encapsulation." />
+    <MESSAGE value="debug &quot;2.8&quot;" />
+    <option name="LAST_COMMIT_MESSAGE" value="debug &quot;2.8&quot;" />
   </component>
 </project>
