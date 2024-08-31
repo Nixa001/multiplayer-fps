@@ -22,6 +22,7 @@ pub struct Players {
     pub client_id: u64,
     pub position: Position,
     pub vision: (f32, f32),
+    pub lives: u8,
 }
 
 impl Players {
@@ -30,8 +31,8 @@ impl Players {
         id: u8,
         position: Position,
         vision: (f32, f32),
-        client_id: u64
+        client_id: u64,
     ) -> Self {
-        Self { name, id, position, vision, client_id }
+        Self { name, id, position, vision, client_id, lives:3 }
     }
 }

@@ -1,3 +1,4 @@
+use crate::enemys::enemys::Enemy;
 use crate::{player::player::Player, playing_field::playing_field::Collision};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
@@ -104,4 +105,55 @@ fn ray_from_screenspace(
     cursor_position: Vec2,
 ) -> Option<Ray> {
     camera.viewport_to_world(camera_transform, cursor_position)
+}
+
+
+pub fn handle_projectile_collisions(
+    mut commands: Commands,
+    projectile_query: Query<(Entity, &Transform), With<Projectile>>,
+    rapier_context: Res<RapierContext>,
+    mut enemy_query: Query<(Entity, &mut Enemy), With<Collision>>,
+) {
+    for (projectile_entity, projectile_transform) in projectile_query.iter() {
+        if let Some((hit_entity, hit_position)) = check_projectile_collision(
+            projectile_entity,
+            projectile_transform,
+            &rapier_context,
+        ) {
+            // Check if the hit entity is an enemy
+            if let Ok((_, mut enemy)) = enemy_query.get_mut(hit_entity) {
+                // Decrement enemy lives
+                enemy.lives = enemy.lives.saturating_sub(1);
+                
+                // If enemy has no lives left, despawn it
+                if enemy.lives == 0 {
+                    commands.entity(hit_entity).despawn();
+                }
+                
+                // Print debug information
+                println!("Enemy hit! Lives remaining: {}", enemy.lives);
+            }
+            
+            // Despawn the projectile
+            commands.entity(projectile_entity).despawn();
+        }
+    }
+}
+
+fn check_projectile_collision(
+    projectile_entity: Entity,
+    projectile_transform: &Transform,
+    rapier_context: &RapierContext,
+) -> Option<(Entity, f32)> {
+    let ray_origin = projectile_transform.translation;
+    let ray_direction = projectile_transform.forward();
+    let max_toi = 0.1; // Short distance to check just in front of the projectile
+    
+    rapier_context.cast_ray(
+        ray_origin,
+        ray_direction,
+        max_toi,
+        true,
+        QueryFilter::default().exclude_collider(projectile_entity),
+    )
 }

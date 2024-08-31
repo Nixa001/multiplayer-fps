@@ -109,6 +109,7 @@ impl GameState {
                     position: position.clone(),
                     client_id: client_id.clone(),
                     vision: (0.0, 0.0),
+                    lives:3,
                 });
 
                 eve = GameEvent::PlayerJoined {

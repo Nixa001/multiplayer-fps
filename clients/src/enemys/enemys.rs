@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use store::Position;
-use multiplayer_fps::{ Counter, EnnemyCreated, GameState };
+use crate::{ Counter, EnnemyCreated, GameState };
 use crate::ListPlayer;
 use crate::player::player::Player;
 
@@ -9,6 +9,7 @@ pub struct Enemy {
     pub id: u8,
     pub name: String,
     pub position: Position,
+    pub lives:u8,
 }
 
 impl Enemy {
@@ -17,6 +18,7 @@ impl Enemy {
             id,
             name,
             position,
+            lives:3
         }
     }
 }

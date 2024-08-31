@@ -118,7 +118,7 @@ fn main() {
                 player::player::grab_mouse,
                 player::fire::fire_projectile,
                 player::fire::update_projectiles,
-                // player::fire::handle_projectile_collisions,
+                player::fire::handle_projectile_collisions,
                 player_2d::player_2d::update_minimap,
                 // playing_field::playing_field::handle_collisions,
                 // handle_gltf_wall_collisions,

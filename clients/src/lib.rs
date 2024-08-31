@@ -20,6 +20,7 @@ mod player;
 mod player_2d;
 mod playing_field;
 mod games;
+mod enemys;
 use crate::player::player::Player;
 
 #[derive(Default, Resource, Debug)]
