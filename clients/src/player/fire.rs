@@ -120,6 +120,8 @@ pub fn handle_projectile_collisions(
             projectile_transform,
             &rapier_context,
         ) {
+            println!(":::::: TEST FUNCT  :::::::::::");
+
             // Check if the hit entity is an enemy
             if let Ok((_, mut enemy)) = enemy_query.get_mut(hit_entity) {
                 // Decrement enemy lives
@@ -131,7 +133,7 @@ pub fn handle_projectile_collisions(
                 }
                 
                 // Print debug information
-                println!("Enemy hit! Lives remaining: {}", enemy.lives);
+                println!(":::::::::Enemy hit! Lives remaining: {}:::::::::", enemy.lives);
             }
             
             // Despawn the projectile
@@ -147,7 +149,7 @@ fn check_projectile_collision(
 ) -> Option<(Entity, f32)> {
     let ray_origin = projectile_transform.translation;
     let ray_direction = projectile_transform.forward();
-    let max_toi = 0.1; // Short distance to check just in front of the projectile
+    let max_toi = 0.5; // Short distance to check just in front of the projectile
     
     rapier_context.cast_ray(
         ray_origin,

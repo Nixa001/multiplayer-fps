@@ -23,14 +23,14 @@ pub struct Player {
     pub speed: f32,
     pub camera_offset: Vec3,
     pub size: Vec2,
-    pub lives: i8,
+    pub lives: u8,
 }
 #[derive(Component)]
 pub struct PlayerCamera;
 #[derive(Component)]
 pub struct Weapon;
 impl Player {
-    pub fn new(id: i32, name: String, speed: f32, size: Vec2, lives: i8) -> Self {
+    pub fn new(id: i32, name: String, speed: f32, size: Vec2, lives: u8) -> Self {
         Player {
             id,
             name,
@@ -40,7 +40,7 @@ impl Player {
             lives,
         }
     }
-    pub fn player_lives(&self) -> i8 {
+    pub fn player_lives(&self) -> u8 {
         self.lives
     }
 }
@@ -66,8 +66,6 @@ pub fn move_player(
     for ev in mouse_motion.read() {
         mouse_delta += ev.delta;
     }
-    println!("mouse delta => {}", mouse_delta);
-
     for (entity, player, mut transform, mut velocity) in query.iter_mut() {
         let a = counter.val;
         if a < 1 {
