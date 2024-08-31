@@ -47,7 +47,7 @@ pub fn fire_projectile(
                     commands.spawn(ProjectileBundle {
                         projectile: Projectile { 
                             speed: 80.0,
-                            lifetime: Timer::from_seconds(5.0, TimerMode::Once),
+                            lifetime: Timer::from_seconds(50.0, TimerMode::Once),
                         },
                         pbr_bundle: PbrBundle {
                             mesh: meshes.add(Mesh::try_from(shape::Icosphere { radius: 0.01, subdivisions: 1 }).unwrap()),
@@ -120,7 +120,7 @@ pub fn handle_projectile_collisions(
             projectile_transform,
             &rapier_context,
         ) {
-            println!(":::::: TEST FUNCT  :::::::::::");
+            println!("✅:::::: TEST FUNCT  :::::::::::✅");
 
             // Check if the hit entity is an enemy
             if let Ok((_, mut enemy)) = enemy_query.get_mut(hit_entity) {
@@ -133,11 +133,17 @@ pub fn handle_projectile_collisions(
                 }
                 
                 // Print debug information
-                println!(":::::::::Enemy hit! Lives remaining: {}:::::::::", enemy.lives);
+                println!("💥:::::::::Enemy hit! Lives remaining: {}:::::::::💥", enemy.lives);
             }
             
             // Despawn the projectile
-            commands.entity(projectile_entity).despawn();
+            if commands.get_entity(projectile_entity).is_some() {
+                commands.entity(projectile_entity).despawn();
+                println!("Projectile despawned");
+            } else {
+                println!("Projectile entity no longer exists");
+            }
+            // commands.entity(projectile_entity).despawn();
         }
     }
 }
