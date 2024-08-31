@@ -21,7 +21,7 @@ pub fn get_input(prompt: &str) -> String {
 pub fn get_level() -> usize {
     println!("######### MULTIPLAYER-FPS: MAZE WARS #########");
     println!("Welcome warrior !");
-    let message = "Pick a level:\n1. lvl 1 (Easy)\n2. lvl 2 (Medium)\n3. lvl 3 (Hard)\n$";
+    let message = "Pick a level:\n1. lvl 1 (Easy)\n2. lvl 2 (Medium)\n3. lvl 3 (Hard)\n>";
     let mut choice = 0;
     let mut ok = false;
     while !ok {
