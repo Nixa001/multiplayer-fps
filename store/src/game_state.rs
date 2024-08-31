@@ -128,6 +128,7 @@ impl GameState {
                 let id = self.get_player_id(client_id);
                 let player = self.players.get_mut(&id).unwrap();
                 player.position = at.clone();
+                player.vision = vision.clone();
                 let mut player_list: HashMap<u8, Players> = HashMap::new();
                 for (idp, value) in self.players.clone() {
                     if !idp.eq(&id) {
