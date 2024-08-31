@@ -22,7 +22,8 @@ pub enum GameEvent {
     PlayerMove {
         player_id: u8,
         at: Position,
-        player_list: HashMap<u8, Players>
+        player_list: HashMap<u8, Players>,
+        vision: (f32, f32)
     },
     Spawn {
         player_id: u8,

@@ -5,7 +5,7 @@ use bevy::prelude::*;
 // use bevy::ecs::system::ParamSet;
 use bevy_rapier3d::dynamics::{ LockedAxes, Velocity };
 use bevy_rapier3d::prelude::{ Collider, GravityScale, RapierContext, RigidBody };
-use crate::{PositionInitial, Counter};
+use crate::{ PositionInitial, Counter };
 use bevy_renet::renet::{ DefaultChannel, RenetClient };
 use bincode::serialize;
 use store::{ GameEvent, Position };
@@ -30,7 +30,7 @@ pub struct PlayerCamera;
 #[derive(Component)]
 pub struct Weapon;
 impl Player {
-    pub fn new(id: i32, name: String, speed: f32, size: Vec2, lives:i8) -> Self {
+    pub fn new(id: i32, name: String, speed: f32, size: Vec2, lives: i8) -> Self {
         Player {
             id,
             name,
@@ -38,10 +38,9 @@ impl Player {
             camera_offset: Vec3::new(0.0, 0.2, 0.8),
             size,
             lives,
-
         }
     }
-    pub fn player_lives(&self) -> i8{
+    pub fn player_lives(&self) -> i8 {
         self.lives
     }
 }
@@ -55,7 +54,7 @@ pub fn move_player(
     rapier_context: Res<RapierContext>,
     collider_query: Query<Entity, (With<Collision>, Without<Player>)>,
     mut location: ResMut<PositionInitial>,
-    mut counter: ResMut<Counter>,
+    mut counter: ResMut<Counter>
 ) {
     let window = windows.single();
     if window.cursor.grab_mode == bevy::window::CursorGrabMode::None {
@@ -66,7 +65,7 @@ pub fn move_player(
     for ev in mouse_motion.read() {
         mouse_delta += ev.delta;
     }
-    //println!("counting in move player => {}", counter.x);
+    println!("mouse delta => {}", mouse_delta);
 
     for (entity, player, mut transform, mut velocity) in query.iter_mut() {
         let a = counter.val;
@@ -74,7 +73,6 @@ pub fn move_player(
             transform.translation = Vec3::new(location.x, location.y, location.z);
         }
         counter.val += 1;
-
 
         let mut direction = Vec3::ZERO;
         if keyboard.pressed(KeyCode::W) {
@@ -107,7 +105,7 @@ pub fn move_player(
         // let max_vertical_angle = 0.4 ; // Limite de l'angle de rotation verticale (en radians)
         // let rotation_x = -mouse_delta.y * 0.002 ;
         // let new_x_rotation = transform.rotation.to_euler(EulerRot::YXZ).0 + rotation_x ;
-        
+
         // if new_x_rotation.abs() <= max_vertical_angle {
         //     transform.rotate_local_x(rotation_x);
         // }
@@ -128,6 +126,7 @@ pub fn move_player(
                         ),
                         player_id: u8::MAX,
                         player_list: HashMap::new(),
+                        vision: (mouse_delta.x, mouse_delta.y),
                     })
                 ).unwrap()
             );
@@ -177,7 +176,6 @@ pub fn setup_player_and_camera(
             GravityScale(0.0),
         ))
         .id();
-
 
     // Spawn the camera and attach it to the weapon
     commands

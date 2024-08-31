@@ -131,7 +131,7 @@ fn main() {
                 if let Ok(event) = deserialize::<GameEvent>(&message) {
                     if game_state.validate(&event, client_id.raw()) {
                         let broad_event = game_state.consume(&event, client_id.raw());
-                        //println!("[EVENT]: Client {} sent:\n\t{:#?}", client_id, broad_event);
+                        println!("[EVENT]: Client {} sent:\n\t{:#?}", client_id, broad_event);
                         match broad_event {
                             GameEvent::PlayerMove { .. } => {
                                 for client_id_p in server.clients_id().into_iter() {
@@ -146,6 +146,7 @@ fn main() {
                                         player_id: u8::MAX,
                                         at: Position::default(),
                                         player_list,
+                                        vision: (0.0, 0.0),
                                     };
                                     server.send_message(
                                         client_id_p,

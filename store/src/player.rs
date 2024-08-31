@@ -21,10 +21,17 @@ pub struct Players {
     pub id: u8,
     pub client_id: u64,
     pub position: Position,
+    pub vision: (f32, f32),
 }
 
 impl Players {
-    pub fn new(name: String, id: u8, position: Position, client_id: u64) -> Self {
-        Self { name, id, position, client_id }
+    pub fn new(
+        name: String,
+        id: u8,
+        position: Position,
+        vision: (f32, f32),
+        client_id: u64
+    ) -> Self {
+        Self { name, id, position, vision, client_id }
     }
 }

@@ -108,6 +108,7 @@ impl GameState {
                     id: *player_id,
                     position: position.clone(),
                     client_id: client_id.clone(),
+                    vision: (0.0, 0.0),
                 });
 
                 eve = GameEvent::PlayerJoined {
@@ -123,7 +124,7 @@ impl GameState {
                 eve = GameEvent::PlayerDisconnected { player_id: player_id.clone() };
             }
 
-            GameEvent::PlayerMove { at, .. } => {
+            GameEvent::PlayerMove { at, vision, .. } => {
                 let id = self.get_player_id(client_id);
                 let player = self.players.get_mut(&id).unwrap();
                 player.position = at.clone();
@@ -137,6 +138,7 @@ impl GameState {
                     player_id: id,
                     at: at.clone(),
                     player_list,
+                    vision: vision.clone(),
                 };
             }
             _ => {}
