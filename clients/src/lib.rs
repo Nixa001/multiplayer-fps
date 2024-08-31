@@ -37,7 +37,7 @@ pub struct PositionInitial {
 pub struct Counter {
     pub val: i32,
 }
-#[derive(Debug,Resource)]
+#[derive(Debug, Resource)]
 pub struct EnnemyCreated {
     pub val: bool,
 }
@@ -220,6 +220,10 @@ pub fn handle_server_messages(
                 GameEvent::AccessForbidden => {
                     info!("❌ Oops ! ongoing game...");
                     exit(1);
+                }
+
+                GameEvent::EndGame => {
+                    info!("🥉 i am the winner");
                 }
 
                 // ! do the same for other events

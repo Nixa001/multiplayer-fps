@@ -113,7 +113,7 @@ fn main() {
                     if game_state.players.len() == 1 && game_state.stage == Stage::InGame {
                         let event = GameEvent::EndGame;
                         game_state.consume(&event, client_id.raw());
-                        server.broadcast_message(0, serialize(&event).unwrap());
+                        server.broadcast_message(DefaultChannel::ReliableOrdered, serialize(&event).unwrap());
                         println!("🟥 Game has ended");
                     }
                 }
