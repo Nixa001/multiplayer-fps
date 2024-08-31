@@ -72,7 +72,8 @@ pub fn update_enemys_position(
                 enemy.position.y - 0.2,
                 enemy.position.z
             );
-            transform.rotate_x(player.vision.0 * 0.002);
+            transform.rotate_local_y(player.vision.0);
+            //transform.rotate_x(player.vision.0 * 0.002);
         }
     }
 }
