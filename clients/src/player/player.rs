@@ -5,7 +5,7 @@ use bevy::prelude::*;
 // use bevy::ecs::system::ParamSet;
 use bevy_rapier3d::dynamics::{ LockedAxes, Velocity };
 use bevy_rapier3d::prelude::{ Collider, GravityScale, RapierContext, RigidBody };
-use crate::{ PositionInitial, Counter };
+use crate::{ Counter, GameState, PositionInitial };
 use bevy_renet::renet::{ DefaultChannel, RenetClient };
 use bincode::serialize;
 use store::{ GameEvent, Position };
@@ -54,7 +54,8 @@ pub fn move_player(
     rapier_context: Res<RapierContext>,
     collider_query: Query<Entity, (With<Collision>, Without<Player>)>,
     mut location: ResMut<PositionInitial>,
-    mut counter: ResMut<Counter>
+    mut counter: ResMut<Counter>,
+    game_state: Res<GameState>
 ) {
     let window = windows.single();
     if window.cursor.grab_mode == bevy::window::CursorGrabMode::None {
@@ -97,7 +98,16 @@ pub fn move_player(
         // Rotation du joueur (et de l'arme)
         transform.rotate_y(-mouse_delta.x * 0.002);
 
-        if !check_player_collision(entity, &transform, movement, &rapier_context, &collider_query) {
+        if
+            !check_player_collision(
+                entity,
+                &transform,
+                movement,
+                &rapier_context,
+                &collider_query
+            ) &&
+            game_state.has_started
+        {
             transform.translation += movement;
         }
 
