@@ -147,6 +147,10 @@ impl GameState {
                 let impacted_player = self.players.get_mut(id).unwrap();
                 impacted_player.lives -= 1;
                 return GameEvent::Impact { id: id.clone() };
+            },
+            GameEvent::Death { player_id } => {
+                self.players.remove(player_id);
+                return GameEvent::Death { player_id: player_id.clone() };
             }
             _ => {}
         }

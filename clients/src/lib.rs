@@ -227,6 +227,10 @@ pub fn handle_server_messages(
                     info!("🥉 i am the winner");
                 }
 
+                GameEvent::Death { player_id } => {
+                    info!("[{}] has died", player_id);
+                },
+
                 // ! do the same for other events
                 _ => {
                     println!("received event from server => {:?}", event);
