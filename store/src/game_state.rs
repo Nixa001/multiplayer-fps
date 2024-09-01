@@ -109,7 +109,7 @@ impl GameState {
                     position: position.clone(),
                     client_id: client_id.clone(),
                     vision: (0.0, 0.0),
-                    lives:3,
+                    lives: 3,
                 });
 
                 eve = GameEvent::PlayerJoined {
@@ -142,6 +142,11 @@ impl GameState {
                     player_list,
                     vision: vision.clone(),
                 };
+            }
+            GameEvent::Impact { id } => {
+                let impacted_player = self.players.get_mut(id).unwrap();
+                impacted_player.lives -= 1;
+                return GameEvent::Impact { id: id.clone() };
             }
             _ => {}
         }
@@ -182,5 +187,16 @@ impl GameState {
             }
         }
         id
+    }
+
+    pub fn get_client_id(&self, id: u8) -> u64 {
+        let mut client_id: u64 = u64::MAX;
+        for (k, v) in &self.players {
+            if k.eq(&id) {
+                client_id = v.client_id;
+                break;
+            }
+        }
+        client_id
     }
 }

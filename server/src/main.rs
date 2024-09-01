@@ -113,7 +113,10 @@ fn main() {
                     if game_state.players.len() == 1 && game_state.stage == Stage::InGame {
                         let event = GameEvent::EndGame;
                         game_state.consume(&event, client_id.raw());
-                        server.broadcast_message(DefaultChannel::ReliableOrdered, serialize(&event).unwrap());
+                        server.broadcast_message(
+                            DefaultChannel::ReliableOrdered,
+                            serialize(&event).unwrap()
+                        );
                         println!("🟥 Game has ended");
                     }
                 }
@@ -154,6 +157,14 @@ fn main() {
                                         serialize(&begin_event).unwrap()
                                     );
                                 }
+                            }
+                            GameEvent::Impact { id } => {
+                                let adress = game_state.get_client_id(id);
+                                server.send_message(
+                                    ClientId::from_raw(adress),
+                                    DefaultChannel::ReliableOrdered,
+                                    serialize(&broad_event).unwrap()
+                                );
                             }
                             _ => {
                                 server.broadcast_message(

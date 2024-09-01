@@ -10,6 +10,9 @@ pub enum GameEvent {
     },
     EndGame,
     AccessForbidden,
+    Impact {
+        id: u8,
+    },
     PlayerJoined {
         player_id: u8,
         name: String,
@@ -23,7 +26,7 @@ pub enum GameEvent {
         player_id: u8,
         at: Position,
         player_list: HashMap<u8, Players>,
-        vision: (f32, f32)
+        vision: (f32, f32),
     },
     Spawn {
         player_id: u8,
