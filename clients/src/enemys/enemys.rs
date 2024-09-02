@@ -51,7 +51,7 @@ pub fn create_enemys(
                 ..default()
             },
             RigidBody::KinematicPositionBased,
-            Collider::cylinder(1.0, 0.5),
+            Collider::cylinder(0.6, 0.2),
             Velocity::default(),
         ))
         .insert(Name::new(format!("Enemy_{}", id)))

@@ -368,7 +368,7 @@ pub fn check_player_collision(
     if let Some((_hit_entity, _hit_position)) = rapier_context.cast_ray(
         ray_origin,
         ray_direction,
-        max_toi + 5.5,
+        max_toi + 2.5,
         true,
         QueryFilter::default().exclude_collider(player_entity),
     ) {
