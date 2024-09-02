@@ -25,6 +25,8 @@ impl Enemy {
     }
 }
 
+
+
 pub fn create_enemys(
     commands: &mut Commands,
     list_player: &ListPlayer,
@@ -33,29 +35,30 @@ pub fn create_enemys(
     materials: &mut ResMut<Assets<StandardMaterial>>
 ) {
     println!("------------Enemys-------{:?}", list_player.list);
+    let player_handle: Handle<Scene> = asset_server.load("soldier/soldier2.glb#Scene0");
+
     for (&id, player) in list_player.list.iter() {
+        let enemy = Enemy::new(id, format!("Enemy_{}", id), player.position.clone());
+        let transform = Transform::from_xyz(
+            player.position.x,
+            player.position.y,
+            player.position.z
+        );
+
         let player_entity = commands.spawn((
-            Enemy::new(id, format!("Enemy_{}", id), player.position.clone()),
-            PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::Cylinder {
-                    radius: 0.15,
-                    height: 1.3,
-                    ..default()
-                })),
-                material: materials.add(Color::RED.into()),
-                transform: Transform::from_xyz(
-                    player.position.x,
-                    player.position.y,
-                    player.position.z
-                ),
+            enemy,
+            SceneBundle {
+                scene: player_handle.clone(),
+                transform,
                 ..default()
             },
             RigidBody::KinematicPositionBased,
-            Collider::cylinder(1.3, 0.15),
+            Collider::cylinder(1.3, 0.15), // Hauteur divisée par 2 pour centrer le collider
             Velocity::default(),
         ))
         .insert(Name::new(format!("Enemy_{}", id)))
         .id();
+        
         println!("Spawned enemy with ID: {:?}", player_entity);
     }
 }
