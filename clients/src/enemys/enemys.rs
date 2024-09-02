@@ -26,43 +26,102 @@ impl Enemy {
 }
 
 
+use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
 
 pub fn create_enemys(
     commands: &mut Commands,
     list_player: &ListPlayer,
-    asset_server: &AssetServer,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>
 ) {
     println!("------------Enemys-------{:?}", list_player.list);
-    let player_handle: Handle<Scene> = asset_server.load("soldier/soldier2.glb#Scene0");
-
+    
     for (&id, player) in list_player.list.iter() {
-        let enemy = Enemy::new(id, format!("Enemy_{}", id), player.position.clone());
-        let transform = Transform::from_xyz(
+        let soldier_entity = commands.spawn(SpatialBundle::default())
+            .insert(Enemy::new(id, format!("Enemy_{}", id), player.position.clone()))
+            .insert(RigidBody::KinematicPositionBased)
+            .insert(Collider::capsule(0.5, 0.2))
+            .insert(Velocity::default())
+            .insert(Name::new(format!("Enemy_{}", id)))
+            .id();
+
+        // Corps (torse)
+        commands.spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Capsule { 
+                radius: 0.2, 
+                rings: 3, 
+                depth: 0.5, 
+                latitudes: 8, 
+                longitudes: 16, 
+                uv_profile: shape::CapsuleUvProfile::Aspect 
+            })),
+            material: materials.add(Color::DARK_GRAY.into()),
+            transform: Transform::from_xyz(0.0, 0.5, 0.0),
+            ..default()
+        }).set_parent(soldier_entity);
+
+        // Tête
+        commands.spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::UVSphere { 
+                radius: 0.15, 
+                sectors: 16, 
+                stacks: 16 
+            })),
+            material: materials.add(Color::BEIGE.into()),
+            transform: Transform::from_xyz(0.0, 0.9, 0.0),
+            ..default()
+        }).set_parent(soldier_entity);
+
+        // Bras gauche
+        commands.spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Capsule { 
+                radius: 0.05, 
+                rings: 3, 
+                depth: 0.4, 
+                latitudes: 8, 
+                longitudes: 16, 
+                uv_profile: shape::CapsuleUvProfile::Aspect 
+            })),
+            material: materials.add(Color::DARK_GRAY.into()),
+            transform: Transform::from_xyz(-0.25, 0.5, 0.0)
+                .with_rotation(Quat::from_rotation_x(0.5)),
+            ..default()
+        }).set_parent(soldier_entity);
+
+        // Bras droit (tenant l'arme)
+        commands.spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Capsule { 
+                radius: 0.05, 
+                rings: 3, 
+                depth: 0.4, 
+                latitudes: 8, 
+                longitudes: 16, 
+                uv_profile: shape::CapsuleUvProfile::Aspect 
+            })),
+            material: materials.add(Color::DARK_GRAY.into()),
+            transform: Transform::from_xyz(0.25, 0.5, 0.0)
+                .with_rotation(Quat::from_rotation_z(-0.5)),
+            ..default()
+        }).set_parent(soldier_entity);
+
+        // AK-47 (représentation simplifiée)
+        commands.spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Box::new(0.5, 0.1, 0.05))),
+            material: materials.add(Color::BLACK.into()),
+            transform: Transform::from_xyz(0.4, 0.4, 0.2)
+                .with_rotation(Quat::from_rotation_y(0.2)),
+            ..default()
+        }).set_parent(soldier_entity);
+
+        // Positionnement global du soldat
+        commands.entity(soldier_entity).insert(Transform::from_xyz(
             player.position.x,
             player.position.y,
             player.position.z
-        ).with_scale(Vec3::splat(0.02));
+        ));
 
-        // Ajuster la taille du collider en fonction de l'échelle du modèle
-        let collider_height = 1.3 * 0.02; // Hauteur originale * échelle
-        let collider_radius = 0.15 * 0.02; // Rayon original * échelle
-
-        let player_entity = commands.spawn((
-            enemy,
-            SceneBundle {
-                scene: player_handle.clone(),
-                transform,
-                ..default()
-            },
-            RigidBody::KinematicPositionBased,
-            Collider::capsule(Vec3::new(0.0, -collider_height/2.0, 0.0), Vec3::new(0.0, collider_height/2.0, 0.0), collider_radius),
-            Velocity::default(),
-            // DebugCollision::default(), // Ajouter ceci pour voir le collider
-        ))
-        .insert(Name::new(format!("Enemy_{}", id)))
-        .id();
-        
-        println!("Spawned enemy with ID: {:?}", player_entity);
+        println!("Spawned enemy with ID: {:?}", soldier_entity);
     }
 }
 
