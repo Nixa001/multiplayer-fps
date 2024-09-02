@@ -107,21 +107,58 @@ fn ray_from_screenspace(
     camera.viewport_to_world(camera_transform, cursor_position)
 }
 
+pub fn check_projectile_collision(
+    projectile_entity: Entity,
+    projectile_transform: &Transform,
+    rapier_context: &RapierContext,
+    direction: Vec3,
+    collider_query: &Query<Entity, (With<Collision>, Without<Projectile>)>,
+) -> Option<(Entity, f32)> {
+    let ray_origin = projectile_transform.translation;
+    let ray_direction = direction.normalize();
+    let max_toi = direction.length() + 0.5; // Maximum ray distance plus a small buffer
+
+    let mut hit_entity = None;
+    let mut hit_toi = f32::MAX;
+
+    rapier_context.intersections_with_ray(
+        ray_origin,
+        ray_direction,
+        max_toi,
+        true,
+        QueryFilter::default().exclude_collider(projectile_entity),
+        |entity, intersection| {
+            // Check if the intersected entity is in the collider_query
+            if collider_query.get(entity).is_ok() {
+                hit_entity = Some(entity);
+                hit_toi = intersection.toi;
+                false // Stop the ray cast when we find a valid collision
+            } else {
+                true // Continue the ray cast if it's not a valid collider
+            }
+        },
+    );
+
+    hit_entity.map(|entity| (entity, hit_toi))
+}
 
 pub fn handle_projectile_collisions(
     mut commands: Commands,
     projectile_query: Query<(Entity, &Transform), With<Projectile>>,
     rapier_context: Res<RapierContext>,
     mut enemy_query: Query<(Entity, &mut Enemy), With<Collision>>,
+    collider_query: Query<Entity, (With<Collision>, Without<Projectile>)>,
 ) {
     for (projectile_entity, projectile_transform) in projectile_query.iter() {
-        if let Some((hit_entity, hit_position)) = check_projectile_collision(
+        if let Some((hit_entity, _hit_toi)) = check_projectile_collision(
             projectile_entity,
             projectile_transform,
             &rapier_context,
+            projectile_transform.forward(), // Assuming projectiles move in their forward direction
+            &collider_query,
         ) {
-            println!("✅:::::: TEST FUNCT  :::::::::::✅");
-
+            println!("✅:::::: Projectile Collision Detected :::::::::::✅");
+            
             // Check if the hit entity is an enemy
             if let Ok((_, mut enemy)) = enemy_query.get_mut(hit_entity) {
                 // Decrement enemy lives
@@ -143,25 +180,36 @@ pub fn handle_projectile_collisions(
             } else {
                 println!("Projectile entity no longer exists");
             }
-            // commands.entity(projectile_entity).despawn();
         }
     }
 }
 
-fn check_projectile_collision(
-    projectile_entity: Entity,
-    projectile_transform: &Transform,
+pub fn check_player_collision(
+    player_entity: Entity,
+    weapon_transform: &Transform,
+    direction: Vec3,
     rapier_context: &RapierContext,
-) -> Option<(Entity, f32)> {
-    let ray_origin = projectile_transform.translation;
-    let ray_direction = projectile_transform.forward();
-    let max_toi = 0.5; // Short distance to check just in front of the projectile
-    
-    rapier_context.cast_ray(
+    _collider_query: &Query<Entity, (With<Collision>, Without<Player>)>,
+) -> bool {
+    // Position future du joueur
+    let _future_position = weapon_transform.translation + direction;
+
+    // Lancer un rayon pour détecter une collision
+    let ray_origin = weapon_transform.translation;
+    let ray_direction = direction.normalize();
+
+    let max_toi = direction.length(); // Distance maximale du rayon
+
+    if let Some((_hit_entity, _hit_position)) = rapier_context.cast_ray(
         ray_origin,
         ray_direction,
-        max_toi,
+        max_toi + 1.5,
         true,
-        QueryFilter::default().exclude_collider(projectile_entity),
-    )
+        QueryFilter::default().exclude_collider(player_entity),
+    ) {
+        // Si un objet est détecté sur la trajectoire, il y a une collision
+        return true;
+    }
+
+    false // Pas de collision détectée
 }

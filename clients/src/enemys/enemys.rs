@@ -47,15 +47,16 @@ pub fn create_enemys(
             },
 
             RigidBody::KinematicPositionBased,
-            Collider::ball(10.5),
+            Collider::cylinder(10.0, 5.0),
             Velocity::default(), // Assurez-vous que cette ligne est présente
-            LockedAxes::ROTATION_LOCKED,
-            GravityScale(0.0),
+            // LockedAxes::ROTATION_LOCKED,
+            // GravityScale(0.0),
 
 
             // RigidBody::KinematicPositionBased, // ou Kinematic selon le comportement souhaité
             // Collider::cuboid(2.5, 2.5, 2.5),
-        ));
+        ))
+        .id();
     }
 }
 
