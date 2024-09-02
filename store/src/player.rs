@@ -1,4 +1,4 @@
-use serde::{ Deserialize, Serialize };
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct Position {
@@ -33,6 +33,13 @@ impl Players {
         vision: (f32, f32),
         client_id: u64,
     ) -> Self {
-        Self { name, id, position, vision, client_id, lives:3 }
+        Self {
+            name,
+            id,
+            position,
+            vision,
+            client_id,
+            lives: 3,
+        }
     }
 }

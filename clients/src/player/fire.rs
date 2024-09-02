@@ -1,11 +1,12 @@
 use crate::enemys::enemys::Enemy;
 use crate::{player::player::Player, playing_field::playing_field::Collision};
-use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
-use bevy::window::Window;
 use bevy::input::mouse::MouseButton;
+use bevy::prelude::*;
+use bevy::window::Window;
+use bevy_rapier3d::prelude::*;
 
 #[derive(Component)]
+#[allow(dead_code)]
 pub struct Projectile {
     pub speed: f32,
     pub lifetime: Timer,
@@ -20,6 +21,7 @@ pub struct ProjectileBundle {
     velocity: Velocity,
 }
 
+#[allow(dead_code)]
 pub fn fire_projectile(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -33,24 +35,27 @@ pub fn fire_projectile(
         if let Ok((player_transform, _player)) = query.get_single() {
             if let Ok((camera, camera_transform)) = camera_query.get_single() {
                 let window = windows.single();
-                let center = Vec2::new(window.width() / 2.0, window.height() / 2.0 -20.);
-                
-                if let Some(ray) = ray_from_screenspace(
-                    &window,
-                    &camera,
-                    camera_transform,
-                    center,
-                ) {
-                    let spawn_point = player_transform.translation + player_transform.forward() * 0.60;
+                let center = Vec2::new(window.width() / 2.0, window.height() / 2.0 - 20.);
+
+                if let Some(ray) = ray_from_screenspace(&camera, camera_transform, center)
+                {
+                    let spawn_point =
+                        player_transform.translation + player_transform.forward() * 0.60;
                     let projectile_direction = ray.direction;
-                    
+
                     commands.spawn(ProjectileBundle {
-                        projectile: Projectile { 
+                        projectile: Projectile {
                             speed: 80.0,
                             lifetime: Timer::from_seconds(50.0, TimerMode::Once),
                         },
                         pbr_bundle: PbrBundle {
-                            mesh: meshes.add(Mesh::try_from(shape::Icosphere { radius: 0.01, subdivisions: 1 }).unwrap()),
+                            mesh: meshes.add(
+                                Mesh::try_from(shape::Icosphere {
+                                    radius: 0.01,
+                                    subdivisions: 1,
+                                })
+                                .unwrap(),
+                            ),
                             material: materials.add(StandardMaterial {
                                 base_color: Color::ORANGE_RED,
                                 emissive: Color::rgba_linear(0.0, 0.0, 0.0, 1.0),
@@ -69,6 +74,7 @@ pub fn fire_projectile(
     }
 }
 
+#[allow(dead_code)]
 pub fn update_projectiles(
     mut commands: Commands,
     mut projectile_query: Query<(Entity, &mut Projectile, &Velocity)>,
@@ -85,27 +91,26 @@ pub fn update_projectiles(
 
         let ray_origin = velocity.linvel.normalize() * 0.05;
         let ray_direction = velocity.linvel.normalize();
-        
-        if rapier_context.cast_ray(
-            ray_origin,
-            ray_direction,
-            0.1,
-            true,
-            QueryFilter::default(),
-        ).is_some() {
+
+        if rapier_context
+            .cast_ray(ray_origin, ray_direction, 0.1, true, QueryFilter::default())
+            .is_some()
+        {
             commands.entity(entity).despawn();
         }
     }
 }
 
+#[allow(dead_code)]
 fn ray_from_screenspace(
-    window: &Window,
     camera: &Camera,
     camera_transform: &GlobalTransform,
     cursor_position: Vec2,
 ) -> Option<Ray> {
     camera.viewport_to_world(camera_transform, cursor_position)
 }
+
+#[allow(dead_code)]
 pub fn handle_projectile_collisions(
     mut commands: Commands,
     projectile_query: Query<(Entity, &Transform), With<Projectile>>,
@@ -114,18 +119,24 @@ pub fn handle_projectile_collisions(
     collider_query: Query<Entity, (With<Collider>, Without<Projectile>)>,
 ) {
     for (projectile_entity, projectile_transform) in projectile_query.iter() {
-        if let Some((hit_entity, hit_toi)) = check_projectile_collision(
+        if let Some((hit_entity, _hit_toi)) = check_projectile_collision(
             projectile_entity,
             projectile_transform,
             &rapier_context,
             projectile_transform.forward(),
             &collider_query,
         ) {
-            println!("✅:::::: Projectile Collision Detected with entity: {:?} :::::::::::✅", hit_entity);
+            println!(
+                "✅:::::: Projectile Collision Detected with entity: {:?} :::::::::::✅",
+                hit_entity
+            );
             // Check if the hit entity has an Enemy component
             if let Ok((_, mut enemy)) = enemy_query.get_mut(hit_entity) {
                 enemy.lives = enemy.lives.saturating_sub(1);
-                println!("💥:::::::::Enemy hit! Lives remaining: {}:::::::::💥", enemy.lives);
+                println!(
+                    "💥:::::::::Enemy hit! Lives remaining: {}:::::::::💥",
+                    enemy.lives
+                );
                 if enemy.lives == 0 {
                     commands.entity(hit_entity).despawn();
                     println!("Enemy despawned!");
@@ -140,6 +151,7 @@ pub fn handle_projectile_collisions(
     }
 }
 
+#[allow(dead_code)]
 pub fn check_projectile_collision(
     projectile_entity: Entity,
     projectile_transform: &Transform,
@@ -174,10 +186,7 @@ pub fn check_projectile_collision(
     hit_entity.map(|entity| (entity, hit_toi))
 }
 
-
-
-
-
+#[allow(dead_code)]
 pub fn check_player_collision(
     player_entity: Entity,
     weapon_transform: &Transform,

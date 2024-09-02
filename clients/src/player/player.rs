@@ -1,24 +1,23 @@
-use std::collections::HashMap;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
+use std::collections::HashMap;
 // use crate::playing_field::playing_field::Collision;
 // use bevy::ecs::system::ParamSet;
-use bevy_rapier3d::dynamics::{ LockedAxes, Velocity };
-use bevy_rapier3d::prelude::{ Collider, GravityScale, RapierContext, RigidBody };
-use crate::{ Counter, GameState, PositionInitial };
-use bevy_renet::renet::{ DefaultChannel, RenetClient };
+use crate::{Counter, GameState, PositionInitial};
+use bevy_rapier3d::dynamics::{LockedAxes, Velocity};
+use bevy_rapier3d::prelude::{Collider, GravityScale, RapierContext, RigidBody};
+use bevy_renet::renet::{DefaultChannel, RenetClient};
 use bincode::serialize;
-use store::{ GameEvent, Position };
+use store::{GameEvent, Position};
 
-use crate::playing_field::playing_field::{ check_player_collision, Collision };
+use crate::playing_field::playing_field::{check_player_collision, Collision};
 // use bevy::sprite::collide_aabb::Collision;
 // use bevy_rapier3d::prelude::RapierContext;
 
 #[derive(Component)]
+#[allow(dead_code)]
 pub struct Player {
-    #[allow(dead_code)]
     pub id: i32,
-    #[allow(dead_code)]
     pub name: String,
     pub speed: f32,
     pub camera_offset: Vec3,
@@ -26,8 +25,11 @@ pub struct Player {
     pub lives: u8,
 }
 #[derive(Component)]
+#[allow(dead_code)]
 pub struct PlayerCamera;
+
 #[derive(Component)]
+#[allow(dead_code)]
 pub struct Weapon;
 impl Player {
     pub fn new(id: i32, name: String, speed: f32, size: Vec2, lives: u8) -> Self {
@@ -45,6 +47,7 @@ impl Player {
     }
 }
 
+#[allow(dead_code)]
 pub fn move_player(
     mut client: ResMut<RenetClient>,
     mut query: Query<(Entity, &Player, &mut Transform, &mut Velocity)>,
@@ -53,9 +56,9 @@ pub fn move_player(
     windows: Query<&Window>,
     rapier_context: Res<RapierContext>,
     collider_query: Query<Entity, (With<Collision>, Without<Player>)>,
-    mut location: ResMut<PositionInitial>,
+    location: ResMut<PositionInitial>,
     mut counter: ResMut<Counter>,
-    game_state: Res<GameState>
+    game_state: Res<GameState>,
 ) {
     let window = windows.single();
     if window.cursor.grab_mode == bevy::window::CursorGrabMode::None {
@@ -66,7 +69,7 @@ pub fn move_player(
     for ev in mouse_motion.read() {
         mouse_delta += ev.delta;
     }
-    for (entity, player, mut transform, mut velocity) in query.iter_mut() {
+    for (entity, player, mut transform, _velocity) in query.iter_mut() {
         let a = counter.val;
         if a < 1 {
             transform.translation = Vec3::new(location.x, location.y, location.z);
@@ -96,15 +99,13 @@ pub fn move_player(
         // Rotation du joueur (et de l'arme)
         transform.rotate_y(-mouse_delta.x * 0.002);
 
-        if
-            !check_player_collision(
-                entity,
-                &transform,
-                movement,
-                &rapier_context,
-                &collider_query
-            ) &&
-            game_state.has_started
+        if !check_player_collision(
+            entity,
+            &transform,
+            movement,
+            &rapier_context,
+            &collider_query,
+        ) && game_state.has_started
         {
             transform.translation += movement;
         }
@@ -130,22 +131,24 @@ pub fn move_player(
                         at: Position::new(
                             transform.translation.x,
                             transform.translation.y,
-                            transform.translation.z
+                            transform.translation.z,
                         ),
                         player_id: u8::MAX,
                         player_list: HashMap::new(),
                         vision: (mouse_delta.x, mouse_delta.y),
-                    })
-                ).unwrap()
+                    }),
+                )
+                .unwrap(),
             );
         }
     }
 }
 
+#[allow(dead_code)]
 pub fn grab_mouse(
     mut windows: Query<&mut Window>,
     mouse: Res<Input<MouseButton>>,
-    key: Res<Input<KeyCode>>
+    key: Res<Input<KeyCode>>,
 ) {
     let mut window = windows.single_mut();
     if mouse.just_pressed(MouseButton::Left) {
@@ -157,20 +160,27 @@ pub fn grab_mouse(
         window.cursor.visible = true;
     }
 }
+#[allow(dead_code)]
 pub fn setup_player_and_camera(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
     player_id: u8,
     x: f32,
     y: f32,
-    z: f32
+    z: f32,
 ) {
     // Spawn the player
     let player_handle: Handle<Scene> = asset_server.load("armes/arme1.glb#Scene0");
     // let player_handle:Handle<Scene> = asset_server.load("armes/Soldier.glb#Scene0");
     let player_entity = commands
         .spawn((
-            Player::new(player_id as i32, "Player".to_string(), 5.0, Vec2::new(0.5, 0.5), 3),
+            Player::new(
+                player_id as i32,
+                "Player".to_string(),
+                5.0,
+                Vec2::new(0.5, 0.5),
+                3,
+            ),
             SceneBundle {
                 scene: player_handle,
                 transform: Transform::from_xyz(x, y, z).with_scale(Vec3::splat(0.4)),
@@ -187,12 +197,10 @@ pub fn setup_player_and_camera(
 
     // Spawn the camera and attach it to the weapon
     commands
-        .spawn((
-            Camera3dBundle {
-                transform: Transform::from_xyz(-0.25, 0.7, 0.0), // Adjust camera position relative to a weapon
-                ..default()
-            },
-        ))
+        .spawn((Camera3dBundle {
+            transform: Transform::from_xyz(-0.25, 0.7, 0.0), // Adjust camera position relative to a weapon
+            ..default()
+        },))
         .set_parent(player_entity);
 
     commands

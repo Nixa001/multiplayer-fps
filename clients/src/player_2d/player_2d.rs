@@ -1,14 +1,15 @@
+use crate::player::player::Player;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use crate::player::player::Player;
 
 #[derive(Component)]
 pub struct MinimapElement;
 
 #[derive(Component)]
+#[allow(dead_code)]
 pub struct MinimapPlayer;
 
-
+#[allow(dead_code)]
 pub fn setup_minimap(
     mut commands: Commands,
     _asset_server: Res<AssetServer>,
@@ -50,6 +51,7 @@ pub fn setup_minimap(
     ));
 }
 
+#[allow(dead_code)]
 pub fn update_minimap(
     player_query: Query<&Transform, With<Player>>,
     mut minimap_query: Query<&mut Style, With<MinimapPlayer>>,
