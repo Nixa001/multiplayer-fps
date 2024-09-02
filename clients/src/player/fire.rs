@@ -106,18 +106,50 @@ fn ray_from_screenspace(
 ) -> Option<Ray> {
     camera.viewport_to_world(camera_transform, cursor_position)
 }
+pub fn handle_projectile_collisions(
+    mut commands: Commands,
+    projectile_query: Query<(Entity, &Transform), With<Projectile>>,
+    rapier_context: Res<RapierContext>,
+    mut enemy_query: Query<(Entity, &mut Enemy)>,
+    collider_query: Query<Entity, (With<Collider>, Without<Projectile>)>,
+) {
+    for (projectile_entity, projectile_transform) in projectile_query.iter() {
+        if let Some((hit_entity, hit_toi)) = check_projectile_collision(
+            projectile_entity,
+            projectile_transform,
+            &rapier_context,
+            projectile_transform.forward(),
+            &collider_query,
+        ) {
+            println!("✅:::::: Projectile Collision Detected with entity: {:?} :::::::::::✅", hit_entity);
+            // Check if the hit entity has an Enemy component
+            if let Ok((_, mut enemy)) = enemy_query.get_mut(hit_entity) {
+                enemy.lives = enemy.lives.saturating_sub(1);
+                println!("💥:::::::::Enemy hit! Lives remaining: {}:::::::::💥", enemy.lives);
+                if enemy.lives == 0 {
+                    commands.entity(hit_entity).despawn();
+                    println!("Enemy despawned!");
+                }
+            } else {
+                println!("Hit entity is not an enemy");
+            }
+            // Despawn the projectile
+            commands.entity(projectile_entity).despawn();
+            println!("Projectile despawned");
+        }
+    }
+}
 
 pub fn check_projectile_collision(
     projectile_entity: Entity,
     projectile_transform: &Transform,
     rapier_context: &RapierContext,
     direction: Vec3,
-    collider_query: &Query<Entity, (With<Collision>, Without<Projectile>)>,
+    collider_query: &Query<Entity, (With<Collider>, Without<Projectile>)>,
 ) -> Option<(Entity, f32)> {
     let ray_origin = projectile_transform.translation;
     let ray_direction = direction.normalize();
     let max_toi = direction.length() + 0.5; // Maximum ray distance plus a small buffer
-
     let mut hit_entity = None;
     let mut hit_toi = f32::MAX;
 
@@ -142,47 +174,9 @@ pub fn check_projectile_collision(
     hit_entity.map(|entity| (entity, hit_toi))
 }
 
-pub fn handle_projectile_collisions(
-    mut commands: Commands,
-    projectile_query: Query<(Entity, &Transform), With<Projectile>>,
-    rapier_context: Res<RapierContext>,
-    mut enemy_query: Query<(Entity, &mut Enemy), With<Collision>>,
-    collider_query: Query<Entity, (With<Collision>, Without<Projectile>)>,
-) {
-    for (projectile_entity, projectile_transform) in projectile_query.iter() {
-        if let Some((hit_entity, _hit_toi)) = check_projectile_collision(
-            projectile_entity,
-            projectile_transform,
-            &rapier_context,
-            projectile_transform.forward(), // Assuming projectiles move in their forward direction
-            &collider_query,
-        ) {
-            println!("✅:::::: Projectile Collision Detected :::::::::::✅");
-            
-            // Check if the hit entity is an enemy
-            if let Ok((_, mut enemy)) = enemy_query.get_mut(hit_entity) {
-                // Decrement enemy lives
-                enemy.lives = enemy.lives.saturating_sub(1);
-                
-                // If enemy has no lives left, despawn it
-                if enemy.lives == 0 {
-                    commands.entity(hit_entity).despawn();
-                }
-                
-                // Print debug information
-                println!("💥:::::::::Enemy hit! Lives remaining: {}:::::::::💥", enemy.lives);
-            }
-            
-            // Despawn the projectile
-            if commands.get_entity(projectile_entity).is_some() {
-                commands.entity(projectile_entity).despawn();
-                println!("Projectile despawned");
-            } else {
-                println!("Projectile entity no longer exists");
-            }
-        }
-    }
-}
+
+
+
 
 pub fn check_player_collision(
     player_entity: Entity,

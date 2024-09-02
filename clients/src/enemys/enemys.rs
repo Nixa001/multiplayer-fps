@@ -55,15 +55,15 @@ pub fn create_enemys(
         println!("Spawned enemy with ID: {:?}", player_entity);
     }
 }
-pub fn debug_enemy_components(
-    enemy_query: Query<(Entity, &Enemy, Option<&Collider>)>,
-) {
-    for (entity, enemy, collider) in enemy_query.iter() {
-        println!("Enemy entity: {:?}", entity);
-        println!("  ID: {}, Name: {}, Lives: {}", enemy.id, enemy.name, enemy.lives);
-        println!("  Has Collider: {}", collider.is_some());
-    }
-}
+// pub fn debug_enemy_components(
+//     enemy_query: Query<(Entity, &Enemy, Option<&Collider>)>,
+// ) {
+//     for (entity, enemy, collider) in enemy_query.iter() {
+//         println!("Enemy entity: {:?}", entity);
+//         println!("  ID: {}, Name: {}, Lives: {}", enemy.id, enemy.name, enemy.lives);
+//         println!("  Has Collider: {}", collider.is_some());
+//     }
+// }
 
 
 pub fn update_enemys_position(
