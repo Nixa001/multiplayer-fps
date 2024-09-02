@@ -3,9 +3,8 @@ use store::Position;
 use crate::{ Counter, EnnemyCreated, GameState };
 use crate::ListPlayer;
 use crate::player::player::Player;
-
-use bevy_rapier3d::dynamics::RigidBody;
-use bevy_rapier3d::prelude::Collider;
+use bevy_rapier3d::dynamics::{ LockedAxes, Velocity };
+use bevy_rapier3d::prelude::{ Collider, GravityScale, RapierContext, RigidBody };
 
 #[derive(Component)]
 pub struct Enemy {
@@ -46,8 +45,16 @@ pub fn create_enemys(
                 ).with_scale(Vec3::splat(0.02)),
                 ..default()
             },
-            RigidBody::Dynamic, // ou Kinematic selon le comportement souhaité
-            Collider::cuboid(1.5, 1.5, 1.5),
+
+            RigidBody::KinematicPositionBased,
+            Collider::ball(10.5),
+            Velocity::default(), // Assurez-vous que cette ligne est présente
+            LockedAxes::ROTATION_LOCKED,
+            GravityScale(0.0),
+
+
+            // RigidBody::KinematicPositionBased, // ou Kinematic selon le comportement souhaité
+            // Collider::cuboid(2.5, 2.5, 2.5),
         ));
     }
 }
