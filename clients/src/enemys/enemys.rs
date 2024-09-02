@@ -34,15 +34,23 @@ pub fn create_enemys(
 ) {
     println!("------------Enemys-------{:?}", list_player.list);
     for (&id, player) in list_player.list.iter() {
+        let enemy_mesh = meshes.add(Mesh::from(shape::Cylinder {
+            radius: 0.15,
+            height: 1.3,
+            ..default()
+        }));
+
+        let enemy_material = materials.add(StandardMaterial {
+            base_color: Color::rgba(1.0, 0.0, 0.0, 0.5), // Rouge semi-transparent
+            alpha_mode: AlphaMode::Blend,
+            ..default()
+        });
+
+        let enemy_model = asset_server.load("soldier/soldier2.glb#Scene0");
+
         let player_entity = commands.spawn((
             Enemy::new(id, format!("Enemy_{}", id), player.position.clone()),
-            PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::Cylinder {
-                    radius: 0.15,
-                    height: 1.3,
-                    ..default()
-                })),
-                material: materials.add(Color::RED.into()),
+            SpatialBundle {
                 transform: Transform::from_xyz(
                     player.position.x,
                     player.position.y,
@@ -55,10 +63,31 @@ pub fn create_enemys(
             Velocity::default(),
         ))
         .insert(Name::new(format!("Enemy_{}", id)))
+        .with_children(|parent| {
+            // Spawn the transparent cylinder
+            parent.spawn(PbrBundle {
+                mesh: enemy_mesh,
+                material: enemy_material,
+                ..default()
+            });
+
+            // Spawn the enemy model with a scale applied
+            parent.spawn(SceneBundle {
+                scene: enemy_model,
+                transform: Transform {
+                    translation: Vec3::new(0.0, 0.2, 0.0),
+                    scale: Vec3::splat(0.02),  // Apply the scale here
+                    ..default()
+                },
+                ..default()
+            });
+        })
         .id();
+
         println!("Spawned enemy with ID: {:?}", player_entity);
     }
 }
+
 
 pub fn update_enemys_position(
     mut query: Query<(&mut Transform, &mut Enemy)>,
@@ -75,7 +104,6 @@ pub fn update_enemys_position(
         create_enemys(&mut commands, &list_player, &asset_server, &mut meshes, &mut materials);
         ennemy_created.val = false;
     }
-
     for (mut transform, mut enemy) in query.iter_mut() {
         if let Some(player) = list_player.list.get(&enemy.id) {
             enemy.position = player.position.clone();
@@ -88,4 +116,3 @@ pub fn update_enemys_position(
         }
     }
 }
-
