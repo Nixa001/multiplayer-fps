@@ -31,8 +31,6 @@ pub fn create_enemys(
     commands: &mut Commands,
     list_player: &ListPlayer,
     asset_server: &AssetServer,
-    meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<StandardMaterial>>
 ) {
     println!("------------Enemys-------{:?}", list_player.list);
     let player_handle: Handle<Scene> = asset_server.load("soldier/soldier2.glb#Scene0");
@@ -45,6 +43,10 @@ pub fn create_enemys(
             player.position.z
         ).with_scale(Vec3::splat(0.02));
 
+        // Ajuster la taille du collider en fonction de l'échelle du modèle
+        let collider_height = 1.3 * 0.02; // Hauteur originale * échelle
+        let collider_radius = 0.15 * 0.02; // Rayon original * échelle
+
         let player_entity = commands.spawn((
             enemy,
             SceneBundle {
@@ -53,8 +55,9 @@ pub fn create_enemys(
                 ..default()
             },
             RigidBody::KinematicPositionBased,
-            Collider::cylinder(1.3, 0.15), // Hauteur divisée par 2 pour centrer le collider
+            Collider::capsule(Vec3::new(0.0, -collider_height/2.0, 0.0), Vec3::new(0.0, collider_height/2.0, 0.0), collider_radius),
             Velocity::default(),
+            // DebugCollision::default(), // Ajouter ceci pour voir le collider
         ))
         .insert(Name::new(format!("Enemy_{}", id)))
         .id();
@@ -75,7 +78,7 @@ pub fn update_enemys_position(
 ) {
     if game_state.has_started && ennemy_created.val {
         println!("❌❌❌❌");
-        create_enemys(&mut commands, &list_player, &asset_server, &mut meshes, &mut materials);
+        create_enemys(&mut commands, &list_player, &asset_server);
         ennemy_created.val = false;
     }
 
