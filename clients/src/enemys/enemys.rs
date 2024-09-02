@@ -4,6 +4,9 @@ use crate::{ Counter, EnnemyCreated, GameState };
 use crate::ListPlayer;
 use crate::player::player::Player;
 
+use bevy_rapier3d::dynamics::RigidBody;
+use bevy_rapier3d::prelude::Collider;
+
 #[derive(Component)]
 pub struct Enemy {
     pub id: u8,
@@ -43,6 +46,8 @@ pub fn create_enemys(
                 ).with_scale(Vec3::splat(0.02)),
                 ..default()
             },
+            RigidBody::Dynamic, // ou Kinematic selon le comportement souhaité
+            Collider::cuboid(1.5, 1.5, 1.5),
         ));
     }
 }

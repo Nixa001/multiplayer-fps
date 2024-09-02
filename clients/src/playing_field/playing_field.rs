@@ -50,9 +50,9 @@ impl Fields {
                 transform: Transform::from_xyz(0.0, 0.0, 0.0),
                 ..Default::default()
             },
-            RigidBody::Fixed,
-            Collider::cuboid(arena_size * 0.5, 0.1, arena_size * 0.5),
-            Collision::Ground,
+            // RigidBody::Fixed,
+            // Collider::cuboid(arena_size * 0.5, 0.1, arena_size * 0.5),
+            // Collision::Ground,
         ));
 
         let wall_height = 5.0;

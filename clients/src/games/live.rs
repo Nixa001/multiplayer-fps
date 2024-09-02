@@ -11,11 +11,14 @@ use crate::GameState;
 pub struct Lives;
 
 pub fn display_lives(
-    //mut query: Query<&mut Text, With<Lives>>,
+    mut query: Query<&mut Text, With<Lives>>,
     mut query_style: Query<&mut Style, With<Lives>>,
     game_state: Res<GameState>
 ) {
     if game_state.has_started {
+        for mut text in query.iter_mut() {
+            text.sections[0].value = format!("Lives: {}", 1);
+        }
         for mut style in query_style.iter_mut() {
             style.display = Display::DEFAULT;
         }
@@ -29,7 +32,7 @@ pub fn setuplives(mut commands: Commands, asset: Res<AssetServer>) {
                 TextSection::new(format!("Lives: {}", 3), TextStyle {
                     font: asset.load("fonts/8-bit-hud.ttf"),
                     font_size: 25.0,
-                    color: Color::BLACK,
+                    color: Color::OLIVE,
                 }),
             ]),
             style: Style {

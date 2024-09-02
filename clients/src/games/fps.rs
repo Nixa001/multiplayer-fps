@@ -38,7 +38,7 @@ pub fn setupfps(mut commands: Commands, asset_server: Res<AssetServer>) {
                 TextSection::new("0 FPS", TextStyle {
                     font: asset_server.load("fonts/8-bit-hud.ttf"),
                     font_size: 25.0,
-                    color: Color::BLACK,
+                    color: Color::RED,
                 }),
             ]),
             style: Style {
