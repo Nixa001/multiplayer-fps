@@ -25,43 +25,37 @@ impl Enemy {
     }
 }
 
-
-
 pub fn create_enemys(
     commands: &mut Commands,
     list_player: &ListPlayer,
     asset_server: &AssetServer,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>
 ) {
     println!("------------Enemys-------{:?}", list_player.list);
-    let player_handle: Handle<Scene> = asset_server.load("soldier/guy.glb#Scene0");
-
     for (&id, player) in list_player.list.iter() {
-        let enemy = Enemy::new(id, format!("Enemy_{}", id), player.position.clone());
-        let transform = Transform::from_xyz(
-            player.position.x,
-            player.position.y,
-            player.position.z
-        ).with_scale(Vec3::splat(0.02));
-
-        // Ajuster la taille du collider en fonction de l'échelle du modèle
-        let collider_height = 1.3 * 0.02; // Hauteur originale * échelle
-        let collider_radius = 0.15 * 0.02; // Rayon original * échelle
-
         let player_entity = commands.spawn((
-            enemy,
-            SceneBundle {
-                scene: player_handle.clone(),
-                transform,
+            Enemy::new(id, format!("Enemy_{}", id), player.position.clone()),
+            PbrBundle {
+                mesh: meshes.add(Mesh::from(shape::Cylinder {
+                    radius: 0.15,
+                    height: 1.3,
+                    ..default()
+                })),
+                material: materials.add(Color::RED.into()),
+                transform: Transform::from_xyz(
+                    player.position.x,
+                    player.position.y,
+                    player.position.z
+                ),
                 ..default()
             },
             RigidBody::KinematicPositionBased,
-            Collider::capsule(Vec3::new(0.0, -collider_height/2.0, 0.0), Vec3::new(0.0, collider_height/2.0, 0.0), collider_radius),
+            Collider::cylinder(1.3, 0.15),
             Velocity::default(),
-            // DebugCollision::default(), // Ajouter ceci pour voir le collider
         ))
         .insert(Name::new(format!("Enemy_{}", id)))
         .id();
-        
         println!("Spawned enemy with ID: {:?}", player_entity);
     }
 }
@@ -78,7 +72,7 @@ pub fn update_enemys_position(
 ) {
     if game_state.has_started && ennemy_created.val {
         println!("❌❌❌❌");
-        create_enemys(&mut commands, &list_player, &asset_server);
+        create_enemys(&mut commands, &list_player, &asset_server, &mut meshes, &mut materials);
         ennemy_created.val = false;
     }
 
@@ -94,3 +88,4 @@ pub fn update_enemys_position(
         }
     }
 }
+
