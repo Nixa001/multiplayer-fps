@@ -25,6 +25,7 @@ impl Enemy {
     }
 }
 
+
 pub fn create_enemys(
     commands: &mut Commands,
     list_player: &ListPlayer,
@@ -33,11 +34,10 @@ pub fn create_enemys(
     println!("------------Enemys-------{:?}", list_player.list);
     for (&id, player) in list_player.list.iter() {
         let player_handle: Handle<Scene> = asset_server.load("soldier/soldier2.glb#Scene0");
-        // let player_handle:Handle<Scene> = asset_server.load("armes/Soldier.glb#Scene0");
         let player_entity = commands.spawn((
             Enemy::new(id, format!("Enemy_{}", id), player.position.clone()),
             SceneBundle {
-                scene: player_handle,
+                scene: player_handle.clone(),
                 transform: Transform::from_xyz(
                     player.position.x,
                     player.position.y,
@@ -45,20 +45,26 @@ pub fn create_enemys(
                 ).with_scale(Vec3::splat(0.02)),
                 ..default()
             },
-
             RigidBody::KinematicPositionBased,
             Collider::cylinder(10.0, 5.0),
-            Velocity::default(), // Assurez-vous que cette ligne est présente
-            // LockedAxes::ROTATION_LOCKED,
-            // GravityScale(0.0),
-
-
-            // RigidBody::KinematicPositionBased, // ou Kinematic selon le comportement souhaité
-            // Collider::cuboid(2.5, 2.5, 2.5),
+            Velocity::default(),
         ))
+        .insert(Name::new(format!("Enemy_{}", id)))  // Ajoutez un nom pour faciliter le débogage
         .id();
+        
+        println!("Spawned enemy with ID: {:?}", player_entity);
     }
 }
+pub fn debug_enemy_components(
+    enemy_query: Query<(Entity, &Enemy, Option<&Collider>)>,
+) {
+    for (entity, enemy, collider) in enemy_query.iter() {
+        println!("Enemy entity: {:?}", entity);
+        println!("  ID: {}, Name: {}, Lives: {}", enemy.id, enemy.name, enemy.lives);
+        println!("  Has Collider: {}", collider.is_some());
+    }
+}
+
 
 pub fn update_enemys_position(
     mut query: Query<(&mut Transform, &mut Enemy)>,

@@ -124,6 +124,8 @@ fn main() {
                 // handle_gltf_wall_collisions,
                 // debug_draw_system,
                 enemys::enemys::update_enemys_position,
+                enemys::enemys::debug_enemy_components,
+
             ).chain()
         )
         .run();
