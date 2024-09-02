@@ -38,8 +38,8 @@ pub fn create_enemys(
             Enemy::new(id, format!("Enemy_{}", id), player.position.clone()),
             PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::Cylinder {
-                    radius: 0.5,
-                    height: 2.0,
+                    radius: 0.2,
+                    height: 1.0,
                     ..default()
                 })),
                 material: materials.add(Color::RED.into()),
@@ -51,7 +51,7 @@ pub fn create_enemys(
                 ..default()
             },
             RigidBody::KinematicPositionBased,
-            Collider::cylinder(0.6, 0.2),
+            Collider::cylinder(1.0, 0.2),
             Velocity::default(),
         ))
         .insert(Name::new(format!("Enemy_{}", id)))
