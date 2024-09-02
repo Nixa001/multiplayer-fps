@@ -43,7 +43,7 @@ pub fn create_enemys(
             player.position.x,
             player.position.y,
             player.position.z
-        );
+        ).with_scale(Vec3::splat(0.02));
 
         let player_entity = commands.spawn((
             enemy,
