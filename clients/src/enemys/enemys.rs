@@ -36,13 +36,13 @@ pub fn create_enemys(
     println!("------------Enemys-------{:?}", list_player.list);
     for (&id, player) in list_player.list.iter() {
         let enemy_mesh = meshes.add(Mesh::from(shape::Cylinder {
-            radius: 0.15,
+            radius: 0.1,
             height: 1.2,
             ..default()
         }));
 
         let enemy_material = materials.add(StandardMaterial {
-            base_color: Color::rgba(1.0, 0.0, 0.0, 0.05), // Rouge semi-transparent
+            base_color: Color::rgba(1.0, 0.0, 0.0, 0.7), // Rouge semi-transparent
             alpha_mode: AlphaMode::Blend,
             ..default()
         });
@@ -61,7 +61,7 @@ pub fn create_enemys(
                     ..default()
                 },
                 RigidBody::KinematicPositionBased,
-                Collider::cylinder(1.3, 0.15),
+                Collider::cylinder(1.2, 0.1),
                 Velocity::default(),
             ))
             .insert(Name::new(format!("Enemy_{}", id)))
