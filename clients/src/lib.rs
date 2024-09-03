@@ -245,6 +245,7 @@ pub fn handle_server_messages(
                     info!("🥉 i am the winner");
                 }
                 GameEvent::Impact { id } => {
+                    println!("Current life => {}", lives.val);
                     if lives.val == 0 {
                         let death_event = GameEvent::Death { player_id: id };
 
@@ -252,8 +253,8 @@ pub fn handle_server_messages(
                             DefaultChannel::ReliableOrdered,
                             serialize(&death_event).unwrap()
                         );
-                        game_state.end_game();
                         client.disconnect();
+                        game_state.end_game();
                     } else {
                         lives.reduce();
                     }
