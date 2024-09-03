@@ -1,21 +1,21 @@
-use bevy::asset::{ Assets};
-use bevy::log::{error, info, warn};
+use bevy::asset::{ Assets };
+use bevy::log::{ error, info, warn };
 use bevy::math::Vec3;
 use bevy::pbr::StandardMaterial;
-use bevy::prelude::{Commands, Mesh, Query, ResMut, Resource, Transform, With};
+use bevy::prelude::{ Commands, Mesh, Query, ResMut, Resource, Transform, With };
 use bevy_renet::renet::transport::ClientAuthentication;
 use bevy_renet::renet::transport::NetcodeClientTransport;
-use bevy_renet::renet::{ConnectionConfig, DefaultChannel, RenetClient};
-use bincode::deserialize;
+use bevy_renet::renet::{ ConnectionConfig, DefaultChannel, RenetClient };
+use bincode::{ deserialize, serialize };
 use std::collections::HashMap;
 use std::{
-    io::{self, Write},
-    net::{SocketAddr, UdpSocket},
+    io::{ self, Write },
+    net::{ SocketAddr, UdpSocket },
     process::*,
     thread::sleep,
     time::SystemTime,
 };
-use store::{GameEvent, Players, GAME_FPS, PROTOCOL_ID};
+use store::{ GameEvent, Players, GAME_FPS, PROTOCOL_ID };
 mod enemys;
 mod games;
 mod player;
@@ -37,6 +37,16 @@ pub struct PositionInitial {
 #[derive(Debug, Default, Resource)]
 pub struct Counter {
     pub val: i32,
+}
+#[derive(Debug, Default, Resource)]
+pub struct LifeCounter {
+    pub val: u8,
+}
+
+impl LifeCounter {
+    pub fn reduce(&mut self) {
+        self.val -= 1;
+    }
 }
 #[derive(Debug, Resource)]
 pub struct EnnemyCreated {
@@ -89,12 +99,10 @@ pub fn get_input(prompt: &str) -> String {
 
 pub fn setup_networking(
     server_addr: &SocketAddr,
-    username: &str,
+    username: &str
 ) -> (RenetClient, NetcodeClientTransport) {
     let client = RenetClient::new(ConnectionConfig::default());
-    let current_time = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap();
+    let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
     let client_id = current_time.as_millis() as u64;
 
     let mut user_data = [0u8; 256];
@@ -116,14 +124,16 @@ pub fn setup_networking(
         exit(1);
     });
 
-    let transport = NetcodeClientTransport::new(current_time, authentication, socket)
-        .expect("Failed to create transport");
+    let transport = NetcodeClientTransport::new(current_time, authentication, socket).expect(
+        "Failed to create transport"
+    );
 
     (client, transport)
 }
 
 pub fn handle_connection(
     mut client: ResMut<RenetClient>,
+    mut lives: ResMut<LifeCounter>,
     mut transport: ResMut<NetcodeClientTransport>,
     _player_query: Query<&mut Transform, With<Player>>,
     spawn_info: ResMut<PlayerSpawnInfo>,
@@ -133,7 +143,7 @@ pub fn handle_connection(
     mut location: ResMut<PositionInitial>,
     mut liste_player: ResMut<ListPlayer>,
     mut game_state: ResMut<GameState>,
-    mut game_timer: ResMut<GameTimer>,
+    mut game_timer: ResMut<GameTimer>
 ) {
     client.update(GAME_FPS);
     if transport.update(GAME_FPS, &mut client).is_err() {
@@ -145,6 +155,7 @@ pub fn handle_connection(
     if client.is_connected() {
         handle_server_messages(
             &mut client,
+            &mut lives,
             commands,
             &mut meshes,
             &mut materials,
@@ -152,18 +163,17 @@ pub fn handle_connection(
             &mut location,
             &mut liste_player,
             &mut game_state,
-            &mut game_timer,
+            &mut game_timer
         );
     }
 
-    transport
-        .send_packets(&mut client)
-        .expect("Error while sending packets to server");
+    transport.send_packets(&mut client).expect("Error while sending packets to server");
     sleep(GAME_FPS);
 }
 
 pub fn handle_server_messages(
     client: &mut ResMut<RenetClient>,
+    lives: &mut ResMut<LifeCounter>,
     mut commands: Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
@@ -171,19 +181,19 @@ pub fn handle_server_messages(
     location: &mut ResMut<PositionInitial>,
     liste_player: &mut ResMut<ListPlayer>,
     game_state: &mut ResMut<GameState>,
-    game_timer: &mut ResMut<GameTimer>,
+    game_timer: &mut ResMut<GameTimer>
 ) {
     while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
         if let Ok(event) = deserialize::<GameEvent>(&message) {
             match event {
-                GameEvent::Spawn {
-                    player_id,
-                    position,
-                    lvl,
-                } => {
+                GameEvent::Spawn { player_id, position, lvl } => {
                     info!(
                         "i am player [{}] located at \"{}°- {}°- {}°\" on level: {}",
-                        player_id, position.x, position.y, position.z, lvl
+                        player_id,
+                        position.x,
+                        position.y,
+                        position.z,
+                        lvl
                     );
 
                     // Mettre à jour la position du joueur
@@ -201,15 +211,10 @@ pub fn handle_server_messages(
                         &mut commands,
                         meshes,
                         materials,
-                        format!("Map{}", lvl).as_str(),
+                        format!("Map{}", lvl).as_str()
                     );
                 }
-                GameEvent::PlayerJoined {
-                    player_id,
-                    name: _,
-                    position: _,
-                    ..
-                } => {
+                GameEvent::PlayerJoined { player_id, name: _, position: _, .. } => {
                     // ! implement logic here
                     info!("[{}] joined the war ", player_id);
                 }
@@ -235,10 +240,24 @@ pub fn handle_server_messages(
                 GameEvent::EndGame => {
                     info!("🥉 i am the winner");
                 }
+                GameEvent::Impact { id } => {
+                    lives.reduce();
+                    if lives.val == 0 {
+                        let death_event = GameEvent::Death { player_id: id };
+
+                        client.send_message(
+                            DefaultChannel::ReliableOrdered,
+                            serialize(&death_event).unwrap()
+                        );
+                        game_state.end_game();
+                        client.disconnect();
+                    }
+                }
 
                 GameEvent::Death { player_id } => {
                     info!("[{}] has died", player_id);
-                },
+                    liste_player.list.remove(&player_id);
+                }
 
                 // ! do the same for other events
                 _ => {
