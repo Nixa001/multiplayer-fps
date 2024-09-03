@@ -259,9 +259,9 @@ pub fn handle_server_messages(
                             serialize(&death_event).unwrap()
                         );
                         println!("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
-                        println!("❌                                                  ❌");
-                        println!("❌           😔 GAME OVER TRY AGAIN WARRIOR 😔     ❌");
-                        println!("❌                                                  ❌");
+                        println!("❌                                              ❌");
+                        println!("❌       😔 GAME OVER TRY AGAIN WARRIOR 😔     ❌");
+                        println!("❌                                              ❌");
                         println!("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
                         client.disconnect();
                         game_state.end_game();
