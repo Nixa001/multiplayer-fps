@@ -116,7 +116,7 @@ pub fn handle_projectile_collisions(
     projectile_query: Query<(Entity, &Transform), With<Projectile>>,
     mut enemy_query: Query<(Entity, &mut Enemy, &Transform)>,
 ) {
-    const IMPACT_DISTANCE: f32 = 0.2; // Ajustez cette valeur selon vos besoins
+    const IMPACT_DISTANCE: f32 = 0.4; 
 
     for (projectile_entity, projectile_transform) in projectile_query.iter() {
         let projectile_position = projectile_transform.translation;
