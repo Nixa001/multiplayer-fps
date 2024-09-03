@@ -42,7 +42,7 @@ pub fn create_enemys(
         }));
 
         let enemy_material = materials.add(StandardMaterial {
-            base_color: Color::rgba(1.0, 0.0, 0.0, 0.1), // Rouge semi-transparent
+            base_color: Color::rgba(1.0, 0.0, 0.0, 0.05), // Rouge semi-transparent
             alpha_mode: AlphaMode::Blend,
             ..default()
         });

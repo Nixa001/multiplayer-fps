@@ -37,7 +37,7 @@ impl Player {
             id,
             name,
             speed,
-            camera_offset: Vec3::new(0.0, 0.2, 0.8),
+            camera_offset: Vec3::new(0.0, 0.3, 0.8),
             size,
             lives,
         }
