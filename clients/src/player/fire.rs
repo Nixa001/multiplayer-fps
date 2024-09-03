@@ -1,4 +1,5 @@
 use crate::enemys::enemys::Enemy;
+use crate::GameState;
 use crate::{ player::player::Player, playing_field::playing_field::Collision };
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
@@ -115,6 +116,7 @@ fn ray_from_screenspace(
 #[allow(dead_code)]
 pub fn handle_projectile_collisions(
     mut client: ResMut<RenetClient>,
+    game_state: Res<GameState>,
     mut commands: Commands,
     projectile_query: Query<(Entity, &Transform), With<Projectile>>,
     mut enemy_query: Query<(Entity, &mut Enemy, &Transform)>
@@ -131,17 +133,19 @@ pub fn handle_projectile_collisions(
             if distance < IMPACT_DISTANCE {
                 // Réduire les vies de l'ennemi
                 enemy.lives = enemy.lives.saturating_sub(1);
-                let impact_event = GameEvent::Impact { id: enemy.id };
-                client.send_message(
-                    DefaultChannel::ReliableOrdered,
-                    serialize(&impact_event).unwrap()
-                );
-                println!("  💥:::::::::Enemy hit! Lives remaining: {}:::::::::💥", enemy.lives);
-                if enemy.lives == 0 {
-                    commands.entity(enemy_entity).despawn();
+                if client.is_connected() && !game_state.has_ended {
+                    let impact_event = GameEvent::Impact { id: enemy.id };
+                    client.send_message(
+                        DefaultChannel::ReliableOrdered,
+                        serialize(&impact_event).unwrap()
+                    );
+                    println!("  💥:::::::::Enemy hit! Lives remaining: {}:::::::::💥", enemy.lives);
+                    if enemy.lives == 0 {
+                        commands.entity(enemy_entity).despawn();
+                    }
+                    // Despawn le projectile
+                    commands.entity(projectile_entity).despawn();
                 }
-                // Despawn le projectile
-                commands.entity(projectile_entity).despawn();
 
                 break;
             }

@@ -245,7 +245,6 @@ pub fn handle_server_messages(
                     info!("🥉 i am the winner");
                 }
                 GameEvent::Impact { id } => {
-                    lives.reduce();
                     if lives.val == 0 {
                         let death_event = GameEvent::Death { player_id: id };
 
@@ -255,12 +254,14 @@ pub fn handle_server_messages(
                         );
                         game_state.end_game();
                         //client.disconnect();
+                    } else {
+                        lives.reduce();
                     }
                 }
 
                 GameEvent::Death { player_id } => {
                     info!("[{}] has died", player_id);
-                   // liste_player.list.remove(&player_id);
+                    // liste_player.list.remove(&player_id);
                 }
 
                 // ! do the same for other events
