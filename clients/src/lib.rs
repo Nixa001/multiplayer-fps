@@ -15,7 +15,7 @@ use std::{
     thread::sleep,
     time::SystemTime,
 };
-use store::{ GameEvent, Players, GAME_FPS, PROTOCOL_ID };
+use store::{ GameEvent, Players, GAME_FPS, NBR_OF_LIVES, PROTOCOL_ID };
 mod enemys;
 mod games;
 mod player;
@@ -45,7 +45,7 @@ pub struct LifeCounter {
 
 impl LifeCounter {
     pub fn new() -> Self {
-        Self { val: 3 }
+        Self { val: NBR_OF_LIVES }
     }
 
     pub fn reduce(&mut self) {

@@ -4,6 +4,7 @@ use bevy::{
     text::{ Text, TextSection, TextStyle },
     ui::{ Display, PositionType, Style, Val },
 };
+use store::NBR_OF_LIVES;
 
 use crate::{ GameState, LifeCounter };
 
@@ -33,7 +34,7 @@ pub fn setuplives(mut commands: Commands, asset: Res<AssetServer>) {
     commands.spawn((
         TextBundle {
             text: Text::from_sections([
-                TextSection::new(format!("Lives: {}", 3), TextStyle {
+                TextSection::new(format!("Lives: {}", NBR_OF_LIVES), TextStyle {
                     font: asset.load("fonts/8-bit-hud.ttf"),
                     font_size: 25.0,
                     color: Color::OLIVE,
