@@ -107,8 +107,7 @@ pub fn move_player(
                     &rapier_context,
                     &collider_query
                 ) &&
-                game_state.has_started &&
-                !game_state.has_ended
+                game_state.has_started
             {
                 transform.translation += movement;
             }
