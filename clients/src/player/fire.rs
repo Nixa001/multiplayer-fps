@@ -124,7 +124,7 @@ pub fn handle_projectile_collisions(
     for (projectile_entity, projectile_transform) in projectile_query.iter() {
         let projectile_position = projectile_transform.translation;
 
-        for (_enemy_entity, mut enemy, enemy_transform) in enemy_query.iter_mut() {
+        for (enemy_entity, mut enemy, enemy_transform) in enemy_query.iter_mut() {
             let enemy_position = enemy_transform.translation;
             let distance = projectile_position.distance(enemy_position);
 
@@ -137,7 +137,9 @@ pub fn handle_projectile_collisions(
                     serialize(&impact_event).unwrap()
                 );
                 println!("  💥:::::::::Enemy hit! Lives remaining: {}:::::::::💥", enemy.lives);
-
+                if enemy.lives == 0 {
+                    commands.entity(enemy_entity).despawn();
+                }
                 // Despawn le projectile
                 commands.entity(projectile_entity).despawn();
 
