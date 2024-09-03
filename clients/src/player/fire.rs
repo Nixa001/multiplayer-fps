@@ -161,7 +161,7 @@ pub fn check_projectile_collision(
 ) -> Option<(Entity, f32)> {
     let ray_origin = projectile_transform.translation;
     let ray_direction = direction.normalize();
-    let max_toi = direction.length() + 0.5; // Maximum ray distance plus a small buffer
+    let max_toi = direction.length(); // Maximum ray distance plus a small buffer
     let mut hit_entity = None;
     let mut hit_toi = f32::MAX;
 
