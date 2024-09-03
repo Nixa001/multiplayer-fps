@@ -254,13 +254,13 @@ pub fn handle_server_messages(
                             serialize(&death_event).unwrap()
                         );
                         game_state.end_game();
-                        client.disconnect();
+                        //client.disconnect();
                     }
                 }
 
                 GameEvent::Death { player_id } => {
                     info!("[{}] has died", player_id);
-                    liste_player.list.remove(&player_id);
+                   // liste_player.list.remove(&player_id);
                 }
 
                 // ! do the same for other events
