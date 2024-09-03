@@ -141,7 +141,7 @@ pub fn handle_projectile_collisions(
                     );
                     println!("  💥:::::::::Enemy hit! Lives remaining: {}:::::::::💥", enemy.lives);
                     if enemy.lives == 0 {
-                        commands.entity(enemy_entity).despawn();
+                        commands.entity(enemy_entity).despawn_recursive();
                         println!("  💥💥💥💥💥💥💥💥DEADDDDDDDD💥💥💥💥💥💥💥💥💥");
                     }
                     // Despawn le projectile
