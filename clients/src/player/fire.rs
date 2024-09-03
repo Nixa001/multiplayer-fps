@@ -127,24 +127,14 @@ pub fn handle_projectile_collisions(
 
             if distance < IMPACT_DISTANCE {
               
-                // println!("Position de la balle : {:?}", projectile_position);
-                // println!("Position de l'ennemi : {:?}", enemy_position);
-                // println!("Distance : {}", distance);
-
-                // Réduire les vies de l'ennemi
                 enemy.lives = enemy.lives.saturating_sub(1);
                 println!("  💥:::::::::Enemy hit! Lives remaining: {}:::::::::💥", enemy.lives);
-
-                // Despawn le projectile
                 commands.entity(projectile_entity).despawn();
 
-                // Optionnel : Despawn l'ennemi s'il n'a plus de vies
-                // if enemy.lives == 0 {
-                //     commands.entity(enemy_entity).despawn();
-                //     println!("Ennemi éliminé !");
-                // }
-
-                // Sortir de la boucle interne car le projectile a déjà touché un ennemi
+                if enemy.lives == 0 {
+                    commands.entity(enemy_entity).despawn();
+                    println!("Ennemi éliminé !");
+                }
                 break;
             }
         }
