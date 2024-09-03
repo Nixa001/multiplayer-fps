@@ -126,10 +126,10 @@ pub fn handle_projectile_collisions(
             projectile_transform.forward(),
             &collider_query,
         ) {
-            println!(
-                "✅:::::: Projectile Collision Detected with entity: {:?} :::::::::::✅",
-                hit_entity
-            );
+            // println!(
+            //     "✅:::::: Projectile Collision Detected with entity: {:?} :::::::::::✅",
+            //     hit_entity
+            // );
             // Check if the hit entity has an Enemy component
             if let Ok((_, mut enemy)) = enemy_query.get_mut(hit_entity) {
                 enemy.lives = enemy.lives.saturating_sub(1);

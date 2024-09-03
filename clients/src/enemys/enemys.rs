@@ -42,7 +42,7 @@ pub fn create_enemys(
         }));
 
         let enemy_material = materials.add(StandardMaterial {
-            base_color: Color::rgba(1.0, 0.0, 0.0, 0.7), // Rouge semi-transparent
+            base_color: Color::rgba(1.0, 0.0, 0.0, 0.05), // Rouge semi-transparent
             alpha_mode: AlphaMode::Blend,
             ..default()
         });
@@ -54,7 +54,7 @@ pub fn create_enemys(
                 Enemy::new(id, format!("Enemy_{}", id), player.position.clone()),
                 SpatialBundle {
                     transform: Transform::from_xyz(
-                        player.position.x,
+                        player.position.x-1.,
                         player.position.y,
                         player.position.z,
                     ),
