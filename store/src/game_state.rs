@@ -92,7 +92,10 @@ impl GameState {
 
             GameEvent::Death { player_id } => {
                 if !self.players.contains_key(player_id) {
+                    println!("❌❌ dead player exists before remove");
                     return false;
+                } else {
+                    println!("🟢 valid death");
                 }
             }
             _ => unreachable!(),

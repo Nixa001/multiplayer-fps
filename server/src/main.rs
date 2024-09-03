@@ -182,7 +182,7 @@ fn main() {
                                 DefaultChannel::ReliableOrdered,
                                 serialize(&event).unwrap()
                             );
-                            println!("[INFO]: player with id [{}] won !", winner);
+                            println!("🟩 [INFO]: player with id [{}] won !", winner);
                         }
                     } else {
                         eprintln!("❌ Player {} sent invalid event:\n\t{:#?}", client_id, event);

@@ -64,74 +64,75 @@ pub fn move_player(
     if window.cursor.grab_mode == bevy::window::CursorGrabMode::None {
         return;
     }
-
-    let mut mouse_delta = Vec2::ZERO;
-    for ev in mouse_motion.read() {
-        mouse_delta += ev.delta;
-    }
-    for (entity, player, mut transform, _velocity) in query.iter_mut() {
-        let a = counter.val;
-        if a < 1 {
-            transform.translation = Vec3::new(location.x, location.y, location.z);
+    if !game_state.has_ended {
+        let mut mouse_delta = Vec2::ZERO;
+        for ev in mouse_motion.read() {
+            mouse_delta += ev.delta;
         }
-        counter.val += 1;
+        for (entity, player, mut transform, _velocity) in query.iter_mut() {
+            let a = counter.val;
+            if a < 1 {
+                transform.translation = Vec3::new(location.x, location.y, location.z);
+            }
+            counter.val += 1;
 
-        let mut direction = Vec3::ZERO;
-        if keyboard.pressed(KeyCode::W) {
-            direction += transform.forward();
-        }
-        if keyboard.pressed(KeyCode::S) {
-            direction += transform.back();
-        }
-        if keyboard.pressed(KeyCode::A) {
-            direction += transform.left();
-        }
-        if keyboard.pressed(KeyCode::D) {
-            direction += transform.right();
-        }
+            let mut direction = Vec3::ZERO;
+            if keyboard.pressed(KeyCode::W) {
+                direction += transform.forward();
+            }
+            if keyboard.pressed(KeyCode::S) {
+                direction += transform.back();
+            }
+            if keyboard.pressed(KeyCode::A) {
+                direction += transform.left();
+            }
+            if keyboard.pressed(KeyCode::D) {
+                direction += transform.right();
+            }
 
-        direction = direction.normalize_or_zero();
+            direction = direction.normalize_or_zero();
 
-        let movement = direction * player.speed * 0.016;
+            let movement = direction * player.speed * 0.016;
 
-        // Vérifier la collision avant de déplacer le joueur
+            // Vérifier la collision avant de déplacer le joueur
 
-        // Rotation du joueur (et de l'arme)
-        transform.rotate_y(-mouse_delta.x * 0.002);
+            // Rotation du joueur (et de l'arme)
+            transform.rotate_y(-mouse_delta.x * 0.002);
 
-        if
-            !check_player_collision(
-                entity,
-                &transform,
-                movement,
-                &rapier_context,
-                &collider_query
-            ) &&
-            game_state.has_started &&
-            !game_state.has_ended
-        {
-            transform.translation += movement;
-        }
+            if
+                !check_player_collision(
+                    entity,
+                    &transform,
+                    movement,
+                    &rapier_context,
+                    &collider_query
+                ) &&
+                game_state.has_started &&
+                !game_state.has_ended
+            {
+                transform.translation += movement;
+            }
 
-        // Assurez-vous que le joueur reste au sol
-        transform.translation.y = 0.2;
+            // Assurez-vous que le joueur reste au sol
+            transform.translation.y = 0.2;
 
-        if client.is_connected() && !game_state.has_ended {
-            client.send_message(
-                DefaultChannel::ReliableOrdered,
-                serialize(
-                    &(GameEvent::PlayerMove {
-                        at: Position::new(
-                            transform.translation.x,
-                            transform.translation.y,
-                            transform.translation.z
-                        ),
-                        player_id: u8::MAX,
-                        player_list: HashMap::new(),
-                        vision: (mouse_delta.x, mouse_delta.y),
-                    })
-                ).unwrap()
-            );
+            if client.is_connected() {
+                client.send_message(
+                    DefaultChannel::ReliableOrdered,
+                    serialize(
+                        &(GameEvent::PlayerMove {
+                            at: Position::new(
+                                transform.translation.x,
+                                transform.translation.y,
+                                transform.translation.z
+                            ),
+                            player_id: u8::MAX,
+                            player_list: HashMap::new(),
+                            vision: (mouse_delta.x, mouse_delta.y),
+                        })
+                    ).unwrap()
+                );
+            }
         }
     }
 }
