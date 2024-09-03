@@ -246,6 +246,7 @@ pub fn handle_server_messages(
                 }
                 GameEvent::Impact { id } => {
                     println!("Current life => {}", lives.val);
+                    lives.reduce();
                     if lives.val == 0 {
                         let death_event = GameEvent::Death { player_id: id };
 
@@ -255,8 +256,6 @@ pub fn handle_server_messages(
                         );
                         client.disconnect();
                         game_state.end_game();
-                    } else {
-                        lives.reduce();
                     }
                 }
 
