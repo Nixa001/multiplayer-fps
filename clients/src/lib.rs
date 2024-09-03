@@ -243,9 +243,13 @@ pub fn handle_server_messages(
 
                 GameEvent::EndGame => {
                     info!("🥉 i am the winner");
+                    println!("💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣");
+                    println!("💣                                                  💣");
+                    println!("💣          👑 YOU WON ! THE WARRIOR  👑           💣");
+                    println!("💣                                                  💣");
+                    println!("💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣💣");
                 }
                 GameEvent::Impact { id } => {
-                    println!("Current life => {}", lives.val);
                     lives.reduce();
                     if lives.val == 0 {
                         let death_event = GameEvent::Death { player_id: id };
@@ -254,13 +258,18 @@ pub fn handle_server_messages(
                             DefaultChannel::ReliableOrdered,
                             serialize(&death_event).unwrap()
                         );
+                        println!("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
+                        println!("❌                                                  ❌");
+                        println!("❌           😔 GAME OVER TRY AGAIN WARRIOR 😔     ❌");
+                        println!("❌                                                  ❌");
+                        println!("❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌");
                         client.disconnect();
                         game_state.end_game();
                     }
                 }
 
                 GameEvent::Death { player_id } => {
-                    info!("[{}] has died", player_id);
+                    info!("🔻 [{}] has died", player_id);
                     // liste_player.list.remove(&player_id);
                 }
 

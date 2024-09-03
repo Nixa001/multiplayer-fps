@@ -117,6 +117,13 @@ fn main() {
                             DefaultChannel::ReliableOrdered,
                             serialize(&event).unwrap()
                         );
+                        for (id, _) in &game_state.players {
+                            println!("✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨");
+                            println!("✨                                                  ✨");
+                            println!("✨               Player [{}] has won !              ✨", id);
+                            println!("✨                                                  ✨");
+                            println!("✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨");
+                        }
                         println!("🟥 Game has ended");
                     }
                 }
