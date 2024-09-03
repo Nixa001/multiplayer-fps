@@ -54,7 +54,7 @@ pub fn create_enemys(
                 Enemy::new(id, format!("Enemy_{}", id), player.position.clone()),
                 SpatialBundle {
                     transform: Transform::from_xyz(
-                        player.position.x-1.,
+                        player.position.x,
                         player.position.y,
                         player.position.z,
                     ),
