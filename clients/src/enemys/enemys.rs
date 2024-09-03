@@ -42,7 +42,7 @@ pub fn create_enemys(
         }));
 
         let enemy_material = materials.add(StandardMaterial {
-            base_color: Color::rgba(1.0, 0.0, 0.0, 0.5), // Rouge semi-transparent
+            base_color: Color::rgba(1.0, 0.0, 0.0, 0.1), // Rouge semi-transparent
             alpha_mode: AlphaMode::Blend,
             ..default()
         });
@@ -77,7 +77,7 @@ pub fn create_enemys(
                 parent.spawn(SceneBundle {
                     scene: enemy_model,
                     transform: Transform {
-                        translation: Vec3::new(0.0, 0.2, 0.0),
+                        translation: Vec3::new(0.0, 0.0, 0.0),
                         scale: Vec3::splat(0.02), // Apply the scale here
                         ..default()
                     },
