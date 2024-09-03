@@ -1,7 +1,7 @@
 use crate::*;
 use rand::*;
-use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, u8};
+use serde::{ Deserialize, Serialize };
+use std::{ collections::HashMap, u8 };
 
 /// The different states a game can be in. (not to be confused with the entire "GameState")
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -13,7 +13,9 @@ pub enum Stage {
 /// The reasons why a game could end
 #[derive(Debug, Clone, Copy, Serialize, PartialEq, Deserialize)]
 pub enum EndGameReason {
-    PlayerWon { winner: u64 },
+    PlayerWon {
+        winner: u64,
+    },
 }
 
 /// A GameState object that is able to keep track of game
@@ -82,6 +84,17 @@ impl GameState {
                     return false;
                 }
             }
+            GameEvent::Impact { id } => {
+                if !self.players.contains_key(id) {
+                    return false;
+                }
+            }
+
+            GameEvent::Death { player_id } => {
+                if !self.players.contains_key(player_id) {
+                    return false;
+                }
+            }
             _ => unreachable!(),
         }
         true
@@ -104,23 +117,15 @@ impl GameState {
                 eve = GameEvent::EndGame;
             }
 
-            GameEvent::PlayerJoined {
-                player_id,
-                name,
-                position,
-                client_id,
-            } => {
-                self.players.insert(
-                    *player_id,
-                    Players {
-                        name: name.to_string(),
-                        id: *player_id,
-                        position: position.clone(),
-                        client_id: client_id.clone(),
-                        vision: (0.0, 0.0),
-                        lives: 3,
-                    },
-                );
+            GameEvent::PlayerJoined { player_id, name, position, client_id } => {
+                self.players.insert(*player_id, Players {
+                    name: name.to_string(),
+                    id: *player_id,
+                    position: position.clone(),
+                    client_id: client_id.clone(),
+                    vision: (0.0, 0.0),
+                    lives: 3,
+                });
 
                 eve = GameEvent::PlayerJoined {
                     player_id: *player_id,
@@ -159,7 +164,7 @@ impl GameState {
                 let impacted_player = self.players.get_mut(id).unwrap();
                 impacted_player.lives -= 1;
                 return GameEvent::Impact { id: id.clone() };
-            },
+            }
             GameEvent::Death { player_id } => {
                 self.players.remove(player_id);
                 return GameEvent::Death { player_id: player_id.clone() };
