@@ -42,6 +42,7 @@ impl Player {
             lives,
         }
     }
+    #[allow(dead_code)]
     pub fn player_lives(&self) -> u8 {
         self.lives
     }

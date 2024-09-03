@@ -1,4 +1,4 @@
-use bevy::asset::{ Assets };
+use bevy::asset::Assets;
 use bevy::log::{ error, info, warn };
 use bevy::math::Vec3;
 use bevy::pbr::StandardMaterial;
@@ -12,7 +12,6 @@ use std::{
     io::{ self, Write },
     net::{ SocketAddr, UdpSocket },
     process::*,
-    thread::sleep,
     time::SystemTime,
 };
 use store::{ GameEvent, Players, GAME_FPS, NBR_OF_LIVES, PROTOCOL_ID };

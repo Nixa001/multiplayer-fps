@@ -29,8 +29,9 @@ impl Default for Collision {
     }
 }
 
+#[allow(dead_code)]
 pub struct Fields;
-
+#[allow(dead_code)]
 impl Fields {
     pub fn spawn_ground(
         mut commands: Commands,
