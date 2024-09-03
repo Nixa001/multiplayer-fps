@@ -110,16 +110,13 @@ fn ray_from_screenspace(
     camera.viewport_to_world(camera_transform, cursor_position)
 }
 
-
-use bevy::prelude::*;
-
 #[allow(dead_code)]
 pub fn handle_projectile_collisions(
     mut commands: Commands,
     projectile_query: Query<(Entity, &Transform), With<Projectile>>,
     mut enemy_query: Query<(Entity, &mut Enemy, &Transform)>,
 ) {
-    const IMPACT_DISTANCE: f32 = 0.5; // Ajustez cette valeur selon vos besoins
+    const IMPACT_DISTANCE: f32 = 0.3; // Ajustez cette valeur selon vos besoins
 
     for (projectile_entity, projectile_transform) in projectile_query.iter() {
         let projectile_position = projectile_transform.translation;
@@ -130,9 +127,9 @@ pub fn handle_projectile_collisions(
 
             if distance < IMPACT_DISTANCE {
                 println!("💥 Impact détecté ! 💥");
-                println!("Position de la balle : {:?}", projectile_position);
-                println!("Position de l'ennemi : {:?}", enemy_position);
-                println!("Distance : {}", distance);
+                // println!("Position de la balle : {:?}", projectile_position);
+                // println!("Position de l'ennemi : {:?}", enemy_position);
+                // println!("Distance : {}", distance);
 
                 // Réduire les vies de l'ennemi
                 enemy.lives = enemy.lives.saturating_sub(1);
@@ -142,10 +139,10 @@ pub fn handle_projectile_collisions(
                 commands.entity(projectile_entity).despawn();
 
                 // Optionnel : Despawn l'ennemi s'il n'a plus de vies
-                if enemy.lives == 0 {
-                    commands.entity(enemy_entity).despawn();
-                    println!("Ennemi éliminé !");
-                }
+                // if enemy.lives == 0 {
+                //     commands.entity(enemy_entity).despawn();
+                //     println!("Ennemi éliminé !");
+                // }
 
                 // Sortir de la boucle interne car le projectile a déjà touché un ennemi
                 break;
