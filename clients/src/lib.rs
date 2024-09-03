@@ -172,7 +172,7 @@ pub fn handle_connection(
     }
 
     transport.send_packets(&mut client).expect("Error while sending packets to server");
-   // sleep(GAME_FPS);
+    // sleep(GAME_FPS);
 }
 
 pub fn handle_server_messages(
@@ -253,7 +253,7 @@ pub fn handle_server_messages(
                             serialize(&death_event).unwrap()
                         );
                         game_state.end_game();
-                        //client.disconnect();
+                        client.disconnect();
                     } else {
                         lives.reduce();
                     }
