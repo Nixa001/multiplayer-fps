@@ -3,7 +3,7 @@ use crate::{EnnemyCreated, GameState};
 use bevy::prelude::*;
 use bevy_rapier3d::dynamics::Velocity;
 use bevy_rapier3d::prelude::{Collider, RigidBody};
-use store::Position;
+use store::{Position, NBR_OF_LIVES};
 
 #[allow(dead_code)]
 #[derive(Component)]
@@ -20,7 +20,7 @@ impl Enemy {
             id,
             name,
             position,
-            lives: 3,
+            lives: NBR_OF_LIVES,
         }
     }
 }
