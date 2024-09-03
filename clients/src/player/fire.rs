@@ -137,10 +137,10 @@ pub fn handle_projectile_collisions(
                     "💥:::::::::Enemy hit! Lives remaining: {}:::::::::💥",
                     enemy.lives
                 );
-                if enemy.lives == 0 {
-                    commands.entity(hit_entity).despawn();
-                    println!("Enemy despawned!");
-                }
+                // if enemy.lives == 0 {
+                //     commands.entity(hit_entity).despawn();
+                //     println!("Enemy despawned!");
+                // }
             } else {
                 println!("Hit entity is not an enemy");
             }
