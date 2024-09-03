@@ -116,7 +116,7 @@ pub fn move_player(
         // Assurez-vous que le joueur reste au sol
         transform.translation.y = 0.2;
 
-        if client.is_connected() {
+        if client.is_connected() && !game_state.has_ended {
             client.send_message(
                 DefaultChannel::ReliableOrdered,
                 serialize(
