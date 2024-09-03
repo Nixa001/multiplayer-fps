@@ -1,21 +1,23 @@
 use bevy::{
     asset::AssetServer,
-    diagnostic::{ DiagnosticsStore, FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin },
-    prelude::{ Color, Commands, Component, Query, Res, ResMut, TextBundle, With },
-    text::{ Text, TextSection, TextStyle },
-    ui::{ Display, PositionType, Style, Val },
+    diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
+    prelude::{Color, Commands, Component, Query, Res, TextBundle, With},
+    text::{Text, TextSection, TextStyle},
+    ui::{Display, PositionType, Style, Val},
     utils::default,
 };
 
 use crate::GameState;
 
 #[derive(Component)]
+#[allow(dead_code)]
 pub struct FpsText;
+#[allow(dead_code)]
 pub fn fps_display_system(
     diagnostics: Res<DiagnosticsStore>,
     mut query: Query<&mut Text, With<FpsText>>,
     mut query_style: Query<&mut Style, With<FpsText>>,
-    game_state: Res<GameState>
+    game_state: Res<GameState>,
 ) {
     if game_state.has_started {
         if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
@@ -31,16 +33,18 @@ pub fn fps_display_system(
     }
 }
 
+#[allow(dead_code)]
 pub fn setupfps(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         TextBundle {
-            text: Text::from_sections([
-                TextSection::new("0 FPS", TextStyle {
+            text: Text::from_sections([TextSection::new(
+                "0 FPS",
+                TextStyle {
                     font: asset_server.load("fonts/8-bit-hud.ttf"),
                     font_size: 25.0,
-                    color: Color::BLACK,
-                }),
-            ]),
+                    color: Color::RED,
+                },
+            )]),
             style: Style {
                 position_type: PositionType::Absolute,
                 top: Val::Px(10.0),

@@ -2,9 +2,9 @@ use bevy::prelude::*;
 use std::default::Default;
 // use bevy::sprite::collide_aabb::collide;
 use crate::player::player::Player;
+use crate::player_2d::player_2d::MinimapElement;
 use bevy_rapier3d::dynamics::RigidBody;
 use bevy_rapier3d::prelude::Collider;
-use crate::player_2d::player_2d::MinimapElement;
 
 use bevy_rapier3d::prelude::*; // version bevy_rapier3d = "0.17.0"
 
@@ -17,6 +17,7 @@ struct CustomBundle {
 }
 
 #[derive(Component)]
+#[allow(dead_code)]
 pub enum Collision {
     Wall { size: Vec2 },
     Ground,
@@ -50,9 +51,9 @@ impl Fields {
                 transform: Transform::from_xyz(0.0, 0.0, 0.0),
                 ..Default::default()
             },
-            RigidBody::Fixed,
-            Collider::cuboid(arena_size * 0.5, 0.1, arena_size * 0.5),
-            Collision::Ground,
+            // RigidBody::Fixed,
+            // Collider::cuboid(arena_size * 0.5, 0.1, arena_size * 0.5),
+            // Collision::Ground,
         ));
 
         let wall_height = 5.0;
@@ -106,7 +107,9 @@ impl Fields {
 
         // Light
         commands.spawn(DirectionalLightBundle {
-            transform: Transform::from_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_4)),
+            transform: Transform::from_rotation(Quat::from_rotation_x(
+                -std::f32::consts::FRAC_PI_4,
+            )),
             directional_light: DirectionalLight {
                 shadows_enabled: true,
                 ..default()
@@ -166,6 +169,7 @@ impl Fields {
     }
 }
 
+#[allow(dead_code)]
 pub fn create_maze(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
@@ -185,18 +189,42 @@ pub fn create_maze(
             match cell {
                 4 => {
                     // Vers le bas et la droite
-                    spawn_wall(commands, meshes, materials, Vec3::new(x, wall_height / 2.0, z + cell_size / 2.0), Vec3::new(wall_thickness, wall_height, cell_size));
-                    spawn_wall(commands, meshes, materials, Vec3::new(x + cell_size / 2.0, wall_height / 2.0, z), Vec3::new(cell_size, wall_height, wall_thickness));
+                    spawn_wall(
+                        commands,
+                        meshes,
+                        materials,
+                        Vec3::new(x, wall_height / 2.0, z + cell_size / 2.0),
+                        Vec3::new(wall_thickness, wall_height, cell_size),
+                    );
+                    spawn_wall(
+                        commands,
+                        meshes,
+                        materials,
+                        Vec3::new(x + cell_size / 2.0, wall_height / 2.0, z),
+                        Vec3::new(cell_size, wall_height, wall_thickness),
+                    );
                     spawn_minimap_wall(commands, x, z, true, true)
                 }
                 3 => {
                     // Vers la droite
-                    spawn_wall(commands, meshes, materials, Vec3::new(x + cell_size / 2.0, wall_height / 2.0, z), Vec3::new(cell_size, wall_height, wall_thickness));
+                    spawn_wall(
+                        commands,
+                        meshes,
+                        materials,
+                        Vec3::new(x + cell_size / 2.0, wall_height / 2.0, z),
+                        Vec3::new(cell_size, wall_height, wall_thickness),
+                    );
                     spawn_minimap_wall(commands, x, z, false, true)
                 }
                 1 => {
                     // Vers le bas
-                    spawn_wall(commands, meshes, materials, Vec3::new(x, wall_height / 2.0, z + cell_size / 2.0), Vec3::new(wall_thickness, wall_height, cell_size));
+                    spawn_wall(
+                        commands,
+                        meshes,
+                        materials,
+                        Vec3::new(x, wall_height / 2.0, z + cell_size / 2.0),
+                        Vec3::new(wall_thickness, wall_height, cell_size),
+                    );
                     spawn_minimap_wall(commands, x, z, true, false)
                 }
                 2 => {
@@ -208,6 +236,7 @@ pub fn create_maze(
     }
 }
 
+#[allow(dead_code)]
 fn spawn_wall(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
@@ -230,15 +259,8 @@ fn spawn_wall(
     ));
 }
 
-
-
-fn spawn_minimap_wall(
-    commands: &mut Commands,
-    x: f32,
-    z: f32,
-    vertical: bool,
-    horizontal: bool,
-) {
+#[allow(dead_code)]
+fn spawn_minimap_wall(commands: &mut Commands, x: f32, z: f32, vertical: bool, horizontal: bool) {
     let minimap_x = (x + 14.0) * (180.0 / 28.0);
     let minimap_z = (z + 14.0) * (180.0 / 28.0);
     if vertical {
@@ -277,10 +299,9 @@ fn spawn_minimap_wall(
     }
 }
 
-
 fn get_mazes(name: &str) -> Vec<Vec<u8>> {
     if name == "Map1" {
-        return  vec![
+        vec![
             vec![4, 3, 2, 3, 3, 3, 3, 4, 3, 3, 1],
             vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
             vec![1, 2, 2, 2, 3, 3, 2, 2, 2, 3, 1],
@@ -291,10 +312,10 @@ fn get_mazes(name: &str) -> Vec<Vec<u8>> {
             vec![1, 2, 3, 1, 1, 2, 3, 2, 1, 2, 1],
             vec![1, 3, 2, 2, 3, 2, 1, 2, 1, 2, 1],
             vec![1, 3, 3, 3, 2, 4, 2, 2, 2, 3, 1],
-            vec![3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 2]
+            vec![3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 2],
         ]
     } else if name == "Map2" {
-        return vec![
+        vec![
             vec![4, 3, 2, 3, 3, 4, 3, 4, 3, 3, 1],
             vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
             vec![1, 2, 2, 3, 3, 3, 2, 1, 2, 3, 1],
@@ -305,9 +326,9 @@ fn get_mazes(name: &str) -> Vec<Vec<u8>> {
             vec![1, 2, 3, 1, 4, 2, 3, 2, 4, 2, 1],
             vec![1, 3, 2, 2, 3, 2, 1, 2, 4, 2, 1],
             vec![1, 3, 3, 3, 2, 4, 2, 2, 2, 3, 1],
-            vec![3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 2]
-        ];
-    }else {
+            vec![3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 2],
+        ]
+    } else {
         vec![
             vec![4, 3, 3, 3, 3, 4, 3, 4, 3, 3, 1],
             vec![1, 1, 1, 3, 3, 2, 1, 1, 3, 1, 1],
@@ -319,7 +340,7 @@ fn get_mazes(name: &str) -> Vec<Vec<u8>> {
             vec![1, 4, 3, 1, 4, 2, 3, 2, 4, 2, 1],
             vec![1, 3, 2, 4, 3, 2, 1, 4, 4, 2, 1],
             vec![1, 3, 3, 3, 2, 4, 2, 2, 2, 3, 1],
-            vec![3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2]
+            vec![3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2],
         ]
     }
 }

@@ -41,7 +41,7 @@ fn main() {
     println!("🕹 maze server listening on {} 📡", server_addr);
 
     let mut timer = Instant::now();
-    let mut count_sec = 20;
+    let mut count_sec = 5;
 
     loop {
         // Receive new messages and update clients at desired fps

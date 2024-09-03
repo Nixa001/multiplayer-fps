@@ -6,6 +6,7 @@ use bevy::window::Window;
 use bevy::input::mouse::MouseButton;
 
 #[derive(Component)]
+#[allow(dead_code)]
 pub struct Projectile {
     pub speed: f32,
     pub lifetime: Timer,
@@ -20,6 +21,7 @@ pub struct ProjectileBundle {
     velocity: Velocity,
 }
 
+#[allow(dead_code)]
 pub fn fire_projectile(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -33,35 +35,37 @@ pub fn fire_projectile(
         if let Ok((player_transform, _player)) = query.get_single() {
             if let Ok((camera, camera_transform)) = camera_query.get_single() {
                 let window = windows.single();
-                let center = Vec2::new(window.width() / 2.0, window.height() / 2.0 - 20.0);
+                let center = Vec2::new(window.width() / 2.0, window.height() / 2.0 - 20.);
 
-                if let Some(ray) = ray_from_screenspace(&window, &camera, camera_transform, center) {
+                if let Some(ray) = ray_from_screenspace(&camera, camera_transform, center)
+                {
                     let spawn_point =
-                        player_transform.translation + player_transform.forward() * 0.6;
+                        player_transform.translation + player_transform.forward() * 0.60;
                     let projectile_direction = ray.direction;
 
                     commands.spawn(ProjectileBundle {
                         projectile: Projectile {
-                            speed: 80.0,
-                            lifetime: Timer::from_seconds(50.0, TimerMode::Once),
+                            speed: 100.0,
+                            lifetime: Timer::from_seconds(5.0, TimerMode::Once),
                         },
                         pbr_bundle: PbrBundle {
                             mesh: meshes.add(
                                 Mesh::try_from(shape::Icosphere {
                                     radius: 0.01,
                                     subdivisions: 1,
-                                }).unwrap()
+                                })
+                                .unwrap(),
                             ),
                             material: materials.add(StandardMaterial {
                                 base_color: Color::ORANGE_RED,
-                                emissive: Color::rgba_linear(0.0, 0.0, 0.0, 1.0),
+                                emissive: Color::rgba_linear(1.0, 0.0, 0.0, 1.0),
                                 ..default()
                             }),
                             transform: Transform::from_translation(spawn_point),
                             ..default()
                         },
                         rigid_body: RigidBody::KinematicVelocityBased,
-                        collider: Collider::ball(0.05),
+                        collider: Collider::ball(0.03),
                         velocity: Velocity::linear(projectile_direction * 50.0),
                     });
                 }
@@ -70,6 +74,7 @@ pub fn fire_projectile(
     }
 }
 
+#[allow(dead_code)]
 pub fn update_projectiles(
     mut commands: Commands,
     mut projectile_query: Query<(Entity, &mut Projectile, &Velocity)>,
@@ -87,18 +92,17 @@ pub fn update_projectiles(
         let ray_origin = velocity.linvel.normalize() * 0.05;
         let ray_direction = velocity.linvel.normalize();
 
-        if
-            rapier_context
-                .cast_ray(ray_origin, ray_direction, 0.1, true, QueryFilter::default())
-                .is_some()
+        if rapier_context
+            .cast_ray(ray_origin, ray_direction, 0.1, true, QueryFilter::default())
+            .is_some()
         {
             commands.entity(entity).despawn();
         }
     }
 }
 
+#[allow(dead_code)]
 fn ray_from_screenspace(
-    window: &Window,
     camera: &Camera,
     camera_transform: &GlobalTransform,
     cursor_position: Vec2
@@ -106,62 +110,110 @@ fn ray_from_screenspace(
     camera.viewport_to_world(camera_transform, cursor_position)
 }
 
+#[allow(dead_code)]
 pub fn handle_projectile_collisions(
     mut commands: Commands,
     projectile_query: Query<(Entity, &Transform), With<Projectile>>,
-    rapier_context: Res<RapierContext>,
-    mut enemy_query: Query<(Entity, &mut Enemy), With<Collision>>
+    mut enemy_query: Query<(Entity, &mut Enemy, &Transform)>,
 ) {
+    const IMPACT_DISTANCE: f32 = 0.45; 
+
     for (projectile_entity, projectile_transform) in projectile_query.iter() {
-        if
-            let Some((hit_entity, hit_position)) = check_projectile_collision(
-                projectile_entity,
-                projectile_transform,
-                &rapier_context
-            )
-        {
-            println!("✅:::::: TEST FUNCT  :::::::::::✅");
+        let projectile_position = projectile_transform.translation;
 
-            // Check if the hit entity is an enemy
-            if let Ok((_, mut enemy)) = enemy_query.get_mut(hit_entity) {
-                // Decrement enemy lives
+        for (enemy_entity, mut enemy, enemy_transform) in enemy_query.iter_mut() {
+            let enemy_position = enemy_transform.translation;
+            let distance = projectile_position.distance(enemy_position);
+
+            if distance < IMPACT_DISTANCE {
+              
+                // println!("Position de la balle : {:?}", projectile_position);
+                // println!("Position de l'ennemi : {:?}", enemy_position);
+                // println!("Distance : {}", distance);
+
+                // Réduire les vies de l'ennemi
                 enemy.lives = enemy.lives.saturating_sub(1);
+                println!("  💥:::::::::Enemy hit! Lives remaining: {}:::::::::💥", enemy.lives);
 
-                // If enemy has no lives left, despawn it
-                if enemy.lives == 0 {
-                    commands.entity(hit_entity).despawn();
-                }
-
-                // Print debug information
-                println!("💥:::::::::Enemy hit! Lives remaining: {}:::::::::💥", enemy.lives);
-            }
-
-            // Despawn the projectile
-            if commands.get_entity(projectile_entity).is_some() {
+                // Despawn le projectile
                 commands.entity(projectile_entity).despawn();
-                println!("Projectile despawned");
-            } else {
-                println!("Projectile entity no longer exists");
+
+                // Optionnel : Despawn l'ennemi s'il n'a plus de vies
+                // if enemy.lives == 0 {
+                //     commands.entity(enemy_entity).despawn();
+                //     println!("Ennemi éliminé !");
+                // }
+
+                // Sortir de la boucle interne car le projectile a déjà touché un ennemi
+                break;
             }
-            // commands.entity(projectile_entity).despawn();
         }
     }
 }
 
-fn check_projectile_collision(
+
+#[allow(dead_code)]
+pub fn check_projectile_collision(
     projectile_entity: Entity,
     projectile_transform: &Transform,
-    rapier_context: &RapierContext
+    rapier_context: &RapierContext,
+    direction: Vec3,
+    collider_query: &Query<Entity, (With<Collider>, Without<Projectile>)>,
 ) -> Option<(Entity, f32)> {
     let ray_origin = projectile_transform.translation;
-    let ray_direction = projectile_transform.forward();
-    let max_toi = 0.5; // Short distance to check just in front of the projectile
+    let ray_direction = direction.normalize();
+    let max_toi = direction.length(); // Maximum ray distance plus a small buffer
+    let mut hit_entity = None;
+    let mut hit_toi = f32::MAX;
 
-    rapier_context.cast_ray(
+    rapier_context.intersections_with_ray(
         ray_origin,
         ray_direction,
         max_toi,
         true,
-        QueryFilter::default().exclude_collider(projectile_entity)
-    )
+        QueryFilter::default().exclude_collider(projectile_entity),
+        |entity, intersection| {
+            // Check if the intersected entity is in the collider_query
+            if collider_query.get(entity).is_ok() {
+                hit_entity = Some(entity);
+                hit_toi = intersection.toi;
+                false // Stop the ray cast when we find a valid collision
+            } else {
+                true // Continue the ray cast if it's not a valid collider
+            }
+        },
+    );
+
+    hit_entity.map(|entity| (entity, hit_toi))
+}
+
+#[allow(dead_code)]
+pub fn check_player_collision(
+    player_entity: Entity,
+    weapon_transform: &Transform,
+    direction: Vec3,
+    rapier_context: &RapierContext,
+    _collider_query: &Query<Entity, (With<Collision>, Without<Player>)>,
+) -> bool {
+    // Position future du joueur
+    let _future_position = weapon_transform.translation + direction;
+
+    // Lancer un rayon pour détecter une collision
+    let ray_origin = weapon_transform.translation;
+    let ray_direction = direction.normalize();
+
+    let max_toi = direction.length(); // Distance maximale du rayon
+
+    if let Some((_hit_entity, _hit_position)) = rapier_context.cast_ray(
+        ray_origin,
+        ray_direction,
+        max_toi + 1.5,
+        true,
+        QueryFilter::default().exclude_collider(player_entity),
+    ) {
+        // Si un objet est détecté sur la trajectoire, il y a une collision
+        return true;
+    }
+
+    false // Pas de collision détectée
 }
