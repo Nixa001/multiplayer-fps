@@ -41,7 +41,7 @@ fn main() {
     println!("🕹 maze server listening on {} 📡", server_addr);
 
     let mut timer = Instant::now();
-    let mut count_sec = 5;
+    let mut count_sec = 20;
 
     loop {
         // Receive new messages and update clients at desired fps
@@ -113,7 +113,17 @@ fn main() {
                     if game_state.players.len() == 1 && game_state.stage == Stage::InGame {
                         let event = GameEvent::EndGame;
                         game_state.consume(&event, client_id.raw());
-                        server.broadcast_message(DefaultChannel::ReliableOrdered, serialize(&event).unwrap());
+                        server.broadcast_message(
+                            DefaultChannel::ReliableOrdered,
+                            serialize(&event).unwrap()
+                        );
+                        for (id, _) in &game_state.players {
+                            println!("✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨");
+                            println!("✨                                                  ✨");
+                            println!("✨               Player [{}] has won !              ✨", id);
+                            println!("✨                                                  ✨");
+                            println!("✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨");
+                        }
                         println!("🟥 Game has ended");
                     }
                 }
@@ -131,7 +141,7 @@ fn main() {
                 if let Ok(event) = deserialize::<GameEvent>(&message) {
                     if game_state.validate(&event, client_id.raw()) {
                         let broad_event = game_state.consume(&event, client_id.raw());
-                        println!("[EVENT]: Client {} sent:\n\t{:#?}", client_id, broad_event);
+                        //println!("[EVENT]: Client {} sent:\n\t{:#?}", client_id, broad_event);
                         match broad_event {
                             GameEvent::PlayerMove { .. } => {
                                 for client_id_p in server.clients_id().into_iter() {
@@ -155,6 +165,14 @@ fn main() {
                                     );
                                 }
                             }
+                            GameEvent::Impact { id } => {
+                                let adress = game_state.get_client_id(id);
+                                server.send_message(
+                                    ClientId::from_raw(adress),
+                                    DefaultChannel::ReliableOrdered,
+                                    serialize(&broad_event).unwrap()
+                                );
+                            }
                             _ => {
                                 server.broadcast_message(
                                     DefaultChannel::ReliableOrdered,
@@ -171,10 +189,8 @@ fn main() {
                                 DefaultChannel::ReliableOrdered,
                                 serialize(&event).unwrap()
                             );
-                            println!("[INFO]: player with id [{}] won !", winner);
+                            println!("🟩 [INFO]: player with id [{}] won !", winner);
                         }
-                    } else {
-                        eprintln!("❌ Player {} sent invalid event:\n\t{:#?}", client_id, event);
                     }
                 }
             }

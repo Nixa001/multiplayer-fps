@@ -10,6 +10,12 @@ pub enum GameEvent {
     },
     EndGame,
     AccessForbidden,
+    Impact {
+        id: u8,
+    },
+    Death {
+        player_id: u8,
+    },
     PlayerJoined {
         player_id: u8,
         name: String,

@@ -1,17 +1,22 @@
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+use bevy::diagnostic::{ FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin };
 use bevy::prelude::*;
-use bevy_rapier3d::plugin::{NoUserData, RapierPhysicsPlugin};
-use bevy_renet::{transport::NetcodeClientPlugin, RenetClientPlugin};
-use games::{
-    fps::*,
-    gamestate::{display_timer, setup_timer},
-    live::*,
-};
+use bevy_rapier3d::plugin::{ NoUserData, RapierPhysicsPlugin };
+use bevy_renet::{ transport::NetcodeClientPlugin, RenetClientPlugin };
+use games::{ fps::*, gamestate::{ display_timer, setup_timer }, live::* };
 use multiplayer_fps::{
-    get_input, handle_connection, setup_networking, Counter, EnnemyCreated, GameState, GameTimer,
-    ListPlayer, PlayerSpawnInfo, PositionInitial,
+    get_input,
+    handle_connection,
+    setup_networking,
+    Counter,
+    EnnemyCreated,
+    GameState,
+    GameTimer,
+    LifeCounter,
+    ListPlayer,
+    PlayerSpawnInfo,
+    PositionInitial,
 };
-use std::{i32, net::SocketAddr};
+use std::{ i32, net::SocketAddr };
 // use bevy::sprite::collide_aabb::collide;
 // use bevy::render::debug::DebugLines;
 // use bevy_gltf::Gltf;
@@ -51,10 +56,7 @@ fn main() {
     }
 
     if username.len() > MAX_USERNAME_LENGTH {
-        eprintln!(
-            "❌ Username is too long (max {} characters)",
-            MAX_USERNAME_LENGTH
-        );
+        eprintln!("❌ Username is too long (max {} characters)", MAX_USERNAME_LENGTH);
         return;
     }
 
@@ -65,6 +67,7 @@ fn main() {
     let timer = GameTimer { sec: i32::MAX };
     let game_state = GameState::new();
     let ennemy_created = EnnemyCreated { val: true };
+    let life_counter = LifeCounter::new();
     App::new()
         .insert_resource(client)
         .insert_resource(transport)
@@ -74,15 +77,18 @@ fn main() {
         .insert_resource(timer)
         .insert_resource(game_state)
         .insert_resource(ennemy_created)
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "IBG".into(),
-                resolution: (1500.0, 1000.0).into(),
-                resizable: true,
+        .insert_resource(life_counter)
+        .add_plugins(
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "IBG".into(),
+                    resolution: (1500.0, 1000.0).into(),
+                    resizable: true,
+                    ..default()
+                }),
                 ..default()
-            }),
-            ..default()
-        }))
+            })
+        )
         .add_systems(Startup, setup_crosshair)
         .add_systems(Update, update_crosshair_position)
         // .add_systems(Update, (fire_projectile, update_projectiles))
@@ -93,20 +99,17 @@ fn main() {
             LogDiagnosticsPlugin::default(),
             FrameTimeDiagnosticsPlugin::default(),
         ))
-        .add_systems(
-            Startup,
-            (
-                //player::player::setup_player_and_camera,
-                playing_field::playing_field::Fields::spawn_ground,
-                player_2d::player_2d::setup_minimap,
-                // playing_field::playing_field::Fields::spawn_object,
-                // playing_field::playing_field::Fields::spawn_player,
-                setup,
-                setup_timer,
-                setupfps,
-                setuplives,
-            ),
-        )
+        .add_systems(Startup, (
+            //player::player::setup_player_and_camera,
+            playing_field::playing_field::Fields::spawn_ground,
+            player_2d::player_2d::setup_minimap,
+            // playing_field::playing_field::Fields::spawn_object,
+            // playing_field::playing_field::Fields::spawn_player,
+            setup,
+            setup_timer,
+            setupfps,
+            setuplives,
+        ))
         // .add_systems(Startup, setup)
         .add_systems(
             Update,
@@ -126,8 +129,7 @@ fn main() {
                 // debug_draw_system,
                 enemys::enemys::update_enemys_position,
                 // enemys::enemys::debug_enemy_components,
-            )
-                .chain(),
+            ).chain()
         )
         .run();
 }
@@ -182,7 +184,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         0, // ID temporaire
         0.0,
         0.0,
-        0.0, // Position par défaut
+        0.0 // Position par défaut
     );
 }
 
@@ -204,7 +206,7 @@ fn setup_crosshair(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 fn update_crosshair_position(
     mut crosshair_query: Query<&mut Style, With<Crosshair>>,
-    windows: Query<&Window>,
+    windows: Query<&Window>
 ) {
     let window = windows.single();
     if let Ok(mut style) = crosshair_query.get_single_mut() {
