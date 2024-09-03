@@ -45,8 +45,8 @@ pub fn fire_projectile(
 
                     commands.spawn(ProjectileBundle {
                         projectile: Projectile {
-                            speed: 80.0,
-                            lifetime: Timer::from_seconds(50.0, TimerMode::Once),
+                            speed: 100.0,
+                            lifetime: Timer::from_seconds(5.0, TimerMode::Once),
                         },
                         pbr_bundle: PbrBundle {
                             mesh: meshes.add(
@@ -58,14 +58,14 @@ pub fn fire_projectile(
                             ),
                             material: materials.add(StandardMaterial {
                                 base_color: Color::ORANGE_RED,
-                                emissive: Color::rgba_linear(0.0, 0.0, 0.0, 1.0),
+                                emissive: Color::rgba_linear(1.0, 0.0, 0.0, 1.0),
                                 ..default()
                             }),
                             transform: Transform::from_translation(spawn_point),
                             ..default()
                         },
                         rigid_body: RigidBody::KinematicVelocityBased,
-                        collider: Collider::ball(0.05),
+                        collider: Collider::ball(0.03),
                         velocity: Velocity::linear(projectile_direction * 50.0),
                     });
                 }

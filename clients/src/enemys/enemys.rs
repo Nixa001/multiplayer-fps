@@ -37,7 +37,7 @@ pub fn create_enemys(
     for (&id, player) in list_player.list.iter() {
         let enemy_mesh = meshes.add(Mesh::from(shape::Cylinder {
             radius: 0.15,
-            height: 1.3,
+            height: 1.2,
             ..default()
         }));
 
