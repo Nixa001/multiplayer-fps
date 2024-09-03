@@ -44,6 +44,10 @@ pub struct LifeCounter {
 }
 
 impl LifeCounter {
+    pub fn new() -> Self {
+        Self { val: 3 }
+    }
+
     pub fn reduce(&mut self) {
         self.val -= 1;
     }

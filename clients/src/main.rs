@@ -67,7 +67,7 @@ fn main() {
     let timer = GameTimer { sec: i32::MAX };
     let game_state = GameState::new();
     let ennemy_created = EnnemyCreated { val: true };
-    let life_counter = LifeCounter::default();
+    let life_counter = LifeCounter::new();
     App::new()
         .insert_resource(client)
         .insert_resource(transport)
